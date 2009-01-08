@@ -1,0 +1,22 @@
+This document lists most of the bug fixes and changes.
+
+******** v3.4.2 ******** 
+# added configpage for parameters
+
+
+******** v3.4.1 ******** 
+# updated disablestyles parameter
+# removed some stray code functions
+# added multiple subscribed calendar support
+
+
+******** v3.4 ******** 
+# fixed $wgCalendarPath override
+
+
+******** trunk/beta ******** 
+# added support for {{TEMPLATE}} syntax for calendar name. 
+	<calendar name={{TEMPLATE}} />
+
+# added timetracking ability via template mode...creates a small table that maintains totals per category...categories are created on the fly...ie: sick... vacation... personal time... anything you want. Entries will match existing entires and update the total values
+	(ex: 5-10# ::sick 8)
