@@ -118,16 +118,63 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
+							$arrEvent[1] = $this->checkTimeTrack($month, $day, $year, $arrEvent[1]);
 							$this->add($month, $day, $year, $articleName, $arrEvent[1], "");
 							$day++;
 						}
-					}else
+					}else{
+						$arrEvent[1] = $this->checkTimeTrack($month, $day, $year, $arrEvent[1]);
 						$this->add($month, $day, $year, $articleName, $arrEvent[1], "");
+					}
 				}
 			}
 		}	
 	}
+	
+	// this function checks a template event for a time trackable value
+	private function checkTimeTrack($month, $day, $year, $event){
 		
+		if(stripos($event,"::") === false) return $event;
+		
+		$arrEvent = split("::", $event);
+		
+		$arrType = split(":",$arrEvent[1]);
+		if(count($arrType) == 1)
+			$arrType = split(" ",$arrEvent[1]); //because of this, the tracked event cannot be more then 1 word
+			
+		$type = trim(strtolower($arrType[0]));
+
+		// we only want the displayed calendar year totals
+		if($this->year == $year){
+			if(isset($this->arrTimeTrack[$type]))
+				$this->arrTimeTrack[$type][] = $arrType[1];
+		}
+		
+		return $event;	
+	}
+	
+	public function buildTrackTimeSummary(){
+		
+		$ret = "";
+		$cntValue = count($this->arrTrackValues);
+		$cntHead = split(",", $this->timeTrackHead);
+		
+		if(count($cntHead) == 2)
+			$html_head = "<table title='Year summary of time specific enties (1-5# ::sick)' width=50% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
+		else
+			$html_head = "<table width=50% border=1 cellpadding=0 cellspacing=0><th>Entry</th><th>Total</th>";
+			
+		$html_foot = "</table>";
+
+		while (list($key,$val) = each($this->arrTimeTrack)) 
+			$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
+	
+		if($cntValue > 0)
+			$ret = $html_head . $ret . $html_foot;
+			
+		return $ret;
+	}
+	
 	//find the number of current events and "build" the <add event> link
     public function buildAddEventLink($month, $day, $year) {
 		
@@ -163,16 +210,28 @@ class CalendarArticles
 	
 	public function getConfig($pagename){
 	
+		$params = array();	
+		
 		$articleName = "$pagename/config";
 		$article = new Article(Title::newFromText($articleName));
 		
 		if ($article->exists()){
 			$body  = $article->fetchContent(0,false,false);
-			$body = str_replace("\"", "", $body);
-		}
-		$ret = split("\n", $body);
+			$body = str_replace("\"", "", $body);	
+			$arr = split("\n", $body);
+			$cnt = count($arr);
 
-		return $ret;
+			for($i=0; $i<$cnt; $i++){
+				$arrParams = split("=", $arr[$i]);
+				$key = $arrParams[0];
+				$value = $arrParams[1];
+				
+				if($key != 'useconfigpage')		// we dont want users to lock themselves out of the config page....		
+					$params[$key][] = $value; 
+			}
+		}
+		
+		return $params;
 	}
 	
 	private function add($month, $day, $year, $pagetitle, $eventname, $body){
@@ -182,7 +241,7 @@ class CalendarArticles
 		$cArticle->day = $day;	
 		$cArticle->year = $year;	
 		$cArticle->pagetitle = $pagetitle;	
-		$cArticle->eventname = $eventname;	
+		$cArticle->eventname = str_replace("::", "", $eventname);	
 		if(trim($body) != "")
 			$cArticle->body = $body;
 		
