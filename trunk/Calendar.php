@@ -16,15 +16,7 @@
  *		The debugging events are written below the calendar web page.
  *			<calendar debug /> - basically, user defined debugging
  * call the debugging by this means:   $this->debug(<data>);
- *
- * the debug log will show up on the calendar display page
- *
- *
- * // (* backwards compatibility only *) - 12/14/08 patch
- * // In the function 'getArticlesForDay', i have code in place to check for older style events (upgraded users only should care)
- * // must use the name parameter even in fullsubscribe mode: <calendar name="Team" fullsubscribe="Main Page/Team" />
- * // if you dont, you will not get the older style events in your calendar...
-*/
+ */
 
 // this is the "refresh" code that allows the calendar to switch time periods
 if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) || isset($_POST["monthBack"])
@@ -215,8 +207,17 @@ class Calendar extends CalendarArticles
 	 // render the calendar
 	 function displayCalendar(){
 	 
+		$this->readStylepage();
+
+
+		$year_pre = ($this->month==1 ? ($this->year-1) : $this->year);		
+		$month_pre = ($this->month==1 ? 12 : $this->month-1);
+		
 		//load all the month events into memory
-		$this->initalizeMonth();
+		if(!$this->setting('performance')) //might add performance tags in the code
+			$this->initalizeMonth($month_pre, $year_pre); //grab last months events for overlapped repeating events
+
+		$this->initalizeMonth($this->month, $this->year); //grab this months events
 		
 		$this->buildTemplateEvents();
 		
@@ -234,18 +235,16 @@ class Calendar extends CalendarArticles
 		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
 	 }
 	 
-	function initalizeMonth(){
+	function initalizeMonth($month, $year){
 		$dayOffset = -$first + 1;
 	    
 	    // build up the months events
-	    $numWeeks = floor(($this->getDaysInMonth($this->year,$this->month) - $dayOffset + 7) / 7);  	
+	    $numWeeks = floor(($this->getDaysInMonth($year, $month) - $dayOffset + 7) / 7);  	
 	    for ($i = 0; $i < $numWeeks; $i += 1) {
 			
 			// write out the days in the week
 			for ($j = 0; $j < 7; $j += 1) {
-				$this->buildArticlesForDay($this->month, $dayOffset, $this->year);
-				
-				//$ret .= $this->getHTMLForDay($this->month,$dayOffset,$this->year);
+				$this->buildArticlesForDay($month, $dayOffset, $year);
 				$dayOffset += 1;
 			}
 		}	 
@@ -354,6 +353,8 @@ class Calendar extends CalendarArticles
 
 	// build the 'template' button	
 	function buildConfigLink($bTextLink = false){	
+		
+		if(!$this->setting('useconfigpage')) return;
 		
 		if($this->setting('useconfigpage',false) == 'disablelinks') return "";
 		
@@ -469,7 +470,7 @@ class Calendar extends CalendarArticles
 			
 		$this->debug("End Calendar Single Day Mode");
 		
-		return "<html>" . cleanDayHTML($html. $this->getHTMLForDay($this->month,$this->day,$this->year) 
+		return "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month,$this->day,$this->year) 
 		. "</table></html>" 
 		. $this->getDebugging());	
 		
@@ -709,7 +710,27 @@ class Calendar extends CalendarArticles
     	
     	return $tempString;	
     }	
-	
+
+	function cleanDayHTML($tempString){
+		// kludge to clean classes from "day" only parameter; causes oddness if the main calendar
+		// was displayed with a single day calendar on the same page... the class defines carried over...
+		$tempString = str_replace("calendarTransparent", "", $tempString);
+		$tempString = str_replace("calendarDayNumber", "", $tempString);
+		$tempString = str_replace("calendarEventAdd", "", $tempString);	
+		$tempString = str_replace("calendarEventList", "", $tempString);	
+		
+		$tempString = str_replace("calendarToday", "", $tempString);	
+		$tempString = str_replace("calendarMonday", "", $tempString);
+		$tempString = str_replace("calendarTuesday", "", $tempString);
+		$tempString = str_replace("calendarWednesday", "", $tempString);
+		$tempString = str_replace("calendarThursday", "", $tempString);	
+		$tempString = str_replace("calendarFriday", "", $tempString);
+		$tempString = str_replace("calendarSaturday", "", $tempString);	
+		$tempString = str_replace("calendarSunday", "", $tempString);	
+		
+		return $tempString;
+	}
+
     // builds the day events into memory
     function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
@@ -744,7 +765,6 @@ class Calendar extends CalendarArticles
 		}
 	}	
 	
-	// Set/Get accessors
 	function setting($param, $retBool=true){
 	
 		//not set; return bool false
@@ -763,19 +783,13 @@ class Calendar extends CalendarArticles
 		$this->arrSettings[$params] = $value;
 	}
 	
+	// Set/Get accessors	
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
 	function setTitle($title) { $this->title = str_replace(' ', '_', $title); }
 	function setName($name) { $this->name = str_replace(' ', '_', $name); }
 	function createAlert($day, $month, $text){$this->arrAlerts[] = $day . "-" . $month . "-" . $text . "\\n";}
 }
-
- function function_defining_magic_words( &$magicWords, $langCode ) {
- 
-	
-     $magicWords['magic_word_id'] = array( 0, 'function_name_in_wikitext' );
-     return true; // unless we return true, other parser function extensions won't get loaded.
- }
 
 // called to process <Calendar> tag.
 // most $params[] values are passed right into the calendar as is...
@@ -825,7 +839,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$params['locktemplates'] = true;
 	}
 	
-	// this needs to be last in after all required $params are configured
+	// this needs to be last after all required $params are updated, changed, defaulted or whatever
 	$calendar->arrSettings = $params;
 	
 	// joint calendar...pulling data from our calendar and the subscribers...ie: "title/name" format
@@ -842,8 +856,6 @@ function displayCalendar($paramstring = "", $params = array()) {
 	// finished special conditions; set the $title and $name in the class
 	$calendar->setTitle($title);
 	$calendar->setName($name);
-
-	$calendar->readStylepage();
 
     // read the cookie to pull last calendar data
     $cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
@@ -872,26 +884,5 @@ function checkForMagicWord($string){
 	
 	return $ret;
 }
-
-function cleanDayHTML($tempString){
-	// kludge to clean classes from "day" only parameter; causes oddness if the main calendar
-	// was displayed with a single day calendar on the same page... the class defines carried over...
-	$tempString = str_replace("calendarTransparent", "", $tempString);
-	$tempString = str_replace("calendarDayNumber", "", $tempString);
-	$tempString = str_replace("calendarEventAdd", "", $tempString);	
-	$tempString = str_replace("calendarEventList", "", $tempString);	
-	
-	$tempString = str_replace("calendarToday", "", $tempString);	
-	$tempString = str_replace("calendarMonday", "", $tempString);
-	$tempString = str_replace("calendarTuesday", "", $tempString);
-	$tempString = str_replace("calendarWednesday", "", $tempString);
-	$tempString = str_replace("calendarThursday", "", $tempString);	
-	$tempString = str_replace("calendarFriday", "", $tempString);
-	$tempString = str_replace("calendarSaturday", "", $tempString);	
-	$tempString = str_replace("calendarSunday", "", $tempString);	
-	
-	return $tempString;
-}
-
 } //end define MEDIAWIKI
 ?>

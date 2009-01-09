@@ -1,5 +1,10 @@
 <?php
+/*
+Class: 		CalendarArticle
+Purpose: 	Stucture to hold article/event data and 
+			then store into an array for future retrieval
 
+*/
 class CalendarArticle
 {
 	var $day = "";
@@ -20,6 +25,13 @@ class CalendarArticle
 	}
 }
 
+/*
+Class: 		CalendarArticles
+Purpose: 	Contains most of the functions to retrieve article 
+			information. It also is the primary container for
+			the main array of class::CalendarArticle articles
+
+*/
 class CalendarArticles
 {	
 	private $arrArticles = array();
@@ -74,22 +86,24 @@ class CalendarArticles
 		}
 
 		if(!$bMulti){
-			$this->buildRepeatingEvents($month, $day, $year, $lines[0], $articleName);
+			$this->buildRepeatingEvents($month, $day, $year, $lines[0], $articleName, $arrBody[0]);
 		}
 		else
 			for($i=0; $i<=$headCount; $i++){
-				$this->buildRepeatingEvents($month, $day, $year, $head[$i], $articleName);
+				$this->buildRepeatingEvents($month, $day, $year, $head[$i], $articleName, $arrBody[$i]);
 			}
 
 	}
-	private function buildRepeatingEvents($month, $day, $year, $event, $articleName){	
+	private function buildRepeatingEvents($month, $day, $year, $event, $page, $body){	
 		$arrEvent = split("#",$event);
 		if((strlen($arrEvent[1]) > 0) && (count($arrEvent) == 2) && ($arrEvent[0] != 0)){
-			for($i=0; $i<$arrEvent[0]; $i++) {
-				$this->add($month, $day++, $year, $articleName, $arrEvent[1], "");
+			$this->add($month, $day++, $year, $arrEvent[1], $page, $body); //add no arrow
+			for($i=1; $i<$arrEvent[0]; $i++) {
+				$this->add($month, $day, $year, '&larr;'.$arrEvent[1], $page, $body); //add with arrow
+				$this->getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($month, $day, $year, $articleName, $event, "");	
+			$this->add($month, $day, $year, $event, $page, $body);	
 	}
 	
 	function LimitText($text,$max) { 
@@ -138,14 +152,29 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
-							$this->add($month, $day, $year, $articleName, $arrEvent[1], "", true);
+							$this->add($month, $day, $year,  $arrEvent[1], $articleName, "", true);
 							$day++;
 						}
 					}else
-						$this->add($month, $day, $year, $articleName, $arrEvent[1], "", true);
+						$this->add($month, $day, $year, $arrEvent[1], $articleName, "", true);
 				}
 			}
 		}	
+	}
+
+	private function getNextValidDate(&$month, &$day, &$year){
+	
+		$day++;
+	
+		$daysMonth = $this->getDaysInMonth($year,$month);
+		if($day > $daysMonth){
+			$day = 1;
+			$month++;
+			if($month > 12){
+				$month = 1;
+				$year++;
+			}
+		}
 	}
 	
 	// this function checks a template event for a time trackable value
@@ -169,8 +198,10 @@ class CalendarArticles
 				$this->arrTimeTrack[$type.' (m)'][] = $arrType[1];
 		}
 		
-		return $arrType[0];
-		//return $event;	
+		//piece together any prefixes that the code may have added - like (r) for repeat events
+		$ret = $arrEvent[0] . $arrType[0]; 
+		
+		return $ret;
 	}
 	
 	public function buildTrackTimeSummary(){
@@ -258,16 +289,16 @@ class CalendarArticles
 		return $params;
 	}
 	
-	private function add($month, $day, $year, $pagetitle, $eventname, $body, $isTemplate=false){
+	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false){
 		$cArticle = new CalendarArticle($month, $day, $year);
 		
-		$temp = $this->checkTimeTrack($month, $day, $year, $eventname,$isTemplate);
+		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
 		
 		$cArticle->month = $month;	
 		$cArticle->day = $day;	
 		$cArticle->year = $year;	
-		$cArticle->pagetitle = $pagetitle;	
-		$cArticle->eventname = $temp;//str_replace("::", "", $temp);	
+		$cArticle->pagetitle = $page;	
+		$cArticle->eventname = $temp."<br/>";
 		if(trim($body) != "")
 			$cArticle->body = $body;
 
