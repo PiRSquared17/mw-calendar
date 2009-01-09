@@ -133,7 +133,7 @@ class CalendarArticles
 	
 	// this function checks a template event for a time trackable value
 	private function checkTimeTrack($month, $day, $year, $event){
-		
+	
 		if(stripos($event,"::") === false) return $event;
 		
 		$arrEvent = split("::", $event);
@@ -145,25 +145,18 @@ class CalendarArticles
 		$type = trim(strtolower($arrType[0]));
 
 		// we only want the displayed calendar year totals
-		if($this->year == $year){
-			if(isset($this->arrTimeTrack[$type]))
+		if($this->year == $year)
 				$this->arrTimeTrack[$type][] = $arrType[1];
-		}
 		
 		return $event;	
 	}
 	
 	public function buildTrackTimeSummary(){
-		
 		$ret = "";
-		$cntValue = count($this->arrTrackValues);
-		$cntHead = split(",", $this->timeTrackHead);
+		$cntValue = count($this->arrTimeTrack);
+		$cntHead = split(",", $this->setting('timetrackhead',false));
 		
-		if(count($cntHead) == 2)
-			$html_head = "<table title='Year summary of time specific enties (1-5# ::sick)' width=50% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
-		else
-			$html_head = "<table width=50% border=1 cellpadding=0 cellspacing=0><th>Entry</th><th>Total</th>";
-			
+		$html_head = "<table title='Year summary of time specific enties (1-5# ::sick)' width=50% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
 		$html_foot = "</table>";
 
 		while (list($key,$val) = each($this->arrTimeTrack)) 
@@ -198,9 +191,9 @@ class CalendarArticles
 		}
 
 		// reuse events (need to used the ==event1== ==event2== logic)
-		if($this->useMultiEvent && $articleCount > 1) $articleCount -= 1;
+		if($this->setting('usemultievent') && $articleCount > 1) $articleCount -= 1;
 		
-		if($articleCount > $this->maxDailyEvents)
+		if($articleCount > $this->setting('maxdailyevents',false))
 			$newURL = "<a title='add a new event' href=\"javascript:alert('Max daily events reached. Please use \'Multiple Events\' fomatting to add more.')\"><u>Add Event</u></a>";
 		else
 			$newURL = "<a title='add a new event' href='" . $this->wikiRoot . urlencode($tempArticle . $articleCount) . "&action=edit'><u>Add Event</u></a>";
@@ -226,11 +219,14 @@ class CalendarArticles
 				$key = $arrParams[0];
 				$value = $arrParams[1];
 				
-				if($key != 'useconfigpage')		// we dont want users to lock themselves out of the config page....		
-					$params[$key][] = $value; 
+				if($key != 'useconfigpage'){		// we dont want users to lock themselves out of the config page....		
+					if(count($arrParams) != 2) 
+						$params[$key] = $key; // init the value with itself if $value is null
+					else
+						$params[$key] = $value; // we have both $key and $value
+				}
 			}
 		}
-		
 		return $params;
 	}
 	
@@ -257,10 +253,10 @@ class CalendarArticles
 		$style = $arrText[2];
 
 		//locked links
-		if($this->disableLinks)
+		if($this->setting('disablelinks'))
 			$ret = "<a $style>" . $arrText[1] . "</a>";
 		else
-			if($this->defaultEdit)
+			if($this->setting('defaultedit'))
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot  . htmlspecialchars($title) . "&action=edit'>$arrText[1]</a>";
 			else
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . htmlspecialchars($title)  . "'>$arrText[1]</a>";
@@ -273,9 +269,10 @@ class CalendarArticles
 		$string = $this->cleanWiki($string);	
 		$htmltext = $string;
 		$plaintext = strip_tags($string);
-
-		if(strlen($plaintext) > $this->charLimit) {
-			$temp = substr($plaintext,0,$this->charLimit) . "..."; //plaintext
+		$charlimit = $this->setting('charlimit',false);
+		
+		if(strlen($plaintext) > $charlimit) {
+			$temp = substr($plaintext,0,$charlimit) . "..."; //plaintext
 			$ret[0] = $plaintext; //full plain text
 			$ret[1] = str_replace($plaintext, $temp, $htmltext); //html
 			$ret[2] = ""; //styles
@@ -286,7 +283,7 @@ class CalendarArticles
 			$ret[2] = ""; //styles
 		}
 		
-		if(!$this->disableStyles)
+		if(!$this->setting('disablestyles'))
 			$ret[2] = $this->buildStyleBySearch($plaintext);
 		
 		return $ret;

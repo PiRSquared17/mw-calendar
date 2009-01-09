@@ -100,27 +100,14 @@ class Calendar extends CalendarArticles
 {  
 	var $version = "3.4.3 (beta)";
 	
+	var $arrSettings = array();
+	
     // [begin] set calendar parameter defaults
 	var $calendarMode = "normal";
 	var $title = ""; 
-	var $name = "Public";
-	var $enableTemplates = false;
-	var $enableStyles = false;
-	var $showAddEvent = true;    
-	var $defaultEdit = false;	
-	var $yearOffset= 2;
-	var $charLimit = 20; // this is the line char limit for listed events
-	var $maxDailyEvents = 5; // max number of events per day; this directly effects performace
-	var $summaryCharLimit = 0;
 	
-	var $debugLevel = 0;
-	var $useMultiEvent = false;
-	var $useEventList = false;
-	var $disableLinks = false;
-	var $lockTemplates = false;
 	var $disableConfigLink = true;
-	var $disableStyles = false;
-	
+
 	var $arrAlerts = array();
 	var $subscribedPages = array();
 
@@ -185,18 +172,18 @@ class Calendar extends CalendarArticles
 	}
 // ******* BEGIN DEBUGGING CODE ******************
 	function debug($e){
-		if($this->debugEnabled){
+		//if($this->setting('debug')){
 			// recorded time in seconds
 			$steptime = round(microtime(1) - $this->markTime,2);
 			$totaltime = round(microtime(1) - $this->startTime,2);
 			$this->debugData .= "<tr><td>$e</td><td align=center>$steptime</td><td align=center>$totaltime</td></tr>";
 			$this->markTime = microtime(1);
-		}
+		//}
 	}
 	
 	// writes all the debug data at the bottom of calendar page
-	function getDebugging() { 
-		if($this->debugEnabled)
+	function getDebugging() {
+		if($this->setting('debug'))
 			return "<table border=1 cellpadding=5 cellspacing=0 >
 			<tr><th>DebugName</th><th>StepTime<br>(sec)</th><th>TotalTime<br>(sec)</th></tr>
 			$this->debugData</table>";
@@ -248,7 +235,7 @@ class Calendar extends CalendarArticles
 		}
 					
 		// add event link value
-		if($this->showAddEvent){
+		if(!$this->setting('disableaddevent')){
 			$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
 		}
 		else {
@@ -310,13 +297,12 @@ class Calendar extends CalendarArticles
 	
 	// build the 'template' button	
 	function buildTemplateLink(){	
-	
-		if(!$this->enableTemplates) return "";
+		if(!$this->setting('usetemplates')) return "";
 		
 		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "';\">";
 
 		$month = strtolower($this->monthNames[$this->month-1]);
-		if($this->lockTemplates)
+		if($this->setting('locktemplates'))
 			$ret = "<input type='button' title='Create a bunch of events in one page (20-25# Vacation)' disabled value='$month events' onClick=\"javascript:document.location='" . $articleName;
 		else
 			$ret = "<input type='button' title='Create a bunch of events in one page (20-25# Vacation)' value='$month events' onClick=\"javascript:document.location='" . $articleName;
@@ -333,7 +319,7 @@ class Calendar extends CalendarArticles
 	// build the 'template' button	
 	function buildConfigLink($bTextLink = false){	
 		
-		if($this->disableConfigLink) return "";
+		if($this->setting('useconfigpage',false) == 'disablelinks') return "";
 		
 		if(!$bTextLink){
 			$articleConfig = $this->wikiRoot . $this->configPageName . "&action=edit" . "';\">";
@@ -420,10 +406,11 @@ class Calendar extends CalendarArticles
     		}
 	    }
 	    $tag_monthSelect .= "</select>";
-    	
+    	$yearoffset = $this->setting('yearoffset',false);
+
 	    // build the year select box, with +/- 5 years in relation to the currently selected year
 	    $tag_yearSelect = "<select name='yearSelect' method='post' onChange='javascript:this.form.submit()'>";
-		for ($i = ($this->year - $this->yearOffset); $i <= ($this->year + $this->yearOffset); $i += 1) {
+		for ($i = ($this->year - $yearoffset); $i <= ($this->year + $yearoffset); $i += 1) {
     		if ($i == $this->year) {
 				$tag_yearSelect .= "<option value=\"" . $i . "\" selected=\"true\">" . 
 				$i . "</option>\n";
@@ -434,12 +421,11 @@ class Calendar extends CalendarArticles
 	    }
 	    $tag_yearSelect .= "</select>";
     	
-
 		$tag_templateButton = $this->buildTemplateLink();
 		$tag_configButton = $this->buildConfigLink(false);
 		$tag_timeTrackValues = $this->buildTrackTimeSummary();
 
-		if(!$this->disableStyles){
+		if(!isset($params["disablestyles"])){
 			$articleStyle = $this->wikiRoot . $this->calendarPageName . "/style&action=edit" . "';\">";
 			$tag_eventStyleButton = "<input type=\"button\" title=\"Set 'html/css' styles based on trigger words (vacation::color:red; font-style:italic)\" value= \"event styles\" onClick=\"javascript:document.location='" . $articleStyle;
 		}
@@ -581,15 +567,16 @@ class Calendar extends CalendarArticles
     // returns an array of existing article names for a specific day
     function getArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
+		$summaryLength = $this->setting('enablesummary',false);
 	
-		for ($i = 0; $i <= $this->maxDailyEvents; $i++) {
+		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
 			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
-			$this->addArticle($month, $day, $year, $articleName, $this->summaryCharLimit);
+			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
 		
 			// subscribed events
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
-				$this->addArticle($month, $day, $year, $articleName, $this->summaryCharLimit);				
+				$this->addArticle($month, $day, $year, $articleName, $summaryLength);				
 				
 			}
 			
@@ -597,7 +584,7 @@ class Calendar extends CalendarArticles
 			// must use the name parameter even in fullsubscribe mode: <calendar name="Team" fullsubscribe="Main Page/Team" />
 			// if you dont, you will not get the older style events in your calendar...
 			$articleName = $this->calendarName . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-			$this->addArticle($month, $day, $year, $articleName, $this->summaryCharLimit);
+			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
 		}
     }
 	
@@ -612,11 +599,28 @@ class Calendar extends CalendarArticles
 	}	
 	
 	// Set/Get accessors
+	function setting($param, $retBool=true){
+	
+		//not set; return bool false
+		if(!isset($this->arrSettings[$param]) && $retBool) return false;
+		if(!isset($this->arrSettings[$param]) && !$retBool) return "";
+		
+		//set, but no value; return bool true
+		if($param == $this->arrSettings[$param] && $retBool) return true;
+		if($param == $this->arrSettings[$param] && !$retBool) return "";
+		
+		// contains data; so lets return it
+		return $this->arrSettings[$param];
+	}
+	
+	function updateSetting($params, $value = null){
+		$this->arrSettings[$params] = $value;
+	}
+	
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
 	function setTitle($title) { $this->title = str_replace(' ', '_', $title); }
 	function setName($name) { $this->name = str_replace(' ', '_', $name); }
-	function setYearsOffset($years) { $this->yearOffset= $years; } 
 	function createAlert($day, $month, $text){$this->arrAlerts[] = $day . "-" . $month . "-" . $text . "\\n";}
 }
 
@@ -628,6 +632,7 @@ class Calendar extends CalendarArticles
  }
 
 // called to process <Calendar> tag.
+// most $params[] values are passed right into the calendar as is...
 function displayCalendar($paramstring = "", $params = array()) {
     global $wgParser;
 	global $wgScript;
@@ -641,60 +646,41 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$wikiRoot = $wgScript . "?title=";
 	
 	// grab the page title
-	$title = $wgTitle->getPrefixedText();
-	$name = "Public";		
-	
-	if(isset($params["debug"])) $debug = true;
-	if(isset($params["name"])) if($params["name"] != "name") $name = $params["name"];	
-
-	$name = checkForMagicWord($name);
+	$title = $wgTitle->getPrefixedText();	
 	
 	$calendar = null;	
-	$calendar = new Calendar($wgCalendarPath, $wikiRoot, $debug);
-	
+	$calendar = new Calendar($wgCalendarPath, $wikiRoot, isset($params["debug"]));
+
+	if(!isset($params["name"])) $params["name"] = "Public";
+	$name = checkForMagicWord($params["name"]);
+		
 	// normal calendar...
 	$calendar->calendarPageName = htmlspecialchars($title . "/" . $name);
 	$calendar->configPageName = htmlspecialchars("$title/$name/config");
-	
+		
 	if(isset($params["useconfigpage"])) {	
 		$configs = $calendar->getConfig("$title/$name");
-		$calendar->disableConfigLink = false;
 		
 		//merge the config page and the calendar tag params; tag params overwrite config file
 		$params = array_merge($configs, $params);	
-
-		if($params["useconfigpage"] == "disablelink") $calendar->disableConfigLink = true;
 	}
-		
-    // check for user set parameters
-	if(isset($params["disableaddevent"])) $calendar->showAddEvent = false;	
-    if(isset($params["usetemplates"])) $calendar->enableTemplates = true;
-    if(isset($params["defaultedit"])) $calendar->defaultEdit = true;
-	if(isset($params["disablelinks"])) $calendar->disableLinks = true;
-	if(isset($params["usemultievent"])) $calendar->useMultiEvent = true; 
-	if(isset($params["locktemplates"])) $calendar->lockTemplates = true; 
-	if(isset($params["disablestyles"])) $calendar->disableStyles = true; 
-	if(isset($params["timetrackhead"])) $calendar->timeTrackHead = $params["timetrackhead"];
+
+	//set defaults as needed
+	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
+	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;
+	if(!isset($params["yearoffset"])) 		$params["yearoffset"] = 2;
+	if(!isset($params["charlimit"])) 		$params["charlimit"] = 20;
+	if(!isset($params["enablesummary"])) 	$params["enablesummary"] = 100; // 100 is the char limit for summary text
 	
-	if(isset($params["date"])) 
-		if($params["date"] != "date") $dateValue = $params["date"];
-	if(isset($params["useeventlist"])) 
-		if($params["useeventlist"] != "useeventlist") $eventListDays = $params["useeventlist"];
-	if(isset($params["yearoffset"])) 
-		if($params["yearoffset"] != "yearoffset") $calendar->setYearsOffset($params["yearoffset"]);
-	if(isset($params["charlimit"])) 
-		if($params["charlimit"] != "charlimit") $calendar->charLimit = ($params["charlimit"]);		
-	if(isset($params["maxdailyevents"])) 
-		if($params["maxdailyevents"] != "maxdailyevents") $calendar->maxDailyEvents = $params["maxdailyevents"];
-	if(isset($params["enablesummary"]))
-		if($params["enablesummary"] != "enablesummary") $calendar->summaryCharLimit = $params["enablesummary"];		
-
 	// no need to pass a parameter here... isset check for the params name, thats it
-	if(isset($params["lockdown"]) || isset($lockdown)){
-		$calendar->showAddEvent = false;
-		$calendar->disableLinks = true;
-		$calendar->lockTemplates = true;
+	if(isset($params["lockdown"])){
+		$params['disableaddevent'] = true;
+		$params['disablelinks'] = true;
+		$params['locktemplates'] = true;
 	}
+	
+	// this needs to be last in after all required $params are configured
+	$calendar->arrSettings = $params;
 	
 	// joint calendar...pulling data from our calendar and the subscribers...ie: "title/name" format
 	if(isset($params["subscribe"])) 
@@ -715,7 +701,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 
     // read the cookie to pull last calendar data
     $cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
-    if (isset($_COOKIE[$cookie_name]) && !isset($eventListDays) && !isset($dateValue)){
+    if (isset($_COOKIE[$cookie_name]) && !isset($params["useeventlist"]) && !isset($params["date"])){
 		$temp = split("`", $_COOKIE[$cookie_name]);
 		$calendar->setMonth($temp[0]);
 		$calendar->setYear($temp[1]);
@@ -724,7 +710,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 	}
 	
 	//this must go after the cookie checks because of the saved date in the cookie
-	if($calendar->enableTemplates){
+	if(isset($params['usetemplates'])){
 		$year = $calendar->year;
 		$month = 1;//$calendar->month;
 			
@@ -741,22 +727,16 @@ function displayCalendar($paramstring = "", $params = array()) {
 		}
 	}
 	
-	// normal month mode
-	if(!isset($eventListDays)  && !isset($dateValue)){
-		$calendar->calendarMode = "normal";
-		$calendar->debug("End Calendar Normal/Full Mode");
-		return "<html>" . $calendar->getHTMLForMonth() . "</html>" . $calendar->getDebugging();
-		}
-
 	// event list mode
-	if(isset($eventListDays)){
+	if(isset($params["useeventlist"])){
 		$calendar->calendarMode = "eventlist";
-		$daysOut = ($eventListDays <= 120 ? $eventListDays : 120);
+		$daysOut = ($params["useeventlist"] <= 120 ? $params["useeventlist"] : 120);
 		
 		$month = $calendar->month;
 		$day = $calendar->day;
 		$year = $calendar->year;
-		$calendar->charLimit = 100;
+
+		$calendar->updateSetting('charlimit',100);
 		
 		for($i=0; $i < $daysOut; $i++){
 			$calendar->getHTMLForDay($month, $day, $year);
@@ -780,11 +760,11 @@ function displayCalendar($paramstring = "", $params = array()) {
 	}
 	
     // specific date mode
-    if (isset($dateValue)) {
+    if (isset($params["date"])) {
 		$calendar->calendarMode = "date";
-		$calendar->charLimit = 100;
-		if (($dateValue  == "today") || ($dateValue == "tomorrow")){
-			if ($dateValue == "tomorrow" ){
+		$calendar->arrSettings['charlimit'] = 100;
+		if (($params["date"] == "today") || ($params["date"] == "tomorrow")){
+			if ($params["date"] == "tomorrow" ){
 				$calendar->day++;
 				
 				//lets check for overlap to next month or next year...
@@ -800,16 +780,15 @@ function displayCalendar($paramstring = "", $params = array()) {
 			}
 		}
 		else {
-			$useDash = split("-",$dateValue);
-			$useSlash = split("/",$dateValue);
+		//$calendar->debug(count($params["date"]));
+			$useDash = split("-",$params["date"]);
+			$useSlash = split("/",$params["date"]);
 			$parseDate = (count($useDash) > 1 ? $useDash : $useSlash);
 			if(count($parseDate) == 3){
 				$calendar->month = $parseDate[0];
 				$calendar->day = $parseDate[1] + 0; // converts to integer
 				$calendar->year = $parseDate[2] + 0;
 			}
-//			else //format error, return
-//				return "<html><h2>Invalid Date Parameter. Valid formats are (mm/dd/ccyy) or (mm-dd-ccyy)</h2></html>";
 		}
 		
 		// build the "daily" view HTML if we have a good date
@@ -823,8 +802,12 @@ function displayCalendar($paramstring = "", $params = array()) {
 		. "</table></html>" 
 		. $calendar->getDebugging());	
 	}
+	
+	// if we made it here.. we're in normal full month mode
+	$calendar->calendarMode = "normal";
+	$calendar->debug("End Calendar Normal/Full Mode");
+	return "<html>" . $calendar->getHTMLForMonth() . "</html>" . $calendar->getDebugging();
 
-	return true;
 }
 
 function checkForMagicWord($string){
