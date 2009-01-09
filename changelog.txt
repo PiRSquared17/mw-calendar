@@ -18,5 +18,10 @@ This document lists most of the bug fixes and changes.
 # added support for {{TEMPLATE}} syntax for calendar name. 
 	<calendar name={{TEMPLATE}} />
 
-# added timetracking ability via template mode...creates a small table that maintains totals per category...categories are created on the fly...ie: sick... vacation... personal time... anything you want. Entries will match existing entires and update the total values
-	(ex: 5-10# ::sick 8)
+# added timetracking ability...creates a small table that maintains totals per category...categories are created on the fly...ie: sick... vacation... project name... anything you want. Entries will match existing entires and update the total values. Day events are only totaled for that month, but monthly/template events are totalled for the year
+	(ex: ::sick-8) 
+	(ex: ::project1:8) 
+	(ex: ::project1-4) <<total 12>>
+	(ex: 5-10# ::vacation-8) <-- template; totals for the year
+
+# re-added repeating events under daily "add event" (ex: 5# Vacation)... this will create 5 vacation events

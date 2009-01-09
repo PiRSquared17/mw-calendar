@@ -35,9 +35,17 @@ class CalendarArticles
 		$temp = "";		
 		$cntWords=0;
 		
+		
 		$article = new Article(Title::newFromText($articleName));	
 		if(!$article->exists()) return "";
-		
+
+		$redirectCount = 0;
+		 while($article->isRedirect() && $redirectCount < 10){
+			 $redirectedArticleTitle = Title::newFromRedirect($article->getContent());
+			 $article = new Article($redirectedArticleTitle);
+			 $redirectCount += 1;
+		 }
+
 		$body = $article->fetchContent(0,false,false);
 		$page = $article->getTitle()->getPrefixedText();
 		$cArticle->pagetitle = $article->getTitle()->getPrefixedText(); //full title with namespace,title,name and date
@@ -53,6 +61,7 @@ class CalendarArticles
 				if($i > 0) $headCount++;
 				$arr = split("==",$line);
 				$head[$headCount] = $arr[1] . "<br/>";
+
 				$temp = "";	$bodyLines = 0; $bMulti = true;	
 			}
 			else{
@@ -64,12 +73,23 @@ class CalendarArticles
 			}	
 		}
 
-		if(!$bMulti)
-			$this->add($month, $day, $year, $page, $lines[0] . "<br/>", $this->LimitText($arrBody[0], $charLimit));
+		if(!$bMulti){
+			$this->buildRepeatingEvents($month, $day, $year, $lines[0], $articleName);
+		}
 		else
-			for($i=0; $i<=$headCount; $i++)
-				$this->add($month, $day, $year, $page, $head[$i], $this->LimitText($arrBody[$i], $charLimit));
+			for($i=0; $i<=$headCount; $i++){
+				$this->buildRepeatingEvents($month, $day, $year, $head[$i], $articleName);
+			}
 
+	}
+	private function buildRepeatingEvents($month, $day, $year, $event, $articleName){	
+		$arrEvent = split("#",$event);
+		if((strlen($arrEvent[1]) > 0) && (count($arrEvent) == 2) && ($arrEvent[0] != 0)){
+			for($i=0; $i<$arrEvent[0]; $i++) {
+				$this->add($month, $day++, $year, $articleName, $arrEvent[1], "");
+			}
+		}else
+			$this->add($month, $day, $year, $articleName, $event, "");	
 	}
 	
 	function LimitText($text,$max) { 
@@ -118,21 +138,18 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
-							$arrEvent[1] = $this->checkTimeTrack($month, $day, $year, $arrEvent[1]);
-							$this->add($month, $day, $year, $articleName, $arrEvent[1], "");
+							$this->add($month, $day, $year, $articleName, $arrEvent[1], "", true);
 							$day++;
 						}
-					}else{
-						$arrEvent[1] = $this->checkTimeTrack($month, $day, $year, $arrEvent[1]);
-						$this->add($month, $day, $year, $articleName, $arrEvent[1], "");
-					}
+					}else
+						$this->add($month, $day, $year, $articleName, $arrEvent[1], "", true);
 				}
 			}
 		}	
 	}
 	
 	// this function checks a template event for a time trackable value
-	private function checkTimeTrack($month, $day, $year, $event){
+	private function checkTimeTrack($month, $day, $year, $event, $isTemplate){
 	
 		if(stripos($event,"::") === false) return $event;
 		
@@ -140,24 +157,35 @@ class CalendarArticles
 		
 		$arrType = split(":",$arrEvent[1]);
 		if(count($arrType) == 1)
-			$arrType = split(" ",$arrEvent[1]); //because of this, the tracked event cannot be more then 1 word
+			$arrType = split("-",$arrEvent[1]);
 			
 		$type = trim(strtolower($arrType[0]));
 
 		// we only want the displayed calendar year totals
-		if($this->year == $year)
-				$this->arrTimeTrack[$type][] = $arrType[1];
+		if($this->year == $year){
+			if($isTemplate)
+				$this->arrTimeTrack[$type.' (y)'][] = $arrType[1];
+			else
+				$this->arrTimeTrack[$type.' (m)'][] = $arrType[1];
+		}
 		
-		return $event;	
+		return $arrType[0];
+		//return $event;	
 	}
 	
 	public function buildTrackTimeSummary(){
+	
+		if($this->setting('disabletimetrack')) return "";
+	
 		$ret = "";
 		$cntValue = count($this->arrTimeTrack);
 		$cntHead = split(",", $this->setting('timetrackhead',false));
+		$linktitle = "Time summaries of time specific enties. Prefix events with :: to track time values.";
 		
-		$html_head = "<table title='Year summary of time specific enties (1-5# ::sick)' width=50% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
-		$html_foot = "</table>";
+		$html_head = "<table title='$linktitle' width=15% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
+		$html_foot = "</table><small>"
+			. "(m) - total month only; doesn't add to year total <br/>"
+			. "(y) - total year; must use monthly templates<br/></small>";
 
 		while (list($key,$val) = each($this->arrTimeTrack)) 
 			$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
@@ -230,17 +258,19 @@ class CalendarArticles
 		return $params;
 	}
 	
-	private function add($month, $day, $year, $pagetitle, $eventname, $body){
+	private function add($month, $day, $year, $pagetitle, $eventname, $body, $isTemplate=false){
 		$cArticle = new CalendarArticle($month, $day, $year);
+		
+		$temp = $this->checkTimeTrack($month, $day, $year, $eventname,$isTemplate);
 		
 		$cArticle->month = $month;	
 		$cArticle->day = $day;	
 		$cArticle->year = $year;	
 		$cArticle->pagetitle = $pagetitle;	
-		$cArticle->eventname = str_replace("::", "", $eventname);	
+		$cArticle->eventname = $temp;//str_replace("::", "", $temp);	
 		if(trim($body) != "")
 			$cArticle->body = $body;
-		
+
 		$this->arrArticles[] = $cArticle;
 	}
 	

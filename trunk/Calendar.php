@@ -212,6 +212,45 @@ class Calendar extends CalendarArticles
         return $d;
     }
 	 
+	 // render the calendar
+	 function displayCalendar(){
+	 
+		//load all the month events into memory
+		$this->initalizeMonth();
+		
+		$this->buildTemplateEvents();
+		
+		if($this->setting('useeventlist'))
+			return $this->buildEventList() . $this->buildTrackTimeSummary();
+			
+		if($this->setting('date'))
+			return $this->buildDateEvent() . $this->buildTrackTimeSummary();
+
+		// if we made it here... there was an error in the previous modes 
+		// or no mode was selected...display full calendar
+		$this->calendarMode = "normal";
+		$this->debug("End Calendar Normal/Full Mode");
+	
+		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
+	 }
+	 
+	function initalizeMonth(){
+		$dayOffset = -$first + 1;
+	    
+	    // build up the months events
+	    $numWeeks = floor(($this->getDaysInMonth($this->year,$this->month) - $dayOffset + 7) / 7);  	
+	    for ($i = 0; $i < $numWeeks; $i += 1) {
+			
+			// write out the days in the week
+			for ($j = 0; $j < 7; $j += 1) {
+				$this->buildArticlesForDay($this->month, $dayOffset, $this->year);
+				
+				//$ret .= $this->getHTMLForDay($this->month,$dayOffset,$this->year);
+				$dayOffset += 1;
+			}
+		}	 
+	}
+	 
     // Generate the HTML for a given month
     // $day may be out of range; if so, give blank HTML
     function getHTMLForDay($month,$day,$year){
@@ -241,9 +280,6 @@ class Calendar extends CalendarArticles
 		else {
 			$tag_addEvent = "";
 		}
-
-		// build standard articles
-		$this->getArticlesForDay($month, $day, $year);
 
 		//build formatted event list
 		$tag_eventList = $this->getArticleLinks($month, $day, $year, true);
@@ -330,6 +366,115 @@ class Calendar extends CalendarArticles
 		return $ret;			
 	}
 	
+	function buildEventList(){
+		$setting = $this->setting('useeventlist',false);
+		
+		if($setting == "") return "";
+		
+		if($setting > 0){
+			$this->calendarMode = "eventlist";
+			$daysOut = ($setting <= 120 ? $setting : 120);
+			
+			$month = $this->month;
+			$day = $this->day;
+			$year = $this->year;
+
+			$this->updateSetting('charlimit',100);
+			
+			for($i=0; $i < $daysOut; $i++){
+				$this->getHTMLForDay($month, $day, $year);
+				$day++;
+				//lets check for overlap to next month or next year...
+				$daysMonth = $this->getDaysInMonth($year,$month);
+				if($day > $daysMonth){
+					$day = 1;
+					$month++;
+					if($month > 12){
+						$month = 1;
+						$year++;
+					}
+				}
+			}
+			if(strlen($this->eventList) == 0)
+				$this->eventList = "<h4>No Events</h4>";
+				
+			$this->debug("End Calendar EventList Mode");
+			
+			return "<html><i> " . $this->buildConfigLink(true) . "</i>" .  $this->eventList . "</html>" . $this->getDebugging();
+		}
+	}
+
+	function buildTemplateEvents(){	//this must go after the cookie checks because of the saved date in the cookie
+		if($this->setting('usetemplates')){
+			$year = $this->year;
+			$month = 1;//$this->month;
+				
+			$additionMonths = $this->month + 12;
+				
+			// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
+			for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
+				for($s=0;$s < count($this->subscribedPages);$s++) //loop thru $i month per subscribed calendar
+					$this->addTemplate($month, $year, ($this->subscribedPages[$s]));
+				
+				$this->addTemplate($month, $year, ($this->calendarPageName));		
+				$year = ($month == 12 ? ++$year : $year);
+				$month = ($month == 12 ? 1 : ++$month);
+			}
+		}
+	}
+	
+	// specific date mode
+	function buildDateEvent(){
+		$setting = $this->setting("date",false);
+		
+		if($setting == "") return "";
+		
+		$this->calendarMode = "date";
+		$this->arrSettings['charlimit'] = 100;
+		
+		if (($setting == "today") || ($setting == "tomorrow")){
+			if ($setting == "tomorrow" ){
+				$this->day++;
+				
+				//lets check for overlap to next month or next year...
+				$daysMonth = $this->getDaysInMonth($this->year,$this->month);
+				if($this->day > $daysMonth){
+					$this->day = 1;
+					$this->month++;
+					if($this->month > 12){
+						$this->month = 1;
+						$this->year++;
+					}
+				}
+			}
+		}
+		else {
+		//$this->debug(count($params["date"]));
+			$useDash = split("-",$setting);
+			$useSlash = split("/",$setting);
+			$parseDate = (count($useDash) > 1 ? $useDash : $useSlash);
+			if(count($parseDate) == 3){
+				$this->month = $parseDate[0];
+				$this->day = $parseDate[1] + 0; // converts to integer
+				$this->year = $parseDate[2] + 0;
+			}
+		}
+		
+		// build the "daily" view HTML if we have a good date
+		$html = "<table width=\"100%\"><h4>" 
+			. $this->monthNames[$this->month -1] . " "
+			. $this->day . ", "
+			. $this->year
+			. " <small><i>" . $this->buildConfigLink(true) . "</i></small></h4>" ;
+			
+		$this->debug("End Calendar Single Day Mode");
+		
+		return "<html>" . cleanDayHTML($html. $this->getHTMLForDay($this->month,$this->day,$this->year) 
+		. "</table></html>" 
+		. $this->getDebugging());	
+		
+	}
+
     function getHTMLForMonth() {   
 		
 		$tag_templateButton = "";
@@ -423,7 +568,6 @@ class Calendar extends CalendarArticles
     	
 		$tag_templateButton = $this->buildTemplateLink();
 		$tag_configButton = $this->buildConfigLink(false);
-		$tag_timeTrackValues = $this->buildTrackTimeSummary();
 
 		if(!isset($params["disablestyles"])){
 			$articleStyle = $this->wikiRoot . $this->calendarPageName . "/style&action=edit" . "';\">";
@@ -509,10 +653,12 @@ class Calendar extends CalendarArticles
 			
 			$ret .= $html_week_end; 		// add the week end code
 		}   
-  		
+		
+		//$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
+		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
-	
+
 		// replace potential variables in footer
 		$tempString = str_replace("[[TodayData]]", $tag_HiddenData, $tempString);
 		$tempString = str_replace("[[TemplateButton]]", $tag_templateButton, $tempString);
@@ -564,8 +710,8 @@ class Calendar extends CalendarArticles
     	return $tempString;	
     }	
 	
-    // returns an array of existing article names for a specific day
-    function getArticlesForDay($month, $day, $year) {
+    // builds the day events into memory
+    function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
 		$summaryLength = $this->setting('enablesummary',false);
 	
@@ -709,105 +855,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->setName($temp[3]);
 	}
 	
-	//this must go after the cookie checks because of the saved date in the cookie
-	if(isset($params['usetemplates'])){
-		$year = $calendar->year;
-		$month = 1;//$calendar->month;
-			
-		$additionMonths = $calendar->month + 12;
-			
-		// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
-		for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
-			for($s=0;$s < count($calendar->subscribedPages);$s++) //loop thru $i month per subscribed calendar
-				$calendar->addTemplate($month, $year, ($calendar->subscribedPages[$s]));
-			
-			$calendar->addTemplate($month, $year, ($calendar->calendarPageName));		
-			$year = ($month == 12 ? ++$year : $year);
-			$month = ($month == 12 ? 1 : ++$month);
-		}
-	}
-	
-	// event list mode
-	if(isset($params["useeventlist"])){
-		$calendar->calendarMode = "eventlist";
-		$daysOut = ($params["useeventlist"] <= 120 ? $params["useeventlist"] : 120);
-		
-		$month = $calendar->month;
-		$day = $calendar->day;
-		$year = $calendar->year;
-
-		$calendar->updateSetting('charlimit',100);
-		
-		for($i=0; $i < $daysOut; $i++){
-			$calendar->getHTMLForDay($month, $day, $year);
-			$day++;
-			//lets check for overlap to next month or next year...
-			$daysMonth = $calendar->getDaysInMonth($year,$month);
-			if($day > $daysMonth){
-				$day = 1;
-				$month++;
-				if($month > 12){
-					$month = 1;
-					$year++;
-				}
-			}
-		}
-		if(strlen($calendar->eventList) == 0)
-			$calendar->eventList = "<h4>No Events</h4>";
-			
-		$calendar->debug("End Calendar EventList Mode");
-		return "<html><i> " . $calendar->buildConfigLink(true) . "</i>" .  $calendar->eventList . "</html>" . $calendar->getDebugging();
-	}
-	
-    // specific date mode
-    if (isset($params["date"])) {
-		$calendar->calendarMode = "date";
-		$calendar->arrSettings['charlimit'] = 100;
-		if (($params["date"] == "today") || ($params["date"] == "tomorrow")){
-			if ($params["date"] == "tomorrow" ){
-				$calendar->day++;
-				
-				//lets check for overlap to next month or next year...
-				$daysMonth = $calendar->getDaysInMonth($calendar->year,$calendar->month);
-				if($calendar->day > $daysMonth){
-					$calendar->day = 1;
-					$calendar->month++;
-					if($calendar->month > 12){
-						$calendar->month = 1;
-						$calendar->year++;
-					}
-				}
-			}
-		}
-		else {
-		//$calendar->debug(count($params["date"]));
-			$useDash = split("-",$params["date"]);
-			$useSlash = split("/",$params["date"]);
-			$parseDate = (count($useDash) > 1 ? $useDash : $useSlash);
-			if(count($parseDate) == 3){
-				$calendar->month = $parseDate[0];
-				$calendar->day = $parseDate[1] + 0; // converts to integer
-				$calendar->year = $parseDate[2] + 0;
-			}
-		}
-		
-		// build the "daily" view HTML if we have a good date
-		$html = "<table width=\"100%\"><h4>" 
-			. $calendar->monthNames[$calendar->month -1] . " "
-			. $calendar->day . ", "
-			. $calendar->year
-			. " <small><i>" . $calendar->buildConfigLink(true) . "</i></small></h4>" ;
-		$calendar->debug("End Calendar Single Day Mode");
-		return "<html>" . cleanDayHTML($html. $calendar->getHTMLForDay($calendar->month,$calendar->day,$calendar->year) 
-		. "</table></html>" 
-		. $calendar->getDebugging());	
-	}
-	
-	// if we made it here.. we're in normal full month mode
-	$calendar->calendarMode = "normal";
-	$calendar->debug("End Calendar Normal/Full Mode");
-	return "<html>" . $calendar->getHTMLForMonth() . "</html>" . $calendar->getDebugging();
-
+	return $calendar->displayCalendar();
 }
 
 function checkForMagicWord($string){
