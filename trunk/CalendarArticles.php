@@ -41,6 +41,7 @@ class CalendarArticles
 		$arrBody = array();
 		$lines = array();
 		$body = array();
+		$arrTimeTrack = array();
 		$bMulti = false;
 		$headCount = 0;
 		$bodyLines =0;
