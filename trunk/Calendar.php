@@ -47,11 +47,10 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 
-	// generate the cookie name
+	// set the cookie
 	$cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
-
-	//save the calendar back into the session
-	setcookie($cookie_name, $month . "`" . $year . "`" . $title . "`" . $name, 0, '/', '');
+	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name;
+	setcookie($cookie_name, $cookie_value);
 	
 	// reload the calling page to refresh the cookies that were just set
 	header("Location: " . $referrerURL);
@@ -102,7 +101,7 @@ class Calendar extends CalendarArticles
                             "July", "August", "September", "October", "November", "December");
 
 						
-    function Calendar($wikiRoot, $debug, $css) {
+    function Calendar($wikiRoot, $debug) {
 
 		$this->wikiRoot = $wikiRoot;
 		$this->debugEnabled = $debug;
@@ -124,29 +123,6 @@ class Calendar extends CalendarArticles
 		// errors
 		$this->errMultiday = "Multiple events/day are enabled. Please use the following format: == event ==.";
 		$this->errStyles = "It appears you have an undefined or invalid style.";
-		
-		// set paths			
-		$extensionPath = dirname(__FILE__);
-		$extensionPath = str_replace("\\", "/", $extensionPath);
-		
-		$this->debug($css);
-		
-		// build template
-		$data_start = "<!-- Calendar Start -->";
-		$css_data = file_get_contents($extensionPath . "/css/$css");		
-		$html_data = file_get_contents($extensionPath . "/calendar_template.html");
-		$data_end = "<!-- Calendar End -->";	
-		
-		//check for css style page...default if not found
-		if($css_data === false)
-			$css_data = file_get_contents($extensionPath . "/css/default.css");
-		
-		$this->html_template = $data_start . $css_data . $html_data . $data_end;
-	
-		$this->daysNormalHTML   = $this->html_week_array("<!-- %s %s -->");
-		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
-		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
-		$this->debug(dirname(__FILE__) . "/calendar_template.html");
 		
 		$this->debug("Calendar Constructor Ended.");
     }
@@ -204,6 +180,9 @@ class Calendar extends CalendarArticles
 	 function displayCalendar(){
 		$this->debug("displayCalendar Started");
 		
+		//build the html variables
+		$this->initalizeHTML();
+		
 		$this->readStylepage();
 		$this->buildTemplateEvents();
 	
@@ -245,7 +224,33 @@ class Calendar extends CalendarArticles
 			}
 		}	 
 	}
-	 
+
+	function initalizeHTML(){
+		
+		// set paths			
+		$extensionPath = dirname(__FILE__);
+		$extensionPath = str_replace("\\", "/", $extensionPath);
+		
+		$css = $this->setting('css');
+		
+		// build template
+		$data_start = "<!-- Calendar Start -->";
+		$css_data = file_get_contents($extensionPath . "/css/$css");		
+		$html_data = file_get_contents($extensionPath . "/calendar_template.html");
+		$data_end = "<!-- Calendar End -->";	
+		
+		//check for css style page...default if not found
+		if($css_data === false)
+			$css_data = file_get_contents($extensionPath . "/css/default.css");
+		
+		$this->html_template = $data_start . $css_data . $html_data . $data_end;
+	
+		$this->daysNormalHTML   = $this->html_week_array("<!-- %s %s -->");
+		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
+		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
+
+	}
+	
     // Generate the HTML for a given month
     // $day may be out of range; if so, give blank HTML
     function getHTMLForDay($month,$day,$year){
@@ -334,9 +339,9 @@ class Calendar extends CalendarArticles
 
 		$month = strtolower($this->monthNames[$this->month-1]);
 		if($this->setting('locktemplates'))
-			$ret = "<input type='button' title='Create a bunch of events in one page (20-25# Vacation)' disabled value='$month events' onClick=\"javascript:document.location='" . $articleName;
+			$ret = "<input class='btn' type='button' title='Create a bunch of events in one page (20-25# Vacation)' disabled value='$month events' onClick=\"javascript:document.location='" . $articleName;
 		else
-			$ret = "<input type='button' title='Create a bunch of events in one page (20-25# Vacation)' value='$month events' onClick=\"javascript:document.location='" . $articleName;
+			$ret = "<input class='btn' type='button' title='Create a bunch of events in one page (20-25# Vacation)' value='$month events' onClick=\"javascript:document.location='" . $articleName;
 		
 		return $ret;			
 	}
@@ -356,7 +361,7 @@ class Calendar extends CalendarArticles
 		
 		if(!$bTextLink){
 			$articleConfig = $this->wikiRoot . $this->configPageName . "&action=edit" . "';\">";
-			$ret = "<input type='button' title='Add calendar parameters here' value='config' onClick=\"javascript:document.location='" . $articleConfig;
+			$ret = "<input class='btn' type='button' title='Add calendar parameters here' value='config' onClick=\"javascript:document.location='" . $articleConfig;
 		}else
 			$ret = "<a href='" . $this->wikiRoot . $this->configPageName . "&action=edit'>(config...)</a>";
 
@@ -538,11 +543,11 @@ class Calendar extends CalendarArticles
 	    $tag_monthSelect = "<select name='monthSelect' method='post' onChange='javascript:this.form.submit()'>";
 	    for ($i = 0; $i < count($this->monthNames); $i += 1) {
     		if ($i + 1 == $this->month) {
-		    $tag_monthSelect .= "<option value=\"" . ($i + 1) . "\" selected=\"true\">" . 
+		    $tag_monthSelect .= "<option class='lst' value='" . ($i + 1) . "' selected='true'>" . 
 			$this->monthNames[$i] . "</option>\n";
     		}
     		else {
-		    $tag_monthSelect .= "<option value=\"" . ($i + 1) . "\">" . 
+		    $tag_monthSelect .= "<option class='lst' value='" . ($i + 1) . "'>" . 
 			$this->monthNames[$i] . "</option>\n";
     		}
 	    }
@@ -553,11 +558,11 @@ class Calendar extends CalendarArticles
 	    $tag_yearSelect = "<select name='yearSelect' method='post' onChange='javascript:this.form.submit()'>";
 		for ($i = ($this->year - $yearoffset); $i <= ($this->year + $yearoffset); $i += 1) {
     		if ($i == $this->year) {
-				$tag_yearSelect .= "<option value=\"" . $i . "\" selected=\"true\">" . 
+				$tag_yearSelect .= "<option class='lst' value='$i' selected='true'>" . 
 				$i . "</option>\n";
     		}
     		else {
-				$tag_yearSelect .= "<option value=\"" . $i . "\">" . $i . "</option>\n";
+				$tag_yearSelect .= "<option class='lst' value='$i'>$i</option>\n";
     		}
 	    }
 	    $tag_yearSelect .= "</select>";
@@ -567,11 +572,11 @@ class Calendar extends CalendarArticles
 
 		if(!isset($params["disablestyles"])){
 			$articleStyle = $this->wikiRoot . $this->calendarPageName . "/style&action=edit" . "';\">";
-			$tag_eventStyleButton = "<input type=\"button\" title=\"Set 'html/css' styles based on trigger words (vacation::color:red; font-style:italic)\" value= \"event styles\" onClick=\"javascript:document.location='" . $articleStyle;
+			$tag_eventStyleButton = "<input class='btn' type=\"button\" title=\"Set 'html/css' styles based on trigger words (vacation::color:red; font-style:italic)\" value= \"event styles\" onClick=\"javascript:document.location='" . $articleStyle;
 		}
 		
 		// build the hidden calendar date info (used to offset the calendar via cookies)
-		$tag_HiddenData = "<input type='hidden' name='calendar_info' value='"
+		$tag_HiddenData = "<input class='btn' type='hidden' name='calendar_info' value='"
 			. $this->month . "`"
 			. $this->year . "`"
 			. $this->title . "`"
@@ -580,11 +585,11 @@ class Calendar extends CalendarArticles
 			. "'>";
 		
 		// build the 'today' button	
-	    $tag_todayButton = "<input name='today' type='submit' value='today'>";
-		$tag_previousMonthButton = "<input name='monthBack' type='submit' value='<<'>";
-		$tag_nextMonthButton = "<input name='monthForward' type='submit' value='>>'>";
-		$tag_previousYearButton = "<input name='yearBack' type='submit' value='<<'>";
-		$tag_nextYearButton = "<input name='yearForward' type='submit' value='>>'>";
+	    $tag_todayButton = "<input class='btn' name='today' type='submit' value='today'>";
+		$tag_previousMonthButton = "<input class='btn' name='monthBack' type='submit' value='<<'>";
+		$tag_nextMonthButton = "<input class='btn' name='monthForward' type='submit' value='>>'>";
+		$tag_previousYearButton = "<input class='btn' name='yearBack' type='submit' value='<<'>";
+		$tag_nextYearButton = "<input class='btn' name='yearForward' type='submit' value='>>'>";
 
 	    // grab the HTML for the calendar
 	    // calendar pieces
