@@ -102,7 +102,7 @@ class Calendar extends CalendarArticles
                             "July", "August", "September", "October", "November", "December");
 
 						
-    function Calendar($wgCalendarPath, $wikiRoot, $debug) {
+    function Calendar($wikiRoot, $debug, $css) {
 
 		$this->wikiRoot = $wikiRoot;
 		$this->debugEnabled = $debug;
@@ -125,24 +125,28 @@ class Calendar extends CalendarArticles
 		$this->errMultiday = "Multiple events/day are enabled. Please use the following format: == event ==.";
 		$this->errStyles = "It appears you have an undefined or invalid style.";
 		
-		// set paths	
-		$extensionFolder = "extensions/Calendar/"; //default
-		$wikiBasePath = str_replace("index.php", "", $_SERVER['SCRIPT_FILENAME']);
-		$wikiBaseURL = str_replace("index.php", "", $_SERVER['SCRIPT_NAME']);
-
-		$extensionPath = $wikiBasePath . $extensionFolder;
-		$extensionURL = $wikiBaseURL . $extensionFolder;
-		
-		// allows manual override of the physical extension paths -todo
-		if(strlen($wgCalendarPath) > 0)
-			$extensionPath = $wgCalendarPath;
-		
+		// set paths			
+		$extensionPath = dirname(__FILE__);
 		$extensionPath = str_replace("\\", "/", $extensionPath);
-		$this->html_template = file_get_contents($extensionPath . "calendar_template.html");
-
+		
+		$this->debug($css);
+		
+		// build template
+		$data_start = "<!-- Calendar Start -->";
+		$css_data = file_get_contents($extensionPath . "/css/$css");		
+		$html_data = file_get_contents($extensionPath . "/calendar_template.html");
+		$data_end = "<!-- Calendar End -->";	
+		
+		//check for css style page...default if not found
+		if($css_data === false)
+			$css_data = file_get_contents($extensionPath . "/css/default.css");
+		
+		$this->html_template = $data_start . $css_data . $html_data . $data_end;
+	
 		$this->daysNormalHTML   = $this->html_week_array("<!-- %s %s -->");
 		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
 		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
+		$this->debug(dirname(__FILE__) . "/calendar_template.html");
 		
 		$this->debug("Calendar Constructor Ended.");
     }
@@ -780,12 +784,9 @@ class Calendar extends CalendarArticles
 function displayCalendar($paramstring = "", $params = array()) {
     global $wgParser;
 	global $wgScript;
-	global $wgCalendarPath;
 	global $wgTitle;
 	global $wgOut, $wgRequest;
-	
-	global $wgSitename;
-	
+
 	$debug = "";
 	
     $wgParser->disableCache();
@@ -793,11 +794,14 @@ function displayCalendar($paramstring = "", $params = array()) {
 	
 	// grab the page title
 	$title = $wgTitle->getPrefixedText();	
+
+	if(!isset($params["css"])) 		$params["css"] = 'default.css';
 	
 	$calendar = null;	
-	$calendar = new Calendar($wgCalendarPath, $wikiRoot, isset($params["debug"]));
+	$calendar = new Calendar($wikiRoot, isset($params["debug"]), $params["css"]);
 
 	if(!isset($params["name"])) $params["name"] = "Public";
+	
 	$name = checkForMagicWord($params["name"]);
 		
 	// normal calendar...

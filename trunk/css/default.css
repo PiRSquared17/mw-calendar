@@ -1,0 +1,94 @@
+<style type="text/css">
+	/* the calendar table style */
+	.calendar {
+	  padding:0px;
+	  border-spacing:0px;
+	  border:1px solid #808080;
+	  border-collapse:collapse;
+	  width:100%;
+	  background-color:;
+	}
+	
+	/* style for the table cell displaying the month title */
+	.calendarTitle {
+	  font-size:18px;
+	  text-align:center;
+	  font-weight:bold;
+	}
+	
+	/* style for the cell holding the year select box */
+	.calendarYearSelect {
+	  text-align:right;
+	  white-space:nowrap;
+	}
+	
+	/* style for the cell holding the month select box */
+	.calendarMonthSelect {
+	  white-space:nowrap;
+	}
+	
+	/* style for the week day headings */
+	.calendarWeekendHeading {
+	  text-align:center;
+	  font-weight:bold;
+	  border:1px solid #808080;
+	  background-color:#E0E0E0;	  
+	}
+	.calendarWeekdayHeading {
+	  text-align:center;
+	  font-weight:bold;
+	  border:1px solid #808080;
+	  background-color:#E0E0E0;
+	}
+	
+	/* style for a cell representing an individual day on the calendar */
+	.calendarWeekend {
+	  width:14%;
+	  height:80px;
+	  vertical-align:top;
+	  border:1px solid #808080;
+	  font-size: 11px;
+	  background-color:#EEEEEE;
+	}
+	.calendarWeekday {
+	  width:14%;
+	  height:80px;
+	  vertical-align:top;
+	  border:1px solid #808080;
+	  font-size: 11px;
+	  background-color:;
+	}
+
+	/* style of the cell displaying the number of the day in the month */
+	.calendarDayNumber {
+	  border:1px solid #CCCCCC;
+	  width:20%;
+	  text-align: center;
+	  font-size: 12px;
+	  background-color:#E0E0E0;
+	}
+	
+	/* style of the cell with the "Add Event" link */
+	.calendarEventAdd {
+	}
+	
+	/* makes the content have a transparent background (for selected days) */
+	.calendarTransparent {
+	  background-color: transparent;
+	  border-spacing: 0px;
+	  width:100%;
+	}
+	
+	/* Style of event list*/
+	.calendarEventList li{
+	  margin-left: 3px;
+	}
+	
+	/* the style to add to the calendarDay style if the displayed calendar day is today's date */
+	.calendarToday {
+	  background-color: #FFFFDD;
+	}
+	.alerts {
+	  text-align: left;
+	}	
+</style>
