@@ -1,5 +1,15 @@
 <style type="text/css">
 	/* the calendar table style */
+	option.lst{
+		background-color:#eee8aa; 
+		color:;
+	}
+	
+	input.btn{
+		background-color:;
+		color:;
+	}	
+	
 	.calendar {
 	  padding:0px;
 	  border-spacing:0px;
@@ -87,7 +97,12 @@
 	
 	/* the style to add to the calendarDay style if the displayed calendar day is today's date */
 	.calendarToday {
-	  background-color: #FFFFDD;
+	  width:14%;
+	  height:80px;
+	  vertical-align:top;
+	  border:1px solid #808080;
+	  font-size: 11px;
+	  background-color: #eee8aa;
 	}
 	.alerts {
 	  text-align: left;

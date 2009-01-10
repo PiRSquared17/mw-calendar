@@ -1,14 +1,14 @@
 <style type="text/css">
-	/* the calendar table style */
+	/* the calendar table style */	
 	option.lst{
-		background-color:#CC99CC; 
-		color:;
+		background-color:black; 
+		color:white
 	}
 	
 	input.btn{
-		background-color:;
-		color:;
-	}	
+		background-color:black; 
+		color:white
+	}
 	
 	.calendar {
 	  padding:0px;
@@ -16,7 +16,8 @@
 	  border:1px solid #808080;
 	  border-collapse:collapse;
 	  width:100%;
-	  background-color:#FFCCFF;
+	  background-color:#000066;
+	  color:#FFFFFF;
 	}
 	
 	/* style for the table cell displaying the month title */
@@ -24,7 +25,6 @@
 	  font-size:18px;
 	  text-align:center;
 	  font-weight:bold;
-	  font-style:; 
 	}
 	
 	/* style for the cell holding the year select box */
@@ -42,14 +42,16 @@
 	.calendarWeekendHeading {
 	  text-align:center;
 	  font-weight:bold;
-	  background-color:#FF6699;
 	  border:1px solid #808080;
+	  background-color:#000000;	
+	  color:#FFFFFF	  
 	}
 	.calendarWeekdayHeading {
 	  text-align:center;
 	  font-weight:bold;
-	  background-color:#FF6699;
 	  border:1px solid #808080;
+	  background-color:#000000;	
+	  color:#FFFFFF	 
 	}
 	
 	/* style for a cell representing an individual day on the calendar */
@@ -59,24 +61,25 @@
 	  vertical-align:top;
 	  border:1px solid #808080;
 	  font-size: 11px;
-	  background-color:#FF99FF;
+	  background-color:#000033;
 	}
-	.calendarWeekday{
+	.calendarWeekday {
 	  width:14%;
 	  height:80px;
 	  vertical-align:top;
 	  border:1px solid #808080;
 	  font-size: 11px;
-	  background-color:#FFCCFF;
+	  background-color:#000066;
 	}
-	
+
 	/* style of the cell displaying the number of the day in the month */
 	.calendarDayNumber {
 	  border:1px solid #CCCCCC;
-	  background-color:#ff69b4;
 	  width:20%;
 	  text-align: center;
 	  font-size: 12px;
+	  background-color:#000000;
+	  color:#FFFFFF
 	}
 	
 	/* style of the cell with the "Add Event" link */
@@ -102,7 +105,7 @@
 	  vertical-align:top;
 	  border:1px solid #808080;
 	  font-size: 11px;
-	  background-color: #CC99CC;
+	  background-color: #000099;
 	}
 	.alerts {
 	  text-align: left;
