@@ -2,20 +2,12 @@
 
 /* Calendar.php
  *
- *
- * - Eric Fortin (12/14/2008) < kenyu73@gmail.com >
+ * - Eric Fortin (1/2009) < kenyu73@gmail.com >
  *
  * - Original author(s):
  *   	Simson L. Garfinkel < simsong@acm.org >
  *   	Michael Walters < mcw6@aol.com > 
- * 		http://www.mediawiki.org/wiki/User:Hex2bit/Calendar
- *
  * See Readme file for full details
- *
- **** debugging: 
- *		The debugging events are written below the calendar web page.
- *			<calendar debug /> - basically, user defined debugging
- * call the debugging by this means:   $this->debug(<data>);
  */
 
 // this is the "refresh" code that allows the calendar to switch time periods
@@ -206,21 +198,22 @@ class Calendar extends CalendarArticles
 	 
 	 // render the calendar
 	 function displayCalendar(){
-	 
+		$this->debug("displayCalendar Started");
+		
 		$this->readStylepage();
-
-
+		$this->buildTemplateEvents();
+	
 		$year_pre = ($this->month==1 ? ($this->year-1) : $this->year);		
 		$month_pre = ($this->month==1 ? 12 : $this->month-1);
 		
+		$this->debug("initalizeMonth Started");	
+		
 		//load all the month events into memory
-		if(!$this->setting('performance')) //might add performance tags in the code
+		if($this->setting('enablerepeatevents')) 
 			$this->initalizeMonth($month_pre, $year_pre); //grab last months events for overlapped repeating events
 
 		$this->initalizeMonth($this->month, $this->year); //grab this months events
-		
-		$this->buildTemplateEvents();
-		
+		$this->debug("initalizeMonth ENDED");	
 		if($this->setting('useeventlist'))
 			return $this->buildEventList() . $this->buildTrackTimeSummary();
 			
@@ -230,8 +223,7 @@ class Calendar extends CalendarArticles
 		// if we made it here... there was an error in the previous modes 
 		// or no mode was selected...display full calendar
 		$this->calendarMode = "normal";
-		$this->debug("End Calendar Normal/Full Mode");
-	
+		$this->debug("displayCalendar Ended");	
 		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
 	 }
 	 
@@ -309,7 +301,7 @@ class Calendar extends CalendarArticles
 			$tempString = str_replace("[[EventList]]", "<ul>" . $tag_eventList . "</ul>", $tempString);
 			$tempString = str_replace("[[Alert]]", $tag_alerts, $tempString);
 		}
-
+		
 		return $tempString;
     }
 
@@ -344,13 +336,13 @@ class Calendar extends CalendarArticles
 		
 		return $ret;			
 	}
-	
+/*	
 	function initNewPage($title, $text){
 		$mytitle = Title::newFromText($title);
 		$article = new Article($mytitle);
 		$res = $article->doEdit($text . "<!-- -->", '');
 	}
-
+*/
 	// build the 'template' button	
 	function buildConfigLink($bTextLink = false){	
 		
@@ -405,11 +397,11 @@ class Calendar extends CalendarArticles
 		}
 	}
 
-	function buildTemplateEvents(){	//this must go after the cookie checks because of the saved date in the cookie
+	function buildTemplateEvents(){	
+
 		if($this->setting('usetemplates')){
 			$year = $this->year;
 			$month = 1;//$this->month;
-				
 			$additionMonths = $this->month + 12;
 				
 			// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
@@ -450,7 +442,6 @@ class Calendar extends CalendarArticles
 			}
 		}
 		else {
-		//$this->debug(count($params["date"]));
 			$useDash = split("-",$setting);
 			$useSlash = split("/",$setting);
 			$parseDate = (count($useDash) > 1 ? $useDash : $useSlash);
@@ -477,7 +468,7 @@ class Calendar extends CalendarArticles
 	}
 
     function getHTMLForMonth() {   
-		
+		$this->debug("getHTMLForMonth Started");
 		$tag_templateButton = "";
        	
 	    /***** Replacement tags *****/
@@ -651,7 +642,6 @@ class Calendar extends CalendarArticles
 				$ret .= $this->getHTMLForDay($this->month,$dayOffset,$this->year);
 				$dayOffset += 1;
 			}
-			
 			$ret .= $html_week_end; 		// add the week end code
 		}   
 		
@@ -674,6 +664,7 @@ class Calendar extends CalendarArticles
 	    $ret .= $html_calendar_end;
  
 
+		$this->debug("getHTMLForMonth Ended");
 	    // return the generated calendar code
 	    return $this->stripLeadingSpace($ret);  	
 	}
@@ -735,11 +726,11 @@ class Calendar extends CalendarArticles
     function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
 		$summaryLength = $this->setting('enablesummary',false);
-	
+
 		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
 			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
 			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
-		
+			
 			// subscribed events
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
@@ -753,18 +744,9 @@ class Calendar extends CalendarArticles
 			$articleName = $this->calendarName . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
 			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
 		}
+		//$this->debug("buildArticlesForDay ENDED");	
     }
-	
-	function readStylepage(){
-		$articleName = $this->calendarPageName . "/" . "style";	
-		$article = new Article(Title::newFromText($articleName));
 
-		if ($article->exists()){
-			$displayText  = $article->fetchContent(0,false,false);	
-			$this->arrStyle = split(chr(10), $displayText);
-		}
-	}	
-	
 	function setting($param, $retBool=true){
 	
 		//not set; return bool false
@@ -799,7 +781,9 @@ function displayCalendar($paramstring = "", $params = array()) {
 	global $wgCalendarPath;
 	global $wgTitle;
 	global $wgOut, $wgRequest;
-
+	
+	global $wgSitename;
+	
 	$debug = "";
 	
     $wgParser->disableCache();
@@ -824,7 +808,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		//merge the config page and the calendar tag params; tag params overwrite config file
 		$params = array_merge($configs, $params);	
 	}
-
+	
 	//set defaults as needed
 	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
 	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;

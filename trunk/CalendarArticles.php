@@ -11,7 +11,7 @@ class CalendarArticle
 	var $month = "";
 	var $year = "";
 	
-	var $pagetitle = ""; //full wiki page name
+	var $page = ""; //full wiki page name
 	var $eventname = ""; //1st line of body
 	var $body = "";
 	var $htmllink = "";
@@ -37,19 +37,16 @@ class CalendarArticles
 	private $arrArticles = array();
 	public $wikiRoot = "";
 	
-	public function addArticle($month, $day, $year, $articleName, $charLimit){
+	public function addArticle($month, $day, $year, $page, $charLimit){
 		$arrBody = array();
 		$lines = array();
 		$body = array();
-		$arrTimeTrack = array();
 		$bMulti = false;
 		$headCount = 0;
 		$bodyLines =0;
 		$temp = "";		
-		$cntWords=0;
 		
-		
-		$article = new Article(Title::newFromText($articleName));	
+		$article = new Article(Title::newFromText($page));
 		if(!$article->exists()) return "";
 
 		$redirectCount = 0;
@@ -61,7 +58,7 @@ class CalendarArticles
 
 		$body = $article->fetchContent(0,false,false);
 		$page = $article->getTitle()->getPrefixedText();
-		$cArticle->pagetitle = $article->getTitle()->getPrefixedText(); //full title with namespace,title,name and date
+		$cArticle->page = $article->getTitle()->getPrefixedText(); //full title with namespace,title,name and date
 		
 		if(strlen(trim($body)) == 0) return "";
 		
@@ -87,24 +84,32 @@ class CalendarArticles
 		}
 
 		if(!$bMulti){
-			$this->buildRepeatingEvents($month, $day, $year, $lines[0], $articleName, $arrBody[0]);
+			$this->buildEvent($month, $day, $year, $lines[0], $page, $this->LimitText($arrBody[0], $charLimit));
 		}
-		else
+		else{
 			for($i=0; $i<=$headCount; $i++){
-				$this->buildRepeatingEvents($month, $day, $year, $head[$i], $articleName, $arrBody[$i]);
+				$this->buildEvent($month, $day, $year, $head[$i], $page, $this->LimitText($arrBody[$i], $charLimit));
 			}
-
+		}
 	}
-	private function buildRepeatingEvents($month, $day, $year, $event, $page, $body){	
+	
+	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate){	
+	
+		if(!$this->setting('enablerepeatevents')){
+			$this->add($month, $day, $year, $event, $page, $body, $isTemplate);	
+			return;
+		}
+		
+		//check for repeating events
 		$arrEvent = split("#",$event);
 		if((strlen($arrEvent[1]) > 0) && (count($arrEvent) == 2) && ($arrEvent[0] != 0)){
 			$this->add($month, $day++, $year, $arrEvent[1], $page, $body); //add no arrow
 			for($i=1; $i<$arrEvent[0]; $i++) {
-				$this->add($month, $day, $year, '&larr;'.$arrEvent[1], $page, $body); //add with arrow
+				$this->add($month, $day, $year, '&larr;'.$arrEvent[1], $page, $body, $isTemplate); //add with arrow
 				$this->getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($month, $day, $year, $event, $page, $body);	
+			$this->add($month, $day, $year, $event, $page, $body, $isTemplate);	
 	}
 	
 	function LimitText($text,$max) { 
@@ -124,7 +129,7 @@ class CalendarArticles
 		for($i=0; $i<$cnt; $i++){
 			$cArticle = $this->arrArticles[$i];
 			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year)
-				$ret .= "<li>" . $this->articleLink($cArticle->pagetitle, $cArticle->eventname). "</li>\n$cArticle->body";
+				$ret .= "<li>" . $this->articleLink($cArticle->page, $cArticle->eventname). "</li>\n$cArticle->body";
 		}
 		
 		return $ret;
@@ -153,16 +158,32 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
-							$this->add($month, $day, $year,  $arrEvent[1], $articleName, "", true);
+							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", true);
 							$day++;
 						}
 					}else
-						$this->add($month, $day, $year, $arrEvent[1], $articleName, "", true);
+						$this->buildEvent($month, $day, $year, $arrEvent[1], $articleName, "", true);
 				}
 			}
 		}	
 	}
 
+	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false){
+		$cArticle = new CalendarArticle($month, $day, $year);
+		
+		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
+		
+		$cArticle->month = $month;	
+		$cArticle->day = $day;	
+		$cArticle->year = $year;	
+		$cArticle->page = $page;	
+		$cArticle->eventname = $temp."<br/>";
+		if(trim($body) != "")
+			$cArticle->body = $body;
+
+		$this->arrArticles[] = $cArticle;
+	}
+	
 	private function getNextValidDate(&$month, &$day, &$year){
 	
 		$day++;
@@ -261,6 +282,16 @@ class CalendarArticles
 		return $newURL;
 	}
 	
+	function readStylepage(){
+		$articleName = $this->calendarPageName . "/" . "style";	
+		$article = new Article(Title::newFromText($articleName));
+
+		if ($article->exists()){
+			$displayText  = $article->fetchContent(0,false,false);	
+			$this->arrStyle = split(chr(10), $displayText);
+		}
+	}	
+	
 	public function getConfig($pagename){
 	
 		$params = array();	
@@ -276,8 +307,8 @@ class CalendarArticles
 
 			for($i=0; $i<$cnt; $i++){
 				$arrParams = split("=", $arr[$i]);
-				$key = $arrParams[0];
-				$value = $arrParams[1];
+				$key = trim($arrParams[0]);
+				$value = trim($arrParams[1]);
 				
 				if($key != 'useconfigpage'){		// we dont want users to lock themselves out of the config page....		
 					if(count($arrParams) != 2) 
@@ -288,22 +319,6 @@ class CalendarArticles
 			}
 		}
 		return $params;
-	}
-	
-	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false){
-		$cArticle = new CalendarArticle($month, $day, $year);
-		
-		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
-		
-		$cArticle->month = $month;	
-		$cArticle->day = $day;	
-		$cArticle->year = $year;	
-		$cArticle->pagetitle = $page;	
-		$cArticle->eventname = $temp."<br/>";
-		if(trim($body) != "")
-			$cArticle->body = $body;
-
-		$this->arrArticles[] = $cArticle;
 	}
 	
     // returns the link for an article, along with summary in the title tag, given a name
