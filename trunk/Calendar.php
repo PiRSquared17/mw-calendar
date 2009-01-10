@@ -725,6 +725,7 @@ class Calendar extends CalendarArticles
     // builds the day events into memory
     function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
+
 		$summaryLength = $this->setting('enablesummary',false);
 
 		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
@@ -747,6 +748,7 @@ class Calendar extends CalendarArticles
 		//$this->debug("buildArticlesForDay ENDED");	
     }
 
+	//hopefully a catchall of most types of returns values
 	function setting($param, $retBool=true){
 	
 		//not set; return bool false
@@ -809,12 +811,11 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$params = array_merge($configs, $params);	
 	}
 	
-	//set defaults as needed
+	//set defaults that are required later in the code...
 	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
 	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;
 	if(!isset($params["yearoffset"])) 		$params["yearoffset"] = 2;
 	if(!isset($params["charlimit"])) 		$params["charlimit"] = 20;
-	if(!isset($params["enablesummary"])) 	$params["enablesummary"] = 100; // 100 is the char limit for summary text
 	
 	// no need to pass a parameter here... isset check for the params name, thats it
 	if(isset($params["lockdown"])){
