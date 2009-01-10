@@ -25,3 +25,5 @@ This document lists most of the bug fixes and changes.
 	(ex: 5-10# ::vacation-8) <-- template; totals for the year
 
 # re-added repeating events under daily "add event" (ex: 5# Vacation)... this will create 5 vacation events
+
+# added 'enablerepeatevents'... enabling this with double the load times because it pulls the previous months events (30 days X 5 events-per-day X 2 months)..basically hits the db 300 times..now double that for for each subscribed calendar...<sigh>
