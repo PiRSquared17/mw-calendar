@@ -36,16 +36,13 @@ class CalendarArticles
 {	
 	private $arrArticles = array();
 	public $wikiRoot = "";
+	private $arrTimeTrack = array();
 	
-	public function addArticle($month, $day, $year, $page, $charLimit){
-		$arrBody = array();
+	public function addArticle($month, $day, $year, $page, $charlimit){
 		$lines = array();
-		$body = array();
-		$bMulti = false;
-		$headCount = 0;
-		$bodyLines =0;
 		$temp = "";		
-		
+		$head = array();
+
 		$article = new Article(Title::newFromText($page));
 		if(!$article->exists()) return "";
 
@@ -57,9 +54,7 @@ class CalendarArticles
 		 }
 
 		$body = $article->fetchContent(0,false,false);
-		$page = $article->getTitle()->getPrefixedText();
-		$cArticle->page = $article->getTitle()->getPrefixedText(); //full title with namespace,title,name and date
-		
+	
 		if(strlen(trim($body)) == 0) return "";
 		
 		$lines = split("\n",$body);
@@ -68,32 +63,28 @@ class CalendarArticles
 		for($i=0; $i<$cntLines; $i++){
 			$line = $lines[$i];
 			if(substr($line,0,2) == '=='){
-				if($i > 0) $headCount++;
 				$arr = split("==",$line);
-				$head[$headCount] = $arr[1] . "<br/>";
-
-				$temp = "";	$bodyLines = 0; $bMulti = true;	
+				$key = $arr[1];
+				$head[$key] = ""; $temp = "";
 			}
 			else{
-				if( $i != 0 && ($bodyLines < $charLimit)){
-					$bodyLines++;
-					$temp .= "$line\n";
-					$arrBody[$headCount] = $this->cleanWiki($temp);
+				if($i == 0){ // $i=0  means this is a one event page no (==event==) data
+					$key = $line; //initalize the key
+					$head[$key] = ""; 
 				}
-			}	
-		}
-
-		if(!$bMulti){
-			$this->buildEvent($month, $day, $year, $lines[0], $page, $this->LimitText($arrBody[0], $charLimit));
-		}
-		else{
-			for($i=0; $i<=$headCount; $i++){
-				$this->buildEvent($month, $day, $year, $head[$i], $page, $this->LimitText($arrBody[$i], $charLimit));
+				else{
+					$temp .= "$line\n";
+					$head[$key] = $this->cleanWiki($temp);
+				}
 			}
+		}
+		
+		while (list($event,$body) = each($head)){
+			$this->buildEvent($month, $day, $year, $event, $page, $this->LimitText($body, $charlimit));
 		}
 	}
 	
-	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate){	
+	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate=false){	
 	
 		if(!$this->setting('enablerepeatevents')){
 			$this->add($month, $day, $year, $event, $page, $body, $isTemplate);	
@@ -102,7 +93,7 @@ class CalendarArticles
 		
 		//check for repeating events
 		$arrEvent = split("#",$event);
-		if((strlen($arrEvent[1]) > 0) && (count($arrEvent) == 2) && ($arrEvent[0] != 0)){
+		if(isset($arrEvent[1]) && ($arrEvent[0] != 0)){
 			$this->add($month, $day++, $year, $arrEvent[1], $page, $body); //add no arrow
 			for($i=1; $i<$arrEvent[0]; $i++) {
 				$this->add($month, $day, $year, '&larr;'.$arrEvent[1], $page, $body, $isTemplate); //add with arrow
@@ -113,7 +104,9 @@ class CalendarArticles
 	}
 	
 	function LimitText($text,$max) { 
-
+		
+		$text = trim($text);
+		
 		if(strlen($text) > $max)
 			$ret = substr($text, 0, $max) . "...";
 		else
@@ -125,11 +118,13 @@ class CalendarArticles
 	public function getArticleLinks($month, $day, $year){
 		$cnt = count($this->arrArticles);
 		$ret = "";
-		
+
 		for($i=0; $i<$cnt; $i++){
 			$cArticle = $this->arrArticles[$i];
-			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year)
+			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
+			//$this->debug($cArticle->eventname);
 				$ret .= "<li>" . $this->articleLink($cArticle->page, $cArticle->eventname). "</li>\n$cArticle->body";
+			}
 		}
 		
 		return $ret;
@@ -170,7 +165,7 @@ class CalendarArticles
 
 	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false){
 		$cArticle = new CalendarArticle($month, $day, $year);
-		
+
 		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
 		
 		$cArticle->month = $month;	
@@ -202,7 +197,8 @@ class CalendarArticles
 	// this function checks a template event for a time trackable value
 	private function checkTimeTrack($month, $day, $year, $event, $isTemplate){
 	
-		if(stripos($event,"::") === false) return $event;
+		if((stripos($event,"::") === false) || $this->setting('disabletimetrack'))
+			return $event;
 		
 		$arrEvent = split("::", $event);
 		
@@ -240,12 +236,14 @@ class CalendarArticles
 			. "(m) - total month only; doesn't add to year total <br/>"
 			. "(y) - total year; must use monthly templates<br/></small>";
 
-		while (list($key,$val) = each($this->arrTimeTrack)) 
-			$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
-	
-		if($cntValue > 0)
-			$ret = $html_head . $ret . $html_foot;
+		if(count($this->arrTimeTrack) > 0){
+			while (list($key,$val) = each($this->arrTimeTrack)) {
+				$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
+			}
 			
+			$ret = $html_head . $ret . $html_foot;
+		}
+	
 		return $ret;
 	}
 	
@@ -307,14 +305,13 @@ class CalendarArticles
 
 			for($i=0; $i<$cnt; $i++){
 				$arrParams = split("=", $arr[$i]);
-				$key = trim($arrParams[0]);
-				$value = trim($arrParams[1]);
+				$key = $arrParams[0];
 				
 				if($key != 'useconfigpage'){		// we dont want users to lock themselves out of the config page....		
-					if(count($arrParams) != 2) 
-						$params[$key] = $key; // init the value with itself if $value is null
+					if(count($arrParams) == 2) 
+						$params[$key] = $arrParams[1]; // we have both $key and $value
 					else
-						$params[$key] = $value; // we have both $key and $value
+						$params[$key] = $key; // init the value with itself if $value is null
 				}
 			}
 		}

@@ -31,3 +31,5 @@ This document lists most of the bug fixes and changes.
 # added a few css style files to change the calendar look and feel
 
 # removed the need for the $wgExtensionPath override; calendar can be anywhere now
+
+# added 'enablelegacy'... I disabled the "CalanderEvents:Page/Title (12-1-2008) - Event 1" format by default...causes about 15% performance drain

@@ -107,7 +107,6 @@ class Calendar extends CalendarArticles
 		$this->debugEnabled = $debug;
 		
 		$this->startTime = $this->markTime = microtime(1);
-		$this->debug("Calendar Constructor Started.");		
 		
 		// set the calendar's initial date to now
 		$today = getdate();    	
@@ -178,10 +177,12 @@ class Calendar extends CalendarArticles
 	 
 	 // render the calendar
 	 function displayCalendar(){
-		$this->debug("displayCalendar Started");
 		
 		//build the html variables
 		$this->initalizeHTML();
+		
+		// if in date mode, update the date
+		$this->updateDate();
 		
 		$this->readStylepage();
 		$this->buildTemplateEvents();
@@ -189,40 +190,30 @@ class Calendar extends CalendarArticles
 		$year_pre = ($this->month==1 ? ($this->year-1) : $this->year);		
 		$month_pre = ($this->month==1 ? 12 : $this->month-1);
 		
-		$this->debug("initalizeMonth Started");	
-		
 		//load all the month events into memory
 		if($this->setting('enablerepeatevents')) 
 			$this->initalizeMonth($month_pre, $year_pre); //grab last months events for overlapped repeating events
 
 		$this->initalizeMonth($this->month, $this->year); //grab this months events
-		$this->debug("initalizeMonth ENDED");	
+		
 		if($this->setting('useeventlist'))
 			return $this->buildEventList() . $this->buildTrackTimeSummary();
 			
 		if($this->setting('date'))
-			return $this->buildDateEvent() . $this->buildTrackTimeSummary();
-
+			return $this->renderDateEvent() . $this->buildTrackTimeSummary();
+			
 		// if we made it here... there was an error in the previous modes 
 		// or no mode was selected...display full calendar
 		$this->calendarMode = "normal";
-		$this->debug("displayCalendar Ended");	
 		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
 	 }
-	 
+	
+	//build the months articles into memory
 	function initalizeMonth($month, $year){
-		$dayOffset = -$first + 1;
-	    
-	    // build up the months events
-	    $numWeeks = floor(($this->getDaysInMonth($year, $month) - $dayOffset + 7) / 7);  	
-	    for ($i = 0; $i < $numWeeks; $i += 1) {
-			
-			// write out the days in the week
-			for ($j = 0; $j < 7; $j += 1) {
-				$this->buildArticlesForDay($month, $dayOffset, $year);
-				$dayOffset += 1;
-			}
-		}	 
+		$days = $this->getDaysInMonth($year, $month);
+		
+	    for ($i = 1; $i <= $days; $i += 1) 
+			$this->buildArticlesForDay($month, $i, $year);
 	}
 
 	function initalizeHTML(){
@@ -231,18 +222,20 @@ class Calendar extends CalendarArticles
 		$extensionPath = dirname(__FILE__);
 		$extensionPath = str_replace("\\", "/", $extensionPath);
 		
-		$css = $this->setting('css');
-		
 		// build template
 		$data_start = "<!-- Calendar Start -->";
-		$css_data = file_get_contents($extensionPath . "/css/$css");		
+		$css = $this->setting('css');		
 		$html_data = file_get_contents($extensionPath . "/calendar_template.html");
 		$data_end = "<!-- Calendar End -->";	
+
 		
-		//check for css style page...default if not found
-		if($css_data === false)
+		//check for valid css file
+		if(file_exists($extensionPath . "/css/$css"))
+			$css_data = file_get_contents($extensionPath . "/css/$css");	
+		else
 			$css_data = file_get_contents($extensionPath . "/css/default.css");
-		
+			
+
 		$this->html_template = $data_start . $css_data . $html_data . $data_end;
 	
 		$this->daysNormalHTML   = $this->html_week_array("<!-- %s %s -->");
@@ -425,8 +418,8 @@ class Calendar extends CalendarArticles
 		}
 	}
 	
-	// specific date mode
-	function buildDateEvent(){
+	function updateDate(){
+
 		$setting = $this->setting("date",false);
 		
 		if($setting == "") return "";
@@ -460,6 +453,10 @@ class Calendar extends CalendarArticles
 				$this->year = $parseDate[2] + 0;
 			}
 		}
+	}
+	
+	// specific date mode
+	function renderDateEvent(){
 		
 		// build the "daily" view HTML if we have a good date
 		$html = "<table width=\"100%\"><h4>" 
@@ -467,37 +464,35 @@ class Calendar extends CalendarArticles
 			. $this->day . ", "
 			. $this->year
 			. " <small><i>" . $this->buildConfigLink(true) . "</i></small></h4>" ;
-			
-		$this->debug("End Calendar Single Day Mode");
 		
-		return "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month,$this->day,$this->year) 
+		return "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month, $this->day, $this->year) 
 		. "</table></html>" 
 		. $this->getDebugging());	
 		
 	}
 
     function getHTMLForMonth() {   
-		$this->debug("getHTMLForMonth Started");
 		$tag_templateButton = "";
        	
 	    /***** Replacement tags *****/
 
-	    $tag_monthSelect = "";         // the month select box [[MonthSelect]] 
-	    $tag_previousMonthButton = ""; // the previous month button [[PreviousMonthButton]]
-	    $tag_nextMonthButton = "";     // the next month button [[NextMonthButton]]
-	    $tag_yearSelect = "";          // the year select box [[YearSelect]]
-	    $tag_previousYearButton = "";  // the previous year button [[PreviousYearButton]]
-	    $tag_nextYearButton = "";      // the next year button [[NextYearButton]]
-	    $tag_calendarName = "";        // the calendar name [[CalendarName]]
-	    $tag_calendarMonth = "";       // the calendar month [[CalendarMonth]]
-	    $tag_calendarYear = "";        // the calendar year [[CalendarYear]]
-	    $tag_day = "";                 // the calendar day [[Day]]
-	    $tag_addEvent = "";            // the add event link [[AddEvent]]
-	    $tag_eventList = "";           // the event list [[EventList]]
+	    $tag_monthSelect = "";         	// the month select box [[MonthSelect]] 
+	    $tag_previousMonthButton = ""; 	// the previous month button [[PreviousMonthButton]]
+	    $tag_nextMonthButton = "";     	// the next month button [[NextMonthButton]]
+	    $tag_yearSelect = "";          	// the year select box [[YearSelect]]
+	    $tag_previousYearButton = "";  	// the previous year button [[PreviousYearButton]]
+	    $tag_nextYearButton = "";      	// the next year button [[NextYearButton]]
+	    $tag_calendarName = "";        	// the calendar name [[CalendarName]]
+	    $tag_calendarMonth = "";       	// the calendar month [[CalendarMonth]]
+	    $tag_calendarYear = "";        	// the calendar year [[CalendarYear]]
+	    $tag_day = "";                 	// the calendar day [[Day]]
+	    $tag_addEvent = "";            	// the add event link [[AddEvent]]
+	    $tag_eventList = "";           	// the event list [[EventList]]
 		$tag_eventStyleButton = "";		// event style buttonn [[EventStyleBtn]]
 		$tag_templateButton = "";		// template button for multiple events [[TemplateButton]]
 		$tag_todayButton = "";			// today button [[TodayButton]]
 		$tag_configButton = ""; 		// config page button
+		$tag_timeTrackValues = "";     	// summary of time tracked events
         
 	    /***** Calendar parts (loaded from template) *****/
 
@@ -515,8 +510,7 @@ class Calendar extends CalendarArticles
 
 	    // the date for the first day of the month
 	    $firstDate = getdate(mktime(12, 0, 0, $this->month, 1, $this->year));
-
-	    $first = $firstDate["wday"];   // the first day of the month
+	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
 	    $today = getdate();    	// today's date
 	    $isSelected = false;    	// if the day being processed is today
@@ -570,7 +564,7 @@ class Calendar extends CalendarArticles
 		$tag_templateButton = $this->buildTemplateLink();
 		$tag_configButton = $this->buildConfigLink(false);
 
-		if(!isset($params["disablestyles"])){
+		if(!$this->setting("disablestyles")){
 			$articleStyle = $this->wikiRoot . $this->calendarPageName . "/style&action=edit" . "';\">";
 			$tag_eventStyleButton = "<input class='btn' type=\"button\" title=\"Set 'html/css' styles based on trigger words (vacation::color:red; font-style:italic)\" value= \"event styles\" onClick=\"javascript:document.location='" . $articleStyle;
 		}
@@ -645,7 +639,7 @@ class Calendar extends CalendarArticles
 	    for ($i = 0; $i < $numWeeks; $i += 1) {
 
 			$ret .= $html_week_start;		// write out the week start code
-				
+			
 			// write out the days in the week
 			for ($j = 0; $j < 7; $j += 1) {
 				$ret .= $this->getHTMLForDay($this->month,$dayOffset,$this->year);
@@ -748,13 +742,13 @@ class Calendar extends CalendarArticles
 				
 			}
 			
-			// (* backwards compatibility only *)
-			// must use the name parameter even in fullsubscribe mode: <calendar name="Team" fullsubscribe="Main Page/Team" />
-			// if you dont, you will not get the older style events in your calendar...
-			$articleName = $this->calendarName . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+			// check for legacy events (prior to 1/1/2009 or so) ex: "CalanderEvents:Page/Title (12-1-2008) - Event 1"
+			// enabling causes additional load times
+			if($this->setting('enablelegacy')){
+				$articleName = $this->calendarName . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
+				$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+			}
 		}
-		//$this->debug("buildArticlesForDay ENDED");	
     }
 
 	//hopefully a catchall of most types of returns values
@@ -800,10 +794,10 @@ function displayCalendar($paramstring = "", $params = array()) {
 	// grab the page title
 	$title = $wgTitle->getPrefixedText();	
 
-	if(!isset($params["css"])) 		$params["css"] = 'default.css';
+	//if(!isset($params["css"])) 		$params["css"] = 'default.css';
 	
 	$calendar = null;	
-	$calendar = new Calendar($wikiRoot, isset($params["debug"]), $params["css"]);
+	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
 
 	if(!isset($params["name"])) $params["name"] = "Public";
 	
@@ -825,6 +819,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;
 	if(!isset($params["yearoffset"])) 		$params["yearoffset"] = 2;
 	if(!isset($params["charlimit"])) 		$params["charlimit"] = 20;
+	if(!isset($params["css"])) 				$params["css"] = "default.css";
 	
 	// no need to pass a parameter here... isset check for the params name, thats it
 	if(isset($params["lockdown"])){
