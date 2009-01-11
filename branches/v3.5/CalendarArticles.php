@@ -104,6 +104,7 @@ class CalendarArticles
 	}
 	
 	function LimitText($text,$max) { 
+		if($max == "") return;
 		
 		$text = trim($text);
 		
@@ -179,21 +180,6 @@ class CalendarArticles
 			$cArticle->body = $body;
 
 		$this->arrArticles[] = $cArticle;
-	}
-	
-	private function getNextValidDate(&$month, &$day, &$year){
-	
-		$day++;
-	
-		$daysMonth = $this->getDaysInMonth($year,$month);
-		if($day > $daysMonth){
-			$day = 1;
-			$month++;
-			if($month > 12){
-				$month = 1;
-				$year++;
-			}
-		}
 	}
 	
 	// this function checks a template event for a time trackable value

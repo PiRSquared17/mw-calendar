@@ -174,7 +174,15 @@ class Calendar extends CalendarArticles
 		}
         return $d;
     }
-	 
+
+	function datemath($dayOffset){
+
+		$seconds = $dayOffset * 86400;
+		$arr = getdate(mktime(12, 0, 0, $this->month, $this->day, $this->year) + $seconds);
+
+		return $arr;
+	}
+	
 	 // render the calendar
 	 function displayCalendar(){
 		
@@ -184,18 +192,12 @@ class Calendar extends CalendarArticles
 		// if in date mode, update the date
 		$this->updateDate();
 		
+		if($this->setting('enablerepeatevents')) 
+			$this->initalizeMonth(-31, 0); //grab last months events for overlapped repeating events
+		
 		$this->readStylepage();
 		$this->buildTemplateEvents();
 	
-		$year_pre = ($this->month==1 ? ($this->year-1) : $this->year);		
-		$month_pre = ($this->month==1 ? 12 : $this->month-1);
-		
-		//load all the month events into memory
-		if($this->setting('enablerepeatevents')) 
-			$this->initalizeMonth($month_pre, $year_pre); //grab last months events for overlapped repeating events
-
-		$this->initalizeMonth($this->month, $this->year); //grab this months events
-		
 		if($this->setting('useeventlist'))
 			return $this->buildEventList() . $this->buildTrackTimeSummary();
 			
@@ -204,18 +206,45 @@ class Calendar extends CalendarArticles
 			
 		// if we made it here... there was an error in the previous modes 
 		// or no mode was selected...display full calendar
+		$this->initalizeMonth(0, 31); //grab this months events
+				
 		$this->calendarMode = "normal";
 		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
 	 }
 	
 	//build the months articles into memory
-	function initalizeMonth($month, $year){
-		$days = $this->getDaysInMonth($year, $month);
+	function initalizeMonth($back, $forward){
+	
+		$cnt = abs($back) + $forward;
 		
-	    for ($i = 1; $i <= $days; $i += 1) 
-			$this->buildArticlesForDay($month, $i, $year);
+		$arr_start = $this->datemath($back);
+		
+		$month = $arr_start['mon'];
+		$day = $arr_start['mday'];
+		$year = $arr_start['year'];
+		
+		
+	    for ($i = 1; $i <= $cnt; $i++) {
+			$this->buildArticlesForDay($month, $day, $year);
+			$this->getNextValidDate($month, $day, $year);
+		}	
 	}
-
+	
+	function getNextValidDate(&$month, &$day, &$year){
+	
+		$day++;
+	
+		$daysMonth = $this->getDaysInMonth($year,$month);
+		if($day > $daysMonth){
+			$day = 1;
+			$month++;
+			if($month > 12){
+				$month = 1;
+				$year++;
+			}
+		}
+	}
+	
 	function initalizeHTML(){
 		
 		// set paths			
@@ -363,22 +392,27 @@ class Calendar extends CalendarArticles
 	
 	function buildEventList(){
 		$setting = $this->setting('useeventlist',false);
-		
+
 		if($setting == "") return "";
 		
 		if($setting > 0){
 			$this->calendarMode = "eventlist";
 			$daysOut = ($setting <= 120 ? $setting : 120);
-			
+
 			$month = $this->month;
 			$day = $this->day;
 			$year = $this->year;
 
 			$this->updateSetting('charlimit',100);
 			
+			//build the days out....
+			$this->initalizeMonth(0, $daysOut);
+			
 			for($i=0; $i < $daysOut; $i++){
+				
 				$this->getHTMLForDay($month, $day, $year);
 				$day++;
+
 				//lets check for overlap to next month or next year...
 				$daysMonth = $this->getDaysInMonth($year,$month);
 				if($day > $daysMonth){
@@ -407,8 +441,9 @@ class Calendar extends CalendarArticles
 			
 			// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
 			for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
-				for($s=0;$s < count($this->subscribedPages);$s++) //loop thru $i month per subscribed calendar
+				for($s=0;$s < count($this->subscribedPages);$s++){ //loop thru $i month per subscribed calendar
 					$this->addTemplate($month, $year, ($this->subscribedPages[$s]));
+				}
 				
 				$this->addTemplate($month, $year, ($this->calendarPageName));		
 				$year = ($month == 12 ? ++$year : $year);
@@ -733,7 +768,7 @@ class Calendar extends CalendarArticles
 		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
 			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
 			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
-			
+
 			// subscribed events
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
