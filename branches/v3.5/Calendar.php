@@ -188,10 +188,10 @@ class Calendar extends CalendarArticles
 		
 		//build the html variables
 		$this->initalizeHTML();
-		
+
 		// if in date mode, update the date
 		$this->updateDate();
-		
+			
 		if($this->setting('enablerepeatevents')) 
 			$this->initalizeMonth(-31, 0); //grab last months events for overlapped repeating events
 		
@@ -214,7 +214,8 @@ class Calendar extends CalendarArticles
 	
 	//build the months articles into memory
 	function initalizeMonth($back, $forward){
-	
+		$this->debug('initalizeMonth called');
+		
 		$cnt = abs($back) + $forward;
 		
 		$arr_start = $this->datemath($back);
@@ -492,12 +493,16 @@ class Calendar extends CalendarArticles
 	// specific date mode
 	function renderDateEvent(){
 		
+		$this->initalizeMonth(0,1);
+		
 		// build the "daily" view HTML if we have a good date
 		$html = "<table width=\"100%\"><h4>" 
 			. $this->monthNames[$this->month -1] . " "
 			. $this->day . ", "
 			. $this->year
 			. " <small><i>" . $this->buildConfigLink(true) . "</i></small></h4>" ;
+			
+		$this->debug("End Date mode");
 		
 		return "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month, $this->day, $this->year) 
 		. "</table></html>" 
@@ -882,6 +887,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 
     // read the cookie to pull last calendar data
     $cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
+
     if (isset($_COOKIE[$cookie_name]) && !isset($params["useeventlist"]) && !isset($params["date"])){
 		$temp = split("`", $_COOKIE[$cookie_name]);
 		$calendar->setMonth($temp[0]);
@@ -889,7 +895,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->setTitle($temp[2]);
 		$calendar->setName($temp[3]);
 	}
-	
+
 	return $calendar->displayCalendar();
 }
 
