@@ -206,7 +206,9 @@ class Calendar extends CalendarArticles
 			
 		// if we made it here... there was an error in the previous modes 
 		// or no mode was selected...display full calendar
-		$this->initalizeMonth(0, 31); //grab this months events
+		$back = -$this->day;
+		$forward = 32-$this->day;
+		$this->initalizeMonth($back, $forward); //grab this months events
 				
 		$this->calendarMode = "normal";
 		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	

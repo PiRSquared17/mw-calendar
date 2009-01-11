@@ -37,6 +37,7 @@ class CalendarArticles
 	private $arrArticles = array();
 	public $wikiRoot = "";
 	private $arrTimeTrack = array();
+	private $arrStyle = array();
 	
 	public function addArticle($month, $day, $year, $page, $charlimit){
 		$lines = array();
