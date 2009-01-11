@@ -140,9 +140,9 @@ class CalendarArticles
 		$article = new Article(Title::newFromText($articleName));
 
 		if (!$article->exists()) return "";
-			
-		$displayText  = $article->fetchContent(0,false,false);
 		
+		$displayText  = $article->fetchContent(0,false,false);
+	
 		$arrAllEvents=split(chr(10),$displayText);
 		if (count($arrAllEvents) > 0){
 			for($i=0; $i<count($arrAllEvents); $i++){
@@ -150,14 +150,16 @@ class CalendarArticles
 				if(strlen($arrEvent[1]) > 0){
 					$day = $arrEvent[0];
 					$arrRepeat = split("-",$arrEvent[0]);
+					
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
 							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", true);
 							$day++;
 						}
-					}else
+					}else{
 						$this->buildEvent($month, $day, $year, $arrEvent[1], $articleName, "", true);
+					}
 				}
 			}
 		}	
@@ -305,11 +307,11 @@ class CalendarArticles
 
 			for($i=0; $i<$cnt; $i++){
 				$arrParams = split("=", $arr[$i]);
-				$key = $arrParams[0];
+				$key = trim($arrParams[0]);
 				
 				if($key != 'useconfigpage'){		// we dont want users to lock themselves out of the config page....		
 					if(count($arrParams) == 2) 
-						$params[$key] = $arrParams[1]; // we have both $key and $value
+						$params[$key] = trim($arrParams[1]); // we have both $key and $value
 					else
 						$params[$key] = $key; // init the value with itself if $value is null
 				}

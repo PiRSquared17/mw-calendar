@@ -400,12 +400,11 @@ class Calendar extends CalendarArticles
 	}
 
 	function buildTemplateEvents(){	
-
 		if($this->setting('usetemplates')){
 			$year = $this->year;
 			$month = 1;//$this->month;
 			$additionMonths = $this->month + 12;
-				
+			
 			// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
 			for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
 				for($s=0;$s < count($this->subscribedPages);$s++) //loop thru $i month per subscribed calendar
