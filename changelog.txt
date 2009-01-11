@@ -1,5 +1,14 @@
 This document lists most of the bug fixes and changes.
 
+******** v3.5 ******** released 1/11/2009
+# removed $wgCalendarPath override; not needed now
+# added timetracking
+# added repeating events via 'add event'
+# many code improvements
+# disabled older event lockups (12-15-2008) types; re-enable by adding 'enablelegacy'
+# added new skins - ex:(css="olive.css")
+
+
 ******** v3.4.2 ******** 
 # added configpage for parameters
 
@@ -14,22 +23,5 @@ This document lists most of the bug fixes and changes.
 # fixed $wgCalendarPath override
 
 
+
 ******** trunk/beta ******** 
-# added support for {{TEMPLATE}} syntax for calendar name. 
-	<calendar name={{TEMPLATE}} />
-
-# added timetracking ability...creates a small table that maintains totals per category...categories are created on the fly...ie: sick... vacation... project name... anything you want. Entries will match existing entires and update the total values. Day events are only totaled for that month, but monthly/template events are totalled for the year
-	(ex: ::sick-8) 
-	(ex: ::project1:8) 
-	(ex: ::project1-4) <<total 12>>
-	(ex: 5-10# ::vacation-8) <-- template; totals for the year
-
-# re-added repeating events under daily "add event" (ex: 5# Vacation)... this will create 5 vacation events
-
-# added 'enablerepeatevents'... enabling this with double the load times because it pulls the previous months events (30 days X 5 events-per-day X 2 months)..basically hits the db 300 times..now double that for for each subscribed calendar...<sigh>
-
-# added a few css style files to change the calendar look and feel
-
-# removed the need for the $wgExtensionPath override; calendar can be anywhere now
-
-# added 'enablelegacy'... I disabled the "CalanderEvents:Page/Title (12-1-2008) - Event 1" format by default...causes about 15% performance drain
