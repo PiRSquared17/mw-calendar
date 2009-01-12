@@ -1,27 +1,5 @@
-This document lists most of the bug fixes and changes.
+This document lists most of the trunk/beta changes. Once the trunk is released, the 
+notes will be added to the next released 'Readme.txt'. The notes in this file will then be erased.
 
-******** v3.5 ******** released 1/11/2009
-# removed $wgCalendarPath override; not needed now
-# added timetracking
-# added repeating events via 'add event'
-# many code improvements
-# disabled older event lockups (12-15-2008) types; re-enable by adding 'enablelegacy'
-# added new skins - ex:(css="olive.css")
-# fix a bug with duplicating events whhile using the 'userepeatevent' mode
-
-******** v3.4.2 ******** 
-# added configpage for parameters
-
-
-******** v3.4.1 ******** 
-# updated disablestyles parameter
-# removed some stray code functions
-# added multiple subscribed calendar support
-
-
-******** v3.4 ******** 
-# fixed $wgCalendarPath override
-
-
-
-******** trunk/beta ******** 
+********** Trunk: v3.5.1 **********
+# re-ordered the template/add event list... it will now be templates 1st, then normal events
