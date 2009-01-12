@@ -82,7 +82,7 @@ require_once ("CalendarArticles.php");
 
 class Calendar extends CalendarArticles
 {  
-	var $version = "3.4.3 (beta)";
+	var $version = "3.5.1 (beta)";
 	
 	var $arrSettings = array();
 	
