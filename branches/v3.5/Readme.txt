@@ -6,7 +6,7 @@
 * MediaWiki: http://www.mediawiki.org/wiki/User:Kenyu73/Calendar
 -->
 __TOC__
-==Setup (v3.5 Release) 1/11/2009==
+==Setup (v3.5.01 Release) 1/12/2009==
 
 * It's recommended to create a custom calendar type Namespace, like '''Calendars''', but can be whatever Namespaces defined in LocalSettings.php or standard MediaWiki namespaces (like user namespaces) however, it's not required. It is recommended though so seaches in the main wiki do not included calendar events.
 ** The easist way is to enter "Calendars:PageName" in the search box to create the main base calendar page.

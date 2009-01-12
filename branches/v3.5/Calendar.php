@@ -183,7 +183,7 @@ class Calendar extends CalendarArticles
 		return $arr;
 	}
 	
-	 // render the calendar
+	//render the calendar
 	 function displayCalendar(){
 		
 		//build the html variables
@@ -191,9 +191,12 @@ class Calendar extends CalendarArticles
 
 		// if in date mode, update the date
 		$this->updateDate();
-			
+
+		//grab last months events for overlapped repeating events
 		if($this->setting('enablerepeatevents')) 
-			$this->initalizeMonth(-31, 0); //grab last months events for overlapped repeating events
+			$this->initalizeMonth(-($this->day + 31), 0); 
+		else
+			$this->initalizeMonth(-($this->day), 0); 
 		
 		$this->readStylepage();
 		$this->buildTemplateEvents();
@@ -206,9 +209,9 @@ class Calendar extends CalendarArticles
 			
 		// if we made it here... there was an error in the previous modes 
 		// or no mode was selected...display full calendar
-		$back = -$this->day;
+		//$back = -$this->day;
 		$forward = 32-$this->day;
-		$this->initalizeMonth($back, $forward); //grab this months events
+		$this->initalizeMonth(0, $forward); //grab this months events
 				
 		$this->calendarMode = "normal";
 		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
