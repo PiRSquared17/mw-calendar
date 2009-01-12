@@ -5,6 +5,8 @@ Purpose: 	Stucture to hold article/event data and
 			then store into an array for future retrieval
 
 */
+require_once ("common.php");
+
 class CalendarArticle
 {
 	var $day = "";
@@ -75,13 +77,13 @@ class CalendarArticles
 				}
 				else{
 					$temp .= "$line\n";
-					$head[$key] = $this->cleanWiki($temp);
+					$head[$key] = cleanWiki($temp);
 				}
 			}
 		}
-		
+		//$this->debug($page);
 		while (list($event,$body) = each($head)){
-			$this->buildEvent($month, $day, $year, $event, $page, $this->LimitText($body, $charlimit));
+			$this->buildEvent($month, $day, $year, $event, $page, limitText($body, $charlimit));
 		}
 	}
 	
@@ -98,24 +100,11 @@ class CalendarArticles
 			$this->add($month, $day++, $year, $arrEvent[1], $page, $body); //add no arrow
 			for($i=1; $i<$arrEvent[0]; $i++) {
 				$this->add($month, $day, $year, '&larr;'.$arrEvent[1], $page, $body, $isTemplate); //add with arrow
-				$this->getNextValidDate($month, $day, $year);
+				getNextValidDate($month, $day, $year);
 			}
 		}else
 			$this->add($month, $day, $year, $event, $page, $body, $isTemplate);	
 	}
-	
-	function LimitText($text,$max) { 
-		if($max == "") return;
-		
-		$text = trim($text);
-		
-		if(strlen($text) > $max)
-			$ret = substr($text, 0, $max) . "...";
-		else
-			$ret = $text;
-	
-		return $ret;
-	} 
 
 	public function getArticleLinks($month, $day, $year){
 		$cnt = count($this->arrArticles);
@@ -285,10 +274,11 @@ class CalendarArticles
 		
 		$articleName = "$pagename/config";
 		$article = new Article(Title::newFromText($articleName));
-		
+
 		if ($article->exists()){
 			$body  = $article->fetchContent(0,false,false);
 			$body = str_replace("\"", "", $body);	
+
 			$arr = split("\n", $body);
 			$cnt = count($arr);
 
@@ -329,7 +319,7 @@ class CalendarArticles
 	
 	private function buildTextAndHTMLString($string){
 
-		$string = $this->cleanWiki($string);	
+		$string = cleanWiki($string);	
 		$htmltext = $string;
 		$plaintext = strip_tags($string);
 		$charlimit = $this->setting('charlimit',false);
@@ -352,34 +342,7 @@ class CalendarArticles
 		return $ret;
 	}	
 	
-	private function cleanWiki($text){
 
-		$text = $this->swapWikiToHTML($text, "'''", "b");
-		$text = $this->swapWikiToHTML($text, "''", "i");
-		$text = $this->swapWikiToHTML($text, "<pre>", "");
-		$text = $this->swapWikiToHTML($text, "</pre>", "");
-	
-		return $text;
-	}
-	
-	//basic tage changer for common wiki tags
-	private function swapWikiToHTML($text, $tagWiki, $tagHTML){
-
-		$ret = $text;
-		
-		$lenWiki = strlen($tagWiki);
-		$pos = strpos($text, $tagWiki);
-		if($pos !== false){
-			if($tagHTML != ""){
-				$ret = substr_replace($text, "<$tagHTML>", $pos, $lenWiki);
-					$ret = str_replace($tagWiki, "</$tagHTML>", $ret);
-			}
-			else
-				$ret = str_replace($tagWiki, "", $ret);
-		}
-		
-		return $ret;
-	}	
 	
 	private function buildStyleBySearch($text){
 

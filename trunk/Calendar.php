@@ -77,7 +77,8 @@ function wfCalendarExtension() {
     $wgParser->setHook( "calendar", "displayCalendar" );
 }
 
-include ("CalendarArticles.php");
+require_once ("common.php");
+require_once ("CalendarArticles.php");
 
 class Calendar extends CalendarArticles
 {  
@@ -104,8 +105,9 @@ class Calendar extends CalendarArticles
     function Calendar($wikiRoot, $debug) {
 
 		$this->wikiRoot = $wikiRoot;
-		$this->debugEnabled = $debug;
 		
+		// debugging
+		$this->debugEnabled = $debug;
 		$this->startTime = $this->markTime = microtime(1);
 		
 		// set the calendar's initial date to now
@@ -113,16 +115,7 @@ class Calendar extends CalendarArticles
 		$this->month = $today['mon'];
 		$this->year = $today['year'];
 		$this->day = $today['mday'];
-		
-		// static date to reference (dont update these!)
-		$this->monthStatic = $today['mon'];
-		$this->yearStatic = $today['year'];
-		$this->dayStatic = $today['mday'];
-		
-		// errors
-		$this->errMultiday = "Multiple events/day are enabled. Please use the following format: == event ==.";
-		$this->errStyles = "It appears you have an undefined or invalid style.";
-		
+	
 		$this->debug("Calendar Constructor Ended.");
     }
 	
@@ -163,55 +156,31 @@ class Calendar extends CalendarArticles
 		}
 		return $ret;
     }
-
-    function getDaysInMonth($year,$month) {	// Leap year rule good through 3999
-
-        if ($month < 1 || $month > 12) return 0;
-        $d = $this->daysInMonth[$month - 1];
-        if ($month == 2 && $year%4==0) {
-			$d = 29;
-			if ($year%100 == 0 && $year%400 != 0) $d = 28;
-		}
-        return $d;
-    }
-
-	function datemath($dayOffset){
-
-		$seconds = $dayOffset * 86400;
-		$arr = getdate(mktime(12, 0, 0, $this->month, $this->day, $this->year) + $seconds);
-
-		return $arr;
-	}
 	
 	 // render the calendar
-	 function displayCalendar(){
-		
-		//build the html variables
-		$this->initalizeHTML();
+	 function renderCalendar(){
 
-		// if in date mode, update the date
-		$this->updateDate();
-			
-		if($this->setting('enablerepeatevents')) 
-			$this->initalizeMonth(-31, 0); //grab last months events for overlapped repeating events
-		
+		$this->initalizeHTML();
 		$this->readStylepage();
 		$this->buildTemplateEvents();
-	
+
+		//grab last months events for overlapped repeating events
+		if($this->setting('enablerepeatevents')) 
+			$this->initalizeMonth(-($this->day + 31), 0); 
+		else
+			$this->initalizeMonth(-($this->day), 0); 
+
+
+		// load the calendar mode as the last step	
 		if($this->setting('useeventlist'))
-			return $this->buildEventList() . $this->buildTrackTimeSummary();
-			
-		if($this->setting('date'))
-			return $this->renderDateEvent() . $this->buildTrackTimeSummary();
-			
-		// if we made it here... there was an error in the previous modes 
-		// or no mode was selected...display full calendar
-		$back = -$this->day;
-		$forward = 32-$this->day;
-		$this->initalizeMonth($back, $forward); //grab this months events
-				
-		$this->calendarMode = "normal";
-		return "<html>" . $this->getHTMLForMonth() . "</html>" . $this->getDebugging(). $this->buildTrackTimeSummary();	
+			$ret = $this->renderEventList();
+		else if($this->setting('date')){
+			$this->updateDate();
+			$ret = $this->renderDate();
+		}else
+			$ret = $this->renderMonth();
+
+		return $ret;	
 	 }
 	
 	//build the months articles into memory
@@ -220,7 +189,7 @@ class Calendar extends CalendarArticles
 		
 		$cnt = abs($back) + $forward;
 		
-		$arr_start = $this->datemath($back);
+		$arr_start = datemath($back, $this->month, $this->day, $this->year);
 		
 		$month = $arr_start['mon'];
 		$day = $arr_start['mday'];
@@ -229,29 +198,14 @@ class Calendar extends CalendarArticles
 		
 	    for ($i = 1; $i <= $cnt; $i++) {
 			$this->buildArticlesForDay($month, $day, $year);
-			$this->getNextValidDate($month, $day, $year);
+			getNextValidDate($month, $day, $year);
 		}	
-	}
-	
-	function getNextValidDate(&$month, &$day, &$year){
-	
-		$day++;
-	
-		$daysMonth = $this->getDaysInMonth($year,$month);
-		if($day > $daysMonth){
-			$day = 1;
-			$month++;
-			if($month > 12){
-				$month = 1;
-				$year++;
-			}
-		}
 	}
 	
 	function initalizeHTML(){
 		
 		// set paths			
-		$extensionPath = dirname(__FILE__);
+		$extensionPath = $this->setting('path'); //dirname(__FILE__);
 		$extensionPath = str_replace("\\", "/", $extensionPath);
 		
 		// build template
@@ -281,7 +235,7 @@ class Calendar extends CalendarArticles
     function getHTMLForDay($month,$day,$year){
 		$tag_eventList= "";
 		
-		if ($day <=0 || $day > $this->getDaysInMonth($year,$month)){
+		if ($day <=0 || $day > getDaysInMonth($month, $year)){
 			return $this->daysMissingHTML[0];
 		}
 
@@ -370,13 +324,7 @@ class Calendar extends CalendarArticles
 		
 		return $ret;			
 	}
-/*	
-	function initNewPage($title, $text){
-		$mytitle = Title::newFromText($title);
-		$article = new Article($mytitle);
-		$res = $article->doEdit($text . "<!-- -->", '');
-	}
-*/
+
 	// build the 'template' button	
 	function buildConfigLink($bTextLink = false){	
 		
@@ -393,7 +341,7 @@ class Calendar extends CalendarArticles
 		return $ret;			
 	}
 	
-	function buildEventList(){
+	function renderEventList(){
 		$setting = $this->setting('useeventlist',false);
 
 		if($setting == "") return "";
@@ -411,28 +359,22 @@ class Calendar extends CalendarArticles
 			//build the days out....
 			$this->initalizeMonth(0, $daysOut);
 			
-			for($i=0; $i < $daysOut; $i++){
-				
+			for($i=0; $i < $daysOut; $i++){	
 				$this->getHTMLForDay($month, $day, $year);
-				$day++;
-
-				//lets check for overlap to next month or next year...
-				$daysMonth = $this->getDaysInMonth($year,$month);
-				if($day > $daysMonth){
-					$day = 1;
-					$month++;
-					if($month > 12){
-						$month = 1;
-						$year++;
-					}
-				}
+				getNextValidDate($month,$day,$year);//bump the date up by 1
 			}
+			
 			if(strlen($this->eventList) == 0)
 				$this->eventList = "<h4>No Events</h4>";
 				
-			$this->debug("End Calendar EventList Mode");
+			$this->debug("renderEventList Ended");
 			
-			return "<html><i> " . $this->buildConfigLink(true) . "</i>" .  $this->eventList . "</html>" . $this->getDebugging();
+			$ret = "<html><i> " . $this->buildConfigLink(true) 
+				. "</i>" .  $this->eventList . "</html>" 
+				. $this->buildTrackTimeSummary()				
+				. $this->getDebugging();
+
+			return $ret;	
 		}
 	}
 
@@ -455,29 +397,19 @@ class Calendar extends CalendarArticles
 		}
 	}
 	
+	// used for 'date' mode only...technically, this can be any date
 	function updateDate(){
-
+		$this->calendarMode = "date";
+		
 		$setting = $this->setting("date",false);
 		
 		if($setting == "") return "";
 		
-		$this->calendarMode = "date";
 		$this->arrSettings['charlimit'] = 100;
 		
 		if (($setting == "today") || ($setting == "tomorrow")){
-			if ($setting == "tomorrow" ){
-				$this->day++;
-				
-				//lets check for overlap to next month or next year...
-				$daysMonth = $this->getDaysInMonth($this->year,$this->month);
-				if($this->day > $daysMonth){
-					$this->day = 1;
-					$this->month++;
-					if($this->month > 12){
-						$this->month = 1;
-						$this->year++;
-					}
-				}
+			if ($setting == "tomorrow" ){	
+				getNextValidDate($this->month, $this->day, $this->year);		
 			}
 		}
 		else {
@@ -493,7 +425,7 @@ class Calendar extends CalendarArticles
 	}
 	
 	// specific date mode
-	function renderDateEvent(){
+	function renderDate(){
 		
 		$this->initalizeMonth(0,1);
 		
@@ -504,19 +436,23 @@ class Calendar extends CalendarArticles
 			. $this->year
 			. " <small><i>" . $this->buildConfigLink(true) . "</i></small></h4>" ;
 			
-		$this->debug("End Date mode");
+		$this->debug("renderDate Ended");
 		
-		return "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month, $this->day, $this->year) 
-		. "</table></html>" 
-		. $this->getDebugging());	
+		$ret = "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month, $this->day, $this->year)) 
+			. "</table></html>" 
+			. $this->buildTrackTimeSummary()
+			. $this->getDebugging();	
+		
+		return $ret;
 		
 	}
 
-    function getHTMLForMonth() {   
+    function renderMonth() {   
 		$tag_templateButton = "";
+		
+		$this->calendarMode = "normal";
        	
 	    /***** Replacement tags *****/
-
 	    $tag_monthSelect = "";         	// the month select box [[MonthSelect]] 
 	    $tag_previousMonthButton = ""; 	// the previous month button [[PreviousMonthButton]]
 	    $tag_nextMonthButton = "";     	// the next month button [[NextMonthButton]]
@@ -548,7 +484,10 @@ class Calendar extends CalendarArticles
 	    /***** Other variables *****/
 
 	    $ret = "";          // the string to return
-
+		
+		//build events into memory for the remainder of the month
+		$this->initalizeMonth(0, (32 - $this->day));
+		
 	    // the date for the first day of the month
 	    $firstDate = getdate(mktime(12, 0, 0, $this->month, 1, $this->year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
@@ -674,7 +613,7 @@ class Calendar extends CalendarArticles
 	    $dayOffset = -$first + 1;
 	    
 	    // determine the number of weeks in the month
-	    $numWeeks = floor(($this->getDaysInMonth($this->year,$this->month) - $dayOffset + 7) / 7);  	
+	    $numWeeks = floor((getDaysInMonth($this->month,$this->year) - $dayOffset + 7) / 7);  	
 
 	    // begin writing out month weeks
 	    for ($i = 0; $i < $numWeeks; $i += 1) {
@@ -706,11 +645,13 @@ class Calendar extends CalendarArticles
   		
 	    /***** Do calendar end code *****/
 	    $ret .= $html_calendar_end;
- 
+ 	
+		$this->debug("renderMonth Ended");	
+		$ret = "<html>" . $this->stripLeadingSpace($ret) . "</html>"
+			. $this->buildTrackTimeSummary()
+			. $this->getDebugging();	
 
-		$this->debug("getHTMLForMonth Ended");
-	    // return the generated calendar code
-	    return $this->stripLeadingSpace($ret);  	
+	    return $ret;	
 	}
 
     // returns the HTML that appears between two search strings.
@@ -832,22 +773,28 @@ function displayCalendar($paramstring = "", $params = array()) {
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
 	
+
 	// grab the page title
 	$title = $wgTitle->getPrefixedText();	
-
-	//if(!isset($params["css"])) 		$params["css"] = 'default.css';
 	
+	$config_page = " ";
+
 	$calendar = null;	
 	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
 
 	if(!isset($params["name"])) $params["name"] = "Public";
 	
+	// set path		
+	$params['path'] = str_replace("\\", "/", dirname(__FILE__));
+		
 	$name = checkForMagicWord($params["name"]);
 		
 	// normal calendar...
 	$calendar->calendarPageName = htmlspecialchars($title . "/" . $name);
 	$calendar->configPageName = htmlspecialchars("$title/$name/config");
-		
+	
+	createNewPage("$title/$name/config", buildConfigString());	
+	
 	if(isset($params["useconfigpage"])) {	
 		$configs = $calendar->getConfig("$title/$name");
 		
@@ -898,22 +845,35 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->setName($temp[3]);
 	}
 
-	return $calendar->displayCalendar();
+	return $calendar->renderCalendar();
 }
 
-function checkForMagicWord($string){
-	global $wgParser;
-	
-	$ret = $string;
-	$string = str_replace("{{","",$string);
-	$string = str_replace("}}","",$string);
-	$string = strtolower($string);
-
-	$string = $wgParser->getVariableValue($string);
-	
-	if(isset($string)) $ret = $string;
-	
-	return $ret;
+// setup the config page with a listing of current parameters
+function buildConfigString(){
+	$string = "The following are the standard parameter options available. If you clear " .
+		"the page, the defaults will return. Just remove the 'x' as needed.\n\n" .
+		"x usetemplates\n" .
+		"x locktemplates\n" .
+		"x defaultedit\n" .
+		"x disableaddevent\n" .
+		"x yearoffset=5\n" .
+		"x date=today\n" .
+		"x useeventlist=90\n" .
+		"x subscribe='page/calendar name1, page/calendar name2, ...'\n" .
+		"x fullsubscribe='page/calendar name'\n" .
+		"x disablelinks\n" .
+		"x usemultievent\n" .
+		"x maxdailyevents=3\n" .
+		"x disablestyles\n" .
+		"x css='olive.css'\n" .
+		"x disabletimetrack\n" .
+		"x enablerepeatevents\n" .
+		"x enablelegacy\n" .
+		"x lockdown\n";
+		
+	return $string;
 }
+
+
 } //end define MEDIAWIKI
 ?>
