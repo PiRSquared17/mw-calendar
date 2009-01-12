@@ -7,7 +7,7 @@ This document lists most of the bug fixes and changes.
 # many code improvements
 # disabled older event lockups (12-15-2008) types; re-enable by adding 'enablelegacy'
 # added new skins - ex:(css="olive.css")
-
+# fix a bug with duplicating events whhile using the 'userepeatevent' mode
 
 ******** v3.4.2 ******** 
 # added configpage for parameters
