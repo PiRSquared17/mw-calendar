@@ -85,14 +85,3 @@ function getNextValidDate(&$month, &$day, &$year){
 	$month = $arr['mon'];
 	$year = $arr['year'];
 }
-
-function createNewPage($title, $text){
-	$article = new Article(Title::newFromText($title));
-	$bExists = $article->exists();
-	
-	if($bExists)
-		$body  = $article->fetchContent(0,false,false);
-	
-	if(!bExists || trim($body) == "")
-		$article->doEdit($text, '');
-}

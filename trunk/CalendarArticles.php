@@ -357,4 +357,16 @@ class CalendarArticles
 
 		return $ret;
 	}
+	
+	function createNewPage($title, $text){
+	$article = new Article(Title::newFromText($title));
+	$bExists = $article->exists();
+
+	if($bExists){
+		$body  = $article->fetchContent(0,false,false);
+		$article->doEdit($text, 'inital config', EDIT_UPDATE);
+	}
+	else
+		$article->doEdit($text, 'inital config', EDIT_NEW);
+	}
 }

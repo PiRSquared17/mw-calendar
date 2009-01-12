@@ -793,7 +793,9 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$calendar->calendarPageName = htmlspecialchars($title . "/" . $name);
 	$calendar->configPageName = htmlspecialchars("$title/$name/config");
 	
-	createNewPage("$title/$name/config", buildConfigString());	
+	// disabling for now... causing wierd errors with mutiple calendar per page
+	//(UNIQ249aadf6593f3f85-calendar-00000000-QINU}
+	//$calendar->createNewPage("$title/$name/config", buildConfigString());	
 	
 	if(isset($params["useconfigpage"])) {	
 		$configs = $calendar->getConfig("$title/$name");
