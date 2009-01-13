@@ -311,9 +311,9 @@ class Calendar extends CalendarArticles
 	// build the 'template' button	
 	function buildTemplateLink(){	
 		if(!$this->setting('usetemplates')) return "";
-			
-		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "';\">";
 
+		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "';\">";
+		
 		$month = strtolower($this->monthNames[$this->month-1]);
 		if($this->setting('locktemplates'))
 			$ret = "<input class='btn' type='button' title='Create a bunch of events in one page (20-25# Vacation)' disabled value='$month events' onClick=\"javascript:document.location='" . $articleName;
@@ -508,11 +508,14 @@ class Calendar extends CalendarArticles
 	    // referrer (the page with the calendar currently displayed)
 	    $referrerURL = $_SERVER['PHP_SELF'];
 	    if ($_SERVER['QUERY_STRING'] != '') {
-			$arrQuery = split('&', $_SERVER['QUERY_STRING']); //stripe trailing options
-    		$referrerURL .= "?" . $arrQuery[0];
+    		$referrerURL .= "?" . $_SERVER['QUERY_STRING'];
 	    }
-		$this->referrerURL = $referrerURL;
+		$this->referrerURL = $referrerURL;		
 		
+	    // referrer (the page with the calendar currently displayed)
+//		$referrerURL = $this->wikiRoot .  $this->title;
+//		$this->referrerURL = $referrerURL;
+
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
 	    $tag_calendarName = str_replace('_', ' ', $this->name);
@@ -775,7 +778,7 @@ class Calendar extends CalendarArticles
 	
 	function load_iCal(){
 		$path = $this->ical_path;
-	
+	$this->debug('load_iCal Started');
 		$iCal = new ical_calendar;
 		
 		//make sure we're good before we go further
