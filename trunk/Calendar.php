@@ -46,10 +46,13 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$year = ($month == 12 ? ++$year : $year);		
 		$month = ($month == 12 ? 1 : ++$month);
 	}
+	
+	if(isset($_POST["ical"]))
+		setcookie('calendar_ical', $_POST["ical"]);
 
 	// set the cookie
 	$cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
-	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name;
+	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`";
 	setcookie($cookie_name, $cookie_value);
 	
 	// reload the calling page to refresh the cookies that were just set
@@ -79,6 +82,7 @@ function wfCalendarExtension() {
 
 require_once ("common.php");
 require_once ("CalendarArticles.php");
+require_once ("ical.class.php");
 
 class Calendar extends CalendarArticles
 {  
@@ -309,11 +313,11 @@ class Calendar extends CalendarArticles
 
 		return $ret;
 	}
-	
+
 	// build the 'template' button	
 	function buildTemplateLink(){	
 		if(!$this->setting('usetemplates')) return "";
-		
+			
 		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "';\">";
 
 		$month = strtolower($this->monthNames[$this->month-1]);
@@ -325,6 +329,14 @@ class Calendar extends CalendarArticles
 		return $ret;			
 	}
 
+	function loadiCalLink(){
+		
+		$ret = "Please specify an iCal format file (vcalendar).<br>"
+			. "<input except='image/jpg' name='ical' class='btn' type='file' title='' value='' size='50'><br>"	
+			. "<input class='btn' type='submit' title='' value='load'>";		
+		return $ret;
+	}
+	
 	// build the 'template' button	
 	function buildConfigLink($bTextLink = false){	
 		
@@ -470,6 +482,7 @@ class Calendar extends CalendarArticles
 		$tag_todayButton = "";			// today button [[TodayButton]]
 		$tag_configButton = ""; 		// config page button
 		$tag_timeTrackValues = "";     	// summary of time tracked events
+		$tag_loadiCalButton = "";
         
 	    /***** Calendar parts (loaded from template) *****/
 
@@ -565,6 +578,7 @@ class Calendar extends CalendarArticles
 		$tag_previousYearButton = "<input class='btn' name='yearBack' type='submit' value='<<'>";
 		$tag_nextYearButton = "<input class='btn' name='yearForward' type='submit' value='>>'>";
 
+		
 	    // grab the HTML for the calendar
 	    // calendar pieces
 	    $html_calendar_start = $this->searchHTML($this->html_template, 
@@ -632,6 +646,9 @@ class Calendar extends CalendarArticles
 		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
+		
+		if($this->setting('ical'))
+			$tag_loadiCalButton = $this->loadiCalLink();
 
 		// replace potential variables in footer
 		$tempString = str_replace("[[TodayData]]", $tag_HiddenData, $tempString);
@@ -640,6 +657,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[Version]]", $this->version, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
+		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		
 	    $ret .= $tempString;
   		
@@ -752,6 +770,35 @@ class Calendar extends CalendarArticles
 		$this->arrSettings[$params] = $value;
 	}
 	
+	function load_iCal(){
+		$path = $this->ical_path;
+	
+		$iCal = new ical_calendar;
+		
+		//make sure we're good before we go further
+		if(!$iCal->setFile($path)) return;
+		
+		$arr = $iCal->getData();
+
+		for($i=0; $i<count($arr); $i++){
+		
+			if(isset($arr[$i]['DTSTART'])){
+				$date = $arr[$i]['DTSTART'];
+				
+				$year = substr($date,0,4);
+				$mon = substr($date,4,2) +0;
+				$day = substr($date,6,4) +0;
+				
+				$event = $arr[$i]['SUMMARY'] . "\n\n" . $arr[$i]['DESCRIPTION'];			
+				$date = "$mon-$day-$year";
+				$page = $this->getNextAvailableArticle($this->calendarPageName, $date);
+
+				if(strlen($year) != "")
+					$this->createNewPage($page, $event, "iCal Import");
+			}
+		}
+	}
+	
 	// Set/Get accessors	
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
@@ -845,6 +892,13 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->setYear($temp[1]);
 		$calendar->setTitle($temp[2]);
 		$calendar->setName($temp[3]);
+		//$calendar->ical_path = ($temp[4]);
+	}
+	
+	if(isset($_COOKIE['calendar_ical'])){
+		$calendar->ical_path = $_COOKIE['calendar_ical'];
+		$calendar->load_iCal();
+		setcookie('calendar_ical', "", time() -3600); //suppose to delete cookie...
 	}
 
 	return $calendar->renderCalendar();

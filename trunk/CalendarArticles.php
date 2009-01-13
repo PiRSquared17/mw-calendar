@@ -230,32 +230,46 @@ class CalendarArticles
 		
     	$articleName = "";    	// the name of the article to check for
     	$articleCount = 1;    	// the article count
+
+		
+		$date = "$month-$day-$year";
+		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
+		
+		$newURL = "<a title='add a new event' href='" . $this->wikiRoot . $articleName . "&action=edit'><u>Add Event</u></a>";
+		
+/*		if($articleCount > $this->setting('maxdailyevents',false))
+			$newURL = "<a title='add a new event' href=\"javascript:alert('Max daily events reached. Please use \'Multiple Events\' fomatting to add more.')\"><u>Add Event</u></a>";
+		else
+			$newURL = "<a title='add a new event' href='" . $this->wikiRoot . urlencode($articleName) . "&action=edit'><u>Add Event</u></a>";
+*/
+		return $newURL;
+	}
+
+	public function getNextAvailableArticle($page, $date){
 		$stop = false;
-	
-		$tempArticle = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event ";
-		$articleName = $tempArticle . $articleCount;
-		$article = new Article(Title::newFromText($articleName));		
+		$page = "$page/$date -Event "; 
+		$articleCount = 1;
+		
+		// always use -Event 1 om this mode
+		if($this->setting('usemultievent'))
+			return $page . $articleCount;
+			
+		$article = new Article(Title::newFromText($page . $articleCount));
 		
 		// dont care about the articles here, just need to get next available article
 		while ($article->exists() && !$stop) {
 			$displayText  = $article->fetchContent(0,false,false);
 			if(strlen($displayText) > 0){
-				$articleCount += 1;				
-				$articleName = $tempArticle . $articleCount;
-				$article = new Article(Title::newFromText($articleName));
+				$articleCount++;
+				$article = new Article(Title::newFromText($page . $articleCount));
+				
+				if($articleCount == $this->setting('maxdailyevents',false))
+					$stop = true;
 			}
 			else $stop = true;
 		}
 
-		// reuse events (need to used the ==event1== ==event2== logic)
-		if($this->setting('usemultievent') && $articleCount > 1) $articleCount -= 1;
-		
-		if($articleCount > $this->setting('maxdailyevents',false))
-			$newURL = "<a title='add a new event' href=\"javascript:alert('Max daily events reached. Please use \'Multiple Events\' fomatting to add more.')\"><u>Add Event</u></a>";
-		else
-			$newURL = "<a title='add a new event' href='" . $this->wikiRoot . urlencode($tempArticle . $articleCount) . "&action=edit'><u>Add Event</u></a>";
-
-		return $newURL;
+		return  $page . $articleCount;
 	}
 	
 	function readStylepage(){
@@ -358,15 +372,13 @@ class CalendarArticles
 		return $ret;
 	}
 	
-	function createNewPage($title, $text){
-	$article = new Article(Title::newFromText($title));
-	$bExists = $article->exists();
+	function createNewPage($title, $text, $summary){
+		$article = new Article(Title::newFromText($title));
+		$bExists = $article->exists();
 
-	if($bExists){
-		$body  = $article->fetchContent(0,false,false);
-		$article->doEdit($text, 'inital config', EDIT_UPDATE);
-	}
-	else
-		$article->doEdit($text, 'inital config', EDIT_NEW);
+		if($bExists)
+			$article->doEdit($text, $summary, EDIT_UPDATE);
+		else
+			$article->doEdit($text, $summary, EDIT_NEW);
 	}
 }
