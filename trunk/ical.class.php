@@ -42,16 +42,16 @@ class ical_calendar{
 				$event = split(":",$line);
 				
 				if(substr($line,0,7) == 'DTSTART'){
-					$arrSection['DTSTART'] = substr($event[1], 0, 8);
+					$arrSection['DTSTART'] = trim(substr($event[1], 0, 8));
 				}
 				if(substr($line,0,5) == 'DTEND'){
-					$arrSection['DTEND'] = substr($event[1], 0, 8);
+					$arrSection['DTEND'] = trim(substr($event[1], 0, 8));
 				}
 				if(substr($line,0,7) == 'SUMMARY'){
-					$arrSection['SUMMARY'] = $event[1];
+					$arrSection['SUMMARY'] = trim($event[1]);
 				}
 				if(substr($line,0,11) == 'DESCRIPTION'){
-					$arrSection['DESCRIPTION'] = $event[1];
+					$arrSection['DESCRIPTION'] = trim($event[1]);
 				}
 			}	
 			$arrEvents[] = $arrSection;

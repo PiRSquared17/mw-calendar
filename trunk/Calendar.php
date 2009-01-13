@@ -47,8 +47,10 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 	
-	if(isset($_POST["ical"]))
+	if(isset($_POST["ical"])){
 		setcookie('calendar_ical', $_POST["ical"]);
+		//$referrerURL .= "&action=purge";
+	}
 
 	// set the cookie
 	$cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
@@ -122,14 +124,7 @@ class Calendar extends CalendarArticles
 	
 		$this->debug("Calendar Constructor Ended.");
     }
-	
-	function getAboutInfo(){
-		
-		$about = "<a href = 'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about...</a>";
-		
-		return $about;
-		
-	}
+
 // ******* BEGIN DEBUGGING CODE ******************
 	function debug($e){
 		//if($this->setting('debug')){
@@ -217,7 +212,6 @@ class Calendar extends CalendarArticles
 		$css = $this->setting('css');		
 		$html_data = file_get_contents($extensionPath . "/calendar_template.html");
 		$data_end = "<!-- Calendar End -->";	
-
 		
 		//check for valid css file
 		if(file_exists($extensionPath . "/css/$css"))
@@ -332,7 +326,7 @@ class Calendar extends CalendarArticles
 	function loadiCalLink(){
 		
 		$ret = "Please specify an iCal format file (vcalendar).<br>"
-			. "<input except='image/jpg' name='ical' class='btn' type='file' title='' value='' size='50'><br>"	
+			. "<input except='text/html' name='ical' class='btn' type='file' title='Browse to file location...' ' size='50'><br>"	
 			. "<input class='btn' type='submit' title='' value='load'>";		
 		return $ret;
 	}
@@ -483,6 +477,8 @@ class Calendar extends CalendarArticles
 		$tag_configButton = ""; 		// config page button
 		$tag_timeTrackValues = "";     	// summary of time tracked events
 		$tag_loadiCalButton = "";
+		$tag_refresh_purge = "";
+		$tag_about = "";
         
 	    /***** Calendar parts (loaded from template) *****/
 
@@ -512,9 +508,11 @@ class Calendar extends CalendarArticles
 	    // referrer (the page with the calendar currently displayed)
 	    $referrerURL = $_SERVER['PHP_SELF'];
 	    if ($_SERVER['QUERY_STRING'] != '') {
-    		$referrerURL .= "?" . $_SERVER['QUERY_STRING'];
+			$arrQuery = split('&', $_SERVER['QUERY_STRING']); //stripe trailing options
+    		$referrerURL .= "?" . $arrQuery[0];
 	    }
 		$this->referrerURL = $referrerURL;
+		
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
 	    $tag_calendarName = str_replace('_', ' ', $this->name);
@@ -522,6 +520,10 @@ class Calendar extends CalendarArticles
     		$tag_calendarName = "Public";
 	    }
     	
+		$tag_refresh_purge = "<a href='$referrerURL&action=purge'>refresh</a>";
+		$tag_about = "<a href = 'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>";
+
+		
 	    // set the month's mont and year tags
 	    $tag_calendarMonth = $this->monthNames[$this->month - 1];
 	    $tag_calendarYear = $this->year;
@@ -610,7 +612,7 @@ class Calendar extends CalendarArticles
 	    $ret .= $html_day_heading;
 
 	    /***** Search and replace variable tags at this point *****/
-		$ret = str_replace("[[About]]", $this->getAboutInfo(), $ret);
+		$ret = str_replace("[[About]]", $tag_about, $ret);
 		$ret = str_replace("[[TodayButton]]", $tag_todayButton, $ret);
 	    $ret = str_replace("[[MonthSelect]]", $tag_monthSelect, $ret);
 	    $ret = str_replace("[[PreviousMonthButton]]", $tag_previousMonthButton, $ret);
@@ -620,8 +622,9 @@ class Calendar extends CalendarArticles
 	    $ret = str_replace("[[NextYearButton]]", $tag_nextYearButton, $ret);
 	    $ret = str_replace("[[CalendarName]]", $tag_calendarName, $ret);
 	    $ret = str_replace("[[CalendarMonth]]", $tag_calendarMonth, $ret); 
-	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);	
-    	
+	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);
+    	$ret = str_replace("[[refresh_purge]]", $tag_refresh_purge , $ret);
+		
 	    /***** Begin building the calendar days *****/
 	    // determine the starting day offset for the month
 	    $dayOffset = -$first + 1;
@@ -789,14 +792,26 @@ class Calendar extends CalendarArticles
 				$mon = substr($date,4,2) +0;
 				$day = substr($date,6,4) +0;
 				
-				$event = $arr[$i]['SUMMARY'] . "\n\n" . $arr[$i]['DESCRIPTION'];			
+				if(strlen(trim($year)) == "") return; // bad data; usually $arr[0]
+				
+				$event = $arr[$i]['SUMMARY'];
+				$description = $arr[$i]['DESCRIPTION'];			
 				$date = "$mon-$day-$year";
-				$page = $this->getNextAvailableArticle($this->calendarPageName, $date);
+				
+				$ical_mode = $this->setting('ical',false);
+					if($ical_mode == 'usemultievent') $bMulti = true;
+				
+				$page = $this->getNextAvailableArticle($this->calendarPageName, $date, $bMulti);
 
-				if(strlen($year) != "")
-					$this->createNewPage($page, $event, "iCal Import");
+				
+				if($bMulti)
+					$this->createNewMultiPage($page, $event, $description, "iCal Import");
+				else
+					$this->createNewPage($page, $event, $description, "iCal Import");
 			}
 		}
+		
+		$this->debug('load_iCal Ended');
 	}
 	
 	// Set/Get accessors	
@@ -892,14 +907,15 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->setYear($temp[1]);
 		$calendar->setTitle($temp[2]);
 		$calendar->setName($temp[3]);
-		//$calendar->ical_path = ($temp[4]);
 	}
 	
 	if(isset($_COOKIE['calendar_ical'])){
 		$calendar->ical_path = $_COOKIE['calendar_ical'];
 		$calendar->load_iCal();
-		setcookie('calendar_ical', "", time() -3600); //suppose to delete cookie...
+		$calendar->debug('cookies loaded');
+		setcookie('calendar_ical', "", time() -3600); //suppose to delete cookie...		
 	}
+	
 
 	return $calendar->renderCalendar();
 }

@@ -81,7 +81,7 @@ class CalendarArticles
 				}
 			}
 		}
-		//$this->debug($page);
+
 		while (list($event,$body) = each($head)){
 			$this->buildEvent($month, $day, $year, $event, $page, limitText($body, $charlimit));
 		}
@@ -236,24 +236,32 @@ class CalendarArticles
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
 		$newURL = "<a title='add a new event' href='" . $this->wikiRoot . $articleName . "&action=edit'><u>Add Event</u></a>";
-		
-/*		if($articleCount > $this->setting('maxdailyevents',false))
-			$newURL = "<a title='add a new event' href=\"javascript:alert('Max daily events reached. Please use \'Multiple Events\' fomatting to add more.')\"><u>Add Event</u></a>";
-		else
-			$newURL = "<a title='add a new event' href='" . $this->wikiRoot . urlencode($articleName) . "&action=edit'><u>Add Event</u></a>";
-*/
+
 		return $newURL;
 	}
 
-	public function getNextAvailableArticle($page, $date){
+	public function getNextAvailableArticle($page, $date, $event_zero=false){
 		$stop = false;
 		$page = "$page/$date -Event "; 
 		$articleCount = 1;
 		
-		// always use -Event 1 om this mode
-		if($this->setting('usemultievent'))
-			return $page . $articleCount;
-			
+		// for ical option and setting all icals to Event -0 (== event ==) style
+		if($event_zero)
+			return $page . "0"; 
+		
+		$max_articles = $this->setting('maxdailyevents',false);
+		
+		// bump up the max for iCal imports...but not to much in case of a runaway
+		// we also want to ignore the inforced 'usemultievent'..however, the 
+		// calendar will still only display the 'maxdailyevents' value
+		if($this->setting('ical')){
+			$max_articles += 5; 
+		}
+		else{
+			if($this->setting('usemultievent') && !$this->setting('ical'))
+				return $page . $articleCount;
+		}
+		
 		$article = new Article(Title::newFromText($page . $articleCount));
 		
 		// dont care about the articles here, just need to get next available article
@@ -263,7 +271,7 @@ class CalendarArticles
 				$articleCount++;
 				$article = new Article(Title::newFromText($page . $articleCount));
 				
-				if($articleCount == $this->setting('maxdailyevents',false))
+				if($articleCount == $max_articles)
 					$stop = true;
 			}
 			else $stop = true;
@@ -372,13 +380,30 @@ class CalendarArticles
 		return $ret;
 	}
 	
-	function createNewPage($title, $text, $summary){
-		$article = new Article(Title::newFromText($title));
+	function createNewPage($page, $event, $description, $summary){
+		$article = new Article(Title::newFromText($page));
 		$bExists = $article->exists();
 
+		$event = $event . "\n\n" . $description;
+		
 		if($bExists)
-			$article->doEdit($text, $summary, EDIT_UPDATE);
+			$article->doEdit($event, $summary, EDIT_UPDATE);
 		else
-			$article->doEdit($text, $summary, EDIT_NEW);
+			$article->doEdit($event, EDIT_NEW);
+	}
+	
+	function createNewMultiPage($page, $event, $description, $summary){
+		$article = new Article(Title::newFromText($page));
+		$bExists = $article->exists();
+
+		$event = "==$event==\n\n" . $description;
+		
+		if($bExists){
+			$body  = trim($article->fetchContent(0,false,false));
+			if(strlen($body) > 0) $body = "$body\n\n";
+			$article->doEdit($body . $event, $summary, EDIT_UPDATE);
+		}
+		else
+			$article->doEdit($event, $summary, EDIT_NEW);
 	}
 }
