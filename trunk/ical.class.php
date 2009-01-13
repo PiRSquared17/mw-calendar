@@ -4,11 +4,10 @@ class ical_calendar{
 
 	var $data = "";
 
-	function ical_calendar(){	
-	}
-	
+	// get an array of vcal elements
 	public function getData(){return $this->parse();}
 	
+	//set and validate the vcal file
 	public function setFile($file){	
 		$bOK = file_exists($file);
 		if($bOK){
@@ -19,6 +18,9 @@ class ical_calendar{
 		return $bOK;
 	}
 	
+//******************************* PRIVATE FUNCTIONS ********************************************************************
+
+	//verify if this is truely a vcal file
 	private function validate(){
 	
 		$lines = split("\n", $this->data);
@@ -28,6 +30,7 @@ class ical_calendar{
 		return false;
 	}
 	
+	//takes a successfully loaded file and returns a parsed file
 	private function parse(){
 		$arrSection = array();
 		$arrEvents = array();
@@ -59,16 +62,6 @@ class ical_calendar{
 		
 		return $arrEvents;
 	}
-	
-    private function getSections($data, $string) {
-	
-    	$temp = split($string, $data);
-    	if (count($temp) > 1) {
-			$temp = split($string2, $temp[1]);
-			return $temp[0];
-    	}
-    	return "";
-    } 
 }
 
 ?>

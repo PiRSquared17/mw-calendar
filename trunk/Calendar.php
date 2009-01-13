@@ -11,8 +11,9 @@
  */
 
 // this is the "refresh" code that allows the calendar to switch time periods
-if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) || isset($_POST["monthBack"])
-	|| isset($_POST["monthForward"]) || isset($_POST["monthSelect"]) || isset($_POST["yearSelect"])){
+if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) 
+	|| isset($_POST["monthBack"]) || isset($_POST["monthForward"]) || isset($_POST["monthSelect"]) 
+	|| isset($_POST["yearSelect"]) || isset($_POST["ical"]) ){
 
 	$today = getdate();    	// today
 	$temp = split("`", $_POST["calendar_info"]);	
@@ -47,10 +48,9 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 	
-	if(isset($_POST["ical"])){
+	if(isset($_POST["ical"]))
 		setcookie('calendar_ical', $_POST["ical"]);
-		//$referrerURL .= "&action=purge";
-	}
+
 
 	// set the cookie
 	$cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
@@ -85,10 +85,13 @@ function wfCalendarExtension() {
 require_once ("common.php");
 require_once ("CalendarArticles.php");
 require_once ("ical.class.php");
+require_once ("debug.class.php");
 
 class Calendar extends CalendarArticles
 {  
 	var $version = "3.5.1 (beta)";
+	
+	var $debug; //debugger class
 	
 	var $arrSettings = array();
 	
@@ -107,44 +110,22 @@ class Calendar extends CalendarArticles
     var $monthNames = array("January", "February", "March", "April", "May", "June",
                             "July", "August", "September", "October", "November", "December");
 
-						
+							
     function Calendar($wikiRoot, $debug) {
-
 		$this->wikiRoot = $wikiRoot;
 		
-		// debugging
-		$this->debugEnabled = $debug;
-		$this->startTime = $this->markTime = microtime(1);
-		
+		$this->debug = new debugger('html');
+		$this->debug->enabled($debug);
+
 		// set the calendar's initial date to now
 		$today = getdate();    	
 		$this->month = $today['mon'];
 		$this->year = $today['year'];
 		$this->day = $today['mday'];
 	
-		$this->debug("Calendar Constructor Ended.");
+		$this->debug->set("Calendar Constructor Ended.");
     }
 
-// ******* BEGIN DEBUGGING CODE ******************
-	function debug($e){
-		//if($this->setting('debug')){
-			// recorded time in seconds
-			$steptime = round(microtime(1) - $this->markTime,2);
-			$totaltime = round(microtime(1) - $this->startTime,2);
-			$this->debugData .= "<tr><td>$e</td><td align=center>$steptime</td><td align=center>$totaltime</td></tr>";
-			$this->markTime = microtime(1);
-		//}
-	}
-	
-	// writes all the debug data at the bottom of calendar page
-	function getDebugging() {
-		if($this->setting('debug'))
-			return "<table border=1 cellpadding=5 cellspacing=0 >
-			<tr><th>DebugName</th><th>StepTime<br>(sec)</th><th>TotalTime<br>(sec)</th></tr>
-			$this->debugData</table>";
-	}	
-// ******* END DEBUGGING CODE *****************
-	
     function html_week_array($format){
 		
 		$ret = array();
@@ -165,10 +146,9 @@ class Calendar extends CalendarArticles
 
 		//grab last months events for overlapped repeating events
 		if($this->setting('enablerepeatevents')) 
-			$this->initalizeMonth(-($this->day + 31), 0); 
+			$this->initalizeMonth($this->day +15, 0); // this checks 1/2 way into the previous month
 		else
-			$this->initalizeMonth(-($this->day), 0); 
-
+			$this->initalizeMonth($this->day, 0); // just go back to the 1st of the current month
 
 		// load the calendar mode as the last step	
 		if($this->setting('useeventlist'))
@@ -182,9 +162,14 @@ class Calendar extends CalendarArticles
 		return $ret;	
 	 }
 	
-	//build the months articles into memory
+	// build the months articles into memory
+	// $back: days back from ($this->day)
+	// $forward: days ahead from ($this->day)
 	function initalizeMonth($back, $forward){
-		$this->debug('initalizeMonth called');
+		$this->debug->set('initalizeMonth called');
+		
+		// just make sure we have a solid negitive here
+		$back = -(abs($back));
 		
 		$cnt = abs($back) + $forward;
 		
@@ -373,12 +358,12 @@ class Calendar extends CalendarArticles
 			if(strlen($this->eventList) == 0)
 				$this->eventList = "<h4>No Events</h4>";
 				
-			$this->debug("renderEventList Ended");
+			$this->debug->set("renderEventList Ended");
 			
 			$ret = "<html><i> " . $this->buildConfigLink(true) 
 				. "</i>" .  $this->eventList . "</html>" 
 				. $this->buildTrackTimeSummary()				
-				. $this->getDebugging();
+				. $this->debug->get();
 
 			return $ret;	
 		}
@@ -442,12 +427,12 @@ class Calendar extends CalendarArticles
 			. $this->year
 			. " <small><i>" . $this->buildConfigLink(true) . "</i></small></h4>" ;
 			
-		$this->debug("renderDate Ended");
+		$this->debug->set("renderDate Ended");
 		
 		$ret = "<html>" . $this->cleanDayHTML($html. $this->getHTMLForDay($this->month, $this->day, $this->year)) 
 			. "</table></html>" 
 			. $this->buildTrackTimeSummary()
-			. $this->getDebugging();	
+			. $this->debug->get();	
 		
 		return $ret;
 		
@@ -495,6 +480,7 @@ class Calendar extends CalendarArticles
 	    $ret = "";          // the string to return
 		
 		//build events into memory for the remainder of the month
+		//the previous days have already been loaded
 		$this->initalizeMonth(0, (32 - $this->day));
 		
 	    // the date for the first day of the month
@@ -508,14 +494,12 @@ class Calendar extends CalendarArticles
 	    // referrer (the page with the calendar currently displayed)
 	    $referrerURL = $_SERVER['PHP_SELF'];
 	    if ($_SERVER['QUERY_STRING'] != '') {
-    		$referrerURL .= "?" . $_SERVER['QUERY_STRING'];
+			$str = split("&",$_SERVER['QUERY_STRING']); //strip any &parameters
+    		$referrerURL .= "?" . $str[0];
 	    }
+		
 		$this->referrerURL = $referrerURL;		
 		
-	    // referrer (the page with the calendar currently displayed)
-//		$referrerURL = $this->wikiRoot .  $this->title;
-//		$this->referrerURL = $referrerURL;
-
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
 	    $tag_calendarName = str_replace('_', ' ', $this->name);
@@ -523,9 +507,9 @@ class Calendar extends CalendarArticles
     		$tag_calendarName = "Public";
 	    }
     	
-		//$tag_refresh_purge = "<a href='$referrerURL&action=purge'>refresh</a>";
-		$tag_about = "<a href = 'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about...</a>";
-
+		$refresh = $this->wikiRoot .  $this->title . "&action=purge";
+		$tag_refresh_purge = "<a title='Click to reload/refresh this wiki page' href='$refresh'>refresh</a>";
+		$tag_about = "<a title='Click here is learn more and get help' href='http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>...";
 		
 	    // set the month's mont and year tags
 	    $tag_calendarMonth = $this->monthNames[$this->month - 1];
@@ -615,7 +599,6 @@ class Calendar extends CalendarArticles
 	    $ret .= $html_day_heading;
 
 	    /***** Search and replace variable tags at this point *****/
-		$ret = str_replace("[[About]]", $tag_about, $ret);
 		$ret = str_replace("[[TodayButton]]", $tag_todayButton, $ret);
 	    $ret = str_replace("[[MonthSelect]]", $tag_monthSelect, $ret);
 	    $ret = str_replace("[[PreviousMonthButton]]", $tag_previousMonthButton, $ret);
@@ -664,16 +647,17 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
+		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
 	    $ret .= $tempString;
   		
 	    /***** Do calendar end code *****/
 	    $ret .= $html_calendar_end;
  	
-		$this->debug("renderMonth Ended");	
+		$this->debug->set("renderMonth Ended");	
 		$ret = "<html>" . $this->stripLeadingSpace($ret) . "</html>"
 			. $this->buildTrackTimeSummary()
-			. $this->getDebugging();	
+			. $this->debug->get();	
 
 	    return $ret;	
 	}
@@ -778,7 +762,7 @@ class Calendar extends CalendarArticles
 	
 	function load_iCal(){
 		$path = $this->ical_path;
-	$this->debug('load_iCal Started');
+	$this->debug->set('load_iCal Started');
 		$iCal = new ical_calendar;
 		
 		//make sure we're good before we go further
@@ -814,7 +798,7 @@ class Calendar extends CalendarArticles
 			}
 		}
 		
-		$this->debug('load_iCal Ended');
+		$this->debug->set('load_iCal Ended');
 	}
 	
 	// Set/Get accessors	
@@ -833,8 +817,6 @@ function displayCalendar($paramstring = "", $params = array()) {
 	global $wgTitle;
 	global $wgOut, $wgRequest;
 
-	$debug = "";
-	
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
 	
@@ -916,10 +898,9 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->ical_path = $_COOKIE['calendar_ical'];
 		$calendar->load_iCal();
 		$calendar->debug('cookies loaded');
-		setcookie('calendar_ical', "", time() -3600); //suppose to delete cookie...		
+		setcookie('calendar_ical', "", time() -3600); //supposed to delete cookie...		
 	}
 	
-
 	return $calendar->renderCalendar();
 }
 

@@ -113,11 +113,11 @@ class CalendarArticles
 		for($i=0; $i<$cnt; $i++){
 			$cArticle = $this->arrArticles[$i];
 			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
-			//$this->debug($cArticle->eventname);
+			//$this->debug->set($cArticle->eventname);
 				$ret .= "<li>" . $this->articleLink($cArticle->page, $cArticle->eventname). "</li>\n$cArticle->body";
 			}
 		}
-		
+
 		return $ret;
 	}
 	
