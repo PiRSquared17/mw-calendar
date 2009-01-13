@@ -3,3 +3,4 @@ notes will be added to the next released 'Readme.txt'. The notes in this file wi
 
 ********** Trunk: v3.5.1 **********
 # re-ordered the template/add event list... it will now be templates 1st, then normal events
+# added initial logic for basic ical imports (VCALENDAR)...event, summary and date; use the 'ical' parameter to activate the tool... defaults to adding a new event, but 'ical=usemultievent' will add concat all events to '-event 0'
