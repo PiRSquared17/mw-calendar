@@ -523,8 +523,8 @@ class Calendar extends CalendarArticles
     		$tag_calendarName = "Public";
 	    }
     	
-		$tag_refresh_purge = "<a href='$referrerURL&action=purge'>refresh</a>";
-		$tag_about = "<a href = 'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>";
+		//$tag_refresh_purge = "<a href='$referrerURL&action=purge'>refresh</a>";
+		$tag_about = "<a href = 'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about...</a>";
 
 		
 	    // set the month's mont and year tags
