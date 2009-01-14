@@ -47,7 +47,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 
-	$session_name = "$title_$name";
+	$session_name = $title . "_" . $name;
 	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`";
 	session_start();
 	$_SESSION[$session_name] = $session_value;
@@ -894,7 +894,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$calendar->setTitle($title);
 	$calendar->setName($name);
 
-	$session = "$title_$name";
+	$session = $title . "_" . $name;
 	if(isset($_SESSION[$session])){
 		$calendar->debug('session loaded');
 		$arrSession = split("`", $_SESSION[$session]);
