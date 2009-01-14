@@ -1,3 +1,4 @@
+
 <!-- 
   Calendar Template
 	
@@ -277,6 +278,9 @@
 	.calendarToday {
 	  background-color: #FFFFDD;
 	}
+	.alerts {
+	  text-align: left;
+	}	
 </style>
 <form method="post">
 <table class="calendar">
@@ -285,7 +289,7 @@
     <td class="calendarMonthSelect" colspan="2"> [[PreviousMonthButton]]&nbsp;[[MonthSelect]]&nbsp;[[NextMonthButton]] </td>
     <td class="calendarTitle" colspan="3"> [[CalendarName]]<br>
       <font size="-1">[[CalendarMonth]], [[CalendarYear]]</font> </td>
-    <td class="calendarYearSelect" colspan="2">[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]] </td>
+    <td class="calendarYearSelect" colspan="2">[[About]]&nbsp;[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]] </td>
   </tr>
   <!-- Header End -->
   <!-- Day Heading Start -->
@@ -306,9 +310,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -318,9 +323,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -330,9 +336,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -342,9 +349,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -354,9 +362,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -366,9 +375,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -378,9 +388,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -393,9 +404,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd calendarTransparent">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList calendarTransparent" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -405,9 +417,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -417,9 +430,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -429,9 +443,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -441,9 +456,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -453,9 +469,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -465,9 +482,10 @@
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
+		  <td class="alerts">[[Alert]]</td>
         </tr>
         <tr>
-          <td class="calendarEventList" colspan="2">[[EventList]]</td>
+          <td class="calendarEventList" colspan="3">[[EventList]]</td>
         </tr>
       </table>
 	</td>
@@ -498,7 +516,10 @@
   </tr>
   <!-- Footer Start -->
 </table>
-<div style="text-align:right">[[TemplateButton]]</div>
+<table width=100% border=0><tr>
+<td style="font-size:85%;">[[Version]]</td>
+<td style="text-align:right">[[EventStyleBtn]] [[TemplateButton]]</td>
+</tr></table>
 [[TodayData]]
 </form>
 <!-- Footer End -->
