@@ -820,8 +820,8 @@ class Calendar extends CalendarArticles
 	// Set/Get accessors	
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
-	function setTitle($title) { $this->title = str_replace(' ', '_', $title); }
-	function setName($name) { $this->name = str_replace(' ', '_', $name); }
+	function setTitle($title) { $this->title = $title;}
+	function setName($name) { $this->name = $name;}
 	function createAlert($day, $month, $text){$this->arrAlerts[] = $day . "-" . $month . "-" . $text . "\\n";}
 }
 
