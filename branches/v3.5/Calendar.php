@@ -47,13 +47,10 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 
-	// set the cookie
-	$cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
-	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name;
-	setcookie($cookie_name, $cookie_value);
-	
-	// reload the calling page to refresh the cookies that were just set
-	header("Location: " . $referrerURL);
+	$session_name = "$title_$name";
+	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`";
+	session_start();
+	$_SESSION[$session_name] = $session_value;
 }
 
 # Confirm MW environment
@@ -81,7 +78,7 @@ include ("CalendarArticles.php");
 
 class Calendar extends CalendarArticles
 {  
-	var $version = "v3.5.0.1 (1/12/2009)";
+	var $version = "v3.5.0.2 (1/14/2009)";
 	
 	var $arrSettings = array();
 	
@@ -786,11 +783,17 @@ class Calendar extends CalendarArticles
 				
 			}
 			
-			// check for legacy events (prior to 1/1/2009 or so) ex: "CalanderEvents:Page/Title (12-1-2008) - Event 1"
+			// check for legacy events (prior to 1/1/2009 or so...) format - "name (12-15-2008) - Event 1"
 			// enabling causes additional load times
 			if($this->setting('enablelegacy')){
-				$articleName = $this->calendarName . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
+			
+				// with namespace...
+				$articleName = $this->legacyName1 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
 				$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+				
+				// without namespace...
+				$articleName = $this->legacyName2 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
+				$this->addArticle($month, $day, $year, $articleName, $summaryLength);			
 			}
 		}
     }
@@ -884,21 +887,22 @@ function displayCalendar($paramstring = "", $params = array()) {
 		if($params["fullsubscribe"] != "fullsubscribe") $calendar->calendarPageName = htmlspecialchars($params["fullsubscribe"]);
 
 	//calendar name itself (this is only for (backwards compatibility)
-	$calendar->calendarName = htmlspecialchars("CalendarEvents:" .$name);
-	
+	$calendar->legacyName1 = "CalendarEvents:" .$name;
+	$calendar->legacyName2 = $name;
+
 	// finished special conditions; set the $title and $name in the class
 	$calendar->setTitle($title);
 	$calendar->setName($name);
 
-    // read the cookie to pull last calendar data
-    $cookie_name = 'calendar_' . str_replace(' ', '_', $title) . str_replace(' ', '_', $name);
-
-    if (isset($_COOKIE[$cookie_name]) && !isset($params["useeventlist"]) && !isset($params["date"])){
-		$temp = split("`", $_COOKIE[$cookie_name]);
-		$calendar->setMonth($temp[0]);
-		$calendar->setYear($temp[1]);
-		$calendar->setTitle($temp[2]);
-		$calendar->setName($temp[3]);
+	$session = "$title_$name";
+	if(isset($_SESSION[$session])){
+		$calendar->debug('session loaded');
+		$arrSession = split("`", $_SESSION[$session]);
+		
+		$calendar->setMonth($arrSession[0]);
+		$calendar->setYear($arrSession[1]);	
+		$calendar->setTitle($arrSession[2]);				
+		$calendar->setName($arrSession[3]);					
 	}
 
 	return $calendar->displayCalendar();
