@@ -18,6 +18,15 @@ class ical_calendar{
 		return $bOK;
 	}
 	
+		//set and validate the vcal file
+	public function setData($data){	
+		$bOK = false;
+		$this->data = $data;
+		$bOK = $this->validate();
+		
+		return $bOK;
+	}
+	
 //******************************* PRIVATE FUNCTIONS ********************************************************************
 
 	//verify if this is truely a vcal file

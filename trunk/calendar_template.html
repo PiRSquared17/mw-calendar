@@ -1,22 +1,3 @@
-<script type="text/javascript">
-function Verify(objForm) {
-	var arrExtensions=new Array("bmp", "gif", "jpg", "jpeg", "png");
-	var objInput = objForm.elements["myfile"];
-	var strFilePath = objInput.value;
-	var arrTmp = strFilePath.split(".");
-	var strExtension = arrTmp[arrTmp.length-1].toLowerCase();
-	var blnExists = false;
-	for (var i=0; i<arrExtensions.length; i++) {
-		if (strExtension == arrExtensions[i]) {
-			blnExists = true;
-			break;
-		}
-	}
-	if (!blnExists)
-		alert("not valid image!");
-	return blnExists;
-}
-</script>
 <!-- 
   Calendar Template
 	
@@ -38,14 +19,14 @@ function Verify(objForm) {
 		Email: kenyu73@gmail.com
 		
 -->
-<form method="post">
+<form enctype="multipart/form-data" method="post"> <!-- enctype enables uploads -->
 <table class="calendar">
   <!-- Header Start -->
   <tr>
     <td class="calendarMonthSelect" colspan="2"> [[PreviousMonthButton]]&nbsp;[[MonthSelect]]&nbsp;[[NextMonthButton]] </td>
     <td class="calendarTitle" colspan="3"> [[CalendarName]]<br/>
       <font size="-1">[[CalendarMonth]], [[CalendarYear]]</font> </td>
-    <td class="calendarYearSelect" colspan="2">[[refresh_purge]]&nbsp;[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]] </td>
+    <td class="calendarYearSelect" colspan="2">[[refresh_purge]]&nbsp;&nbsp;[[About]]&nbsp;&nbsp;[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]] </td>
   </tr>
   <!-- Header End -->
   <!-- Day Heading Start -->
@@ -273,11 +254,10 @@ function Verify(objForm) {
   <!-- Footer Start -->
 </table>
 <table width=100% border=0><tr>
-<td style="font-size:85%;">[[Version]]&nbsp;[[About]][[TimeTrackValues]]</td>
+<td style="font-size:85%;">[[Version]]&nbsp; &nbsp;<i>[[cookie_set]]</i> [[TimeTrackValues]] [[TodayData]]</td>
 <td style="text-align:right; vertical-align:top;">[[EventStyleBtn]] [[TemplateButton]] [[ConfigurationButton]]</td>
-<tr><td width=60%></td><td colspan="2" style="text-align:left; vertical-align:center;">[[Load_iCal]]</td></tr>
 </tr>
 </table>
-[[TodayData]]
+[[Load_iCal]]
 </form>
 <!-- Footer End -->
