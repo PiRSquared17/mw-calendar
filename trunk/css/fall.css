@@ -10,6 +10,43 @@
 		color:;
 	}
 	
+	ul.bullets{
+		padding-left: 5px;
+		xlist-style-image: url('check.jpg');
+	}	
+	
+	/* style of the cell with the "Add Event" link */
+	.calendarEventAdd {
+	}
+	
+	/* makes the content have a transparent background (for selected days) */
+	.calendarTransparent {
+	  background-color: transparent;
+	  border-spacing: 0px;
+	  width:100%;
+	}
+	
+	/* Style of event list*/
+	.calendarEventList {
+	  width:100%;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.repeatEvent{
+		background-color: #E8E8E8;
+		border:1px solid #CCCCCC;
+		padding:0px;
+		text-align: center;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.singleEvent{
+		border:0px solid #CCCCCC;
+		padding:0px;
+		text-align: left;
+		border-spacing: 0px;
+	}
+	
 	.calendar {
 	  padding:0px;
 	  border-spacing:0px;
@@ -76,22 +113,6 @@
 	  width:20%;
 	  text-align: center;
 	  font-size: 12px;
-	}
-	
-	/* style of the cell with the "Add Event" link */
-	.calendarEventAdd {
-	}
-	
-	/* makes the content have a transparent background (for selected days) */
-	.calendarTransparent {
-	  background-color: transparent;
-	  border-spacing: 0px;
-	  width:100%;
-	}
-	
-	/* Style of event list*/
-	.calendarEventList li{
-	  margin-left: 3px;
 	}
 	
 	/* the style to add to the calendarDay style if the displayed calendar day is today's date */

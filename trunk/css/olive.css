@@ -1,7 +1,7 @@
 <style type="text/css">
 	/* the calendar table style */
 	option.lst{
-		background-color:#eee8aa; 
+		background-color:; 
 		color:;
 	}
 	
@@ -9,6 +9,43 @@
 		background-color:;
 		color:;
 	}	
+	
+	ul.bullets{
+		padding-left: 5px;
+		xlist-style-image: url('check.jpg');
+	}
+	
+	/* style of the cell with the "Add Event" link */
+	.calendarEventAdd {
+	}
+	
+	/* makes the content have a transparent background (for selected days) */
+	.calendarTransparent {
+	  background-color: transparent;
+	  border-spacing: 0px;
+	  width:100%;
+	}
+	
+	/* Style of event list*/
+	.calendarEventList {
+	  width:100%;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.repeatEvent{
+		background-color: #E8E8E8;
+		border:1px solid #CCCCCC;
+		padding:0px;
+		text-align: center;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.singleEvent{
+		border:0px solid #CCCCCC;
+		padding:0px;
+		text-align: left;
+		border-spacing: 0px;
+	}
 	
 	.calendar {
 	  padding:0px;
@@ -45,6 +82,7 @@
 	  background-color:#CCCC99;
 	  border:1px solid #808080;
 	}
+	
 	.calendarWeekdayHeading {
 	  text-align:center;
 	  font-weight:bold;
@@ -61,6 +99,7 @@
 	  font-size: 11px;
 	  background-color:#bdb76b;
 	}
+	
 	.calendarWeekday{
 	  width:14%;
 	  height:80px;
@@ -78,23 +117,7 @@
 	  text-align: center;
 	  font-size: 12px;
 	}
-	
-	/* style of the cell with the "Add Event" link */
-	.calendarEventAdd {
-	}
-	
-	/* makes the content have a transparent background (for selected days) */
-	.calendarTransparent {
-	  background-color: transparent;
-	  border-spacing: 0px;
-	  width:100%;
-	}
-	
-	/* Style of event list*/
-	.calendarEventList li{
-	  margin-left: 3px;
-	}
-	
+
 	/* the style to add to the calendarDay style if the displayed calendar day is today's date */
 	.calendarToday {
 	  width:14%;
@@ -104,6 +127,7 @@
 	  font-size: 11px;
 	  background-color: #eee8aa;
 	}
+	
 	.alerts {
 	  text-align: left;
 	}	
