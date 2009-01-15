@@ -87,10 +87,11 @@ class CalendarArticles
 		}
 	}
 	
-	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate=false){	
+	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate=false, $bRepeats=false){	
 	
+		// check for 'add event' type repeat events...templates can always repeat.
 		if(!$this->setting('enablerepeatevents')){
-			$this->add($month, $day, $year, $event, $page, $body, $isTemplate);	
+			$this->add($month, $day, $year, $event, $page, $body, $isTemplate, $bRepeats);	
 			return;
 		}
 		
@@ -98,25 +99,40 @@ class CalendarArticles
 		$arrEvent = split("#",$event);
 		if(isset($arrEvent[1]) && ($arrEvent[0] != 0)){
 			for($i=0; $i<$arrEvent[0]; $i++) {
-				$this->add($month, $day, $year, $arrEvent[1], $page, $body, $isTemplate, true); //add with arrow
+				$this->add($month, $day, $year, $arrEvent[1], $page, $body, false, true); //add with arrow
 				getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($month, $day, $year, "<li>$event</li>", $page, $body, $isTemplate);	
+			$this->add($month, $day, $year, "$event", $page, $body, $isTemplate, $bRepeats);	
 	}
 
 	public function getArticleLinks($month, $day, $year){
-		$cnt = count($this->arrArticles);
+		$cntEvents = count($this->arrArticles['events']);
+		$cntTemplates = count($this->arrArticles['templates']);
+		
 		$ret = "";
 
-		for($i=0; $i<$cnt; $i++){
-			$cArticle = $this->arrArticles[$i];
+		for($i=0; $i<$cntTemplates; $i++){
+			$cArticle = $this->arrArticles['templates'][$i];
 			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
-			//$this->debug->set($cArticle->eventname);
 				$ret .= $cArticle->html;
 			}
+		}	
+		
+		// we want to format the normal 'add event' items in 1 table cell
+		// this creates less spacing and creates a better <ul>
+		if($cntEvents > 0){
+			$ret .= "<tr cellpadding=0 cellspacing=0 ><td class='calendarTransparent singleEvent'>";
+			$ret .= "<ul class='bullets'>";
+			for($i=0; $i<$cntEvents; $i++){
+				$cArticle = $this->arrArticles['events'][$i];
+				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
+					$ret .= "<li>" . $cArticle->html . "</li>";
+				}
+			}
+			$ret .= "</ul></td></tr>";
 		}
-
+		
 		return $ret;
 	}
 	
@@ -144,7 +160,7 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
-							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", true);
+							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", true, true);
 							$day++;
 						}
 					}else{
@@ -156,6 +172,7 @@ class CalendarArticles
 	}
 
 	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false, $bRepeats=false){
+		
 		$cArticle = new CalendarArticle($month, $day, $year);
 
 		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
@@ -171,12 +188,12 @@ class CalendarArticles
 		$html = $this->articleLink($page, $temp);
 		
 		if($bRepeats){
-			$cArticle->html = "<tr><td class='repeats'>$html</td></tr>";
-			array_unshift($this->arrArticles,$cArticle); //put repeats on top of the event list
+			$cArticle->html = "<tr><td class='repeatEvent'>$html<br>$cArticle->body</td></tr>";
+			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
 		}
 		else{
-			$cArticle->html = "<tr><td class='calendarTransparent'>$html</td></tr>";
-			$this->arrArticles[] = $cArticle;
+			$cArticle->html = "$html<br>$cArticle->body";
+			$this->arrArticles['events'][] = $cArticle;
 		}
 }
 	

@@ -878,7 +878,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
 	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;
 	if(!isset($params["yearoffset"])) 		$params["yearoffset"] = 2;
-	if(!isset($params["charlimit"])) 		$params["charlimit"] = 20;
+	if(!isset($params["charlimit"])) 		$params["charlimit"] = 25;
 	if(!isset($params["css"])) 				$params["css"] = "default.css";
 	
 	// no need to pass a parameter here... isset check for the params name, thats it

@@ -1,5 +1,6 @@
 <style type="text/css">
 	/* the calendar table style */
+	
 	option.lst{
 		background-color:; 
 		color:;
@@ -9,6 +10,10 @@
 		background-color:;
 		color:;
 	}	
+	ul.bullets{
+		padding-left: 5px;
+		xlist-style-image: url('check.jpg');
+	}
 	
 	.calendar {
 	  padding:0px;
@@ -44,6 +49,7 @@
 	  border:1px solid #808080;
 	  background-color:#E0E0E0;	  
 	}
+	
 	.calendarWeekdayHeading {
 	  text-align:center;
 	  font-weight:bold;
@@ -59,7 +65,9 @@
 	  border:1px solid #808080;
 	  font-size: 11px;
 	  background-color:#EEEEEE;
+	  padding:0px;
 	}
+	
 	.calendarWeekday {
 	  width:14%;
 	  height:80px;
@@ -67,6 +75,7 @@
 	  border:1px solid #808080;
 	  font-size: 11px;
 	  background-color:;
+	  padding:0px;
 	}
 
 	/* style of the cell displaying the number of the day in the month */
@@ -87,21 +96,31 @@
 	  background-color: transparent;
 	  border-spacing: 0px;
 	  width:100%;
+	  padding:0px;
 	}
 	
 	/* Style of event list*/
-	.calendarEventList{
+	.calendarEventList {
 	  background-color: transparent;
 	  width:100%;
+	  border:0px solid #CCCCCC;
+	  padding:0px;
 	 }
 	
-	/* Style of event list*/
-	.repeats{
-		xbackground-color: green;
+	/* defined in CalendarArticles.php*/
+	.repeatEvent{
+		background-color: #E8E8E8;
 		border:1px solid #CCCCCC;
 		padding:0px;
 		text-align: center;
-		xmargin-left: 3px;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.singleEvent{
+		border:0px solid #CCCCCC;
+		padding:0px;
+		text-align: left;
+		border-spacing: 0px;
 	}
 	
 	/* the style to add to the calendarDay style if the displayed calendar day is today's date */
@@ -112,6 +131,7 @@
 	  border:1px solid #808080;
 	  font-size: 11px;
 	  background-color: #FFFFDD;
+	  padding:0px;
 	}
 	
 	.alerts {
