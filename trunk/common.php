@@ -85,3 +85,12 @@ function getNextValidDate(&$month, &$day, &$year){
 	$month = $arr['mon'];
 	$year = $arr['year'];
 }
+
+function day_diff($date1, $date2){
+	
+	$start = mktime(0, 0, 0, $date1['mon'], $date1['mday'], $date1['year']);
+	$end = mktime(0, 0, 0, $date2['mon'], $date2['mday'], $date2['year']);
+	
+	return ($end - $start) / 86400; //seconds
+	
+}

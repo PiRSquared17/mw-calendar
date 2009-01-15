@@ -54,10 +54,10 @@ class ical_calendar{
 				$event = split(":",$line);
 				
 				if(substr($line,0,7) == 'DTSTART'){
-					$arrSection['DTSTART'] = trim(substr($event[1], 0, 8));
+					$arrSection['DTSTART'] = $this->convertToPHPDate(trim(substr($event[1], 0, 8)));
 				}
 				if(substr($line,0,5) == 'DTEND'){
-					$arrSection['DTEND'] = trim(substr($event[1], 0, 8));
+					$arrSection['DTEND'] = $this->convertToPHPDate(trim(substr($event[1], 0, 8)));
 				}
 				if(substr($line,0,7) == 'SUMMARY'){
 					$arrSection['SUMMARY'] = trim($event[1]);
@@ -70,6 +70,14 @@ class ical_calendar{
 		}
 		
 		return $arrEvents;
+	}
+	
+	private function convertToPHPDate($date){
+		$arr['year'] = substr($date,0,4);
+		$arr['mon'] = substr($date,4,2) +0;
+		$arr['mday'] = substr($date,6,4) +0;
+		
+		return $arr;
 	}
 }
 

@@ -13,7 +13,7 @@
 // this is the "refresh" code that allows the calendar to switch time periods
 if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) 
 	|| isset($_POST["monthBack"]) || isset($_POST["monthForward"]) || isset($_POST["monthSelect"]) 
-	|| isset($_POST["yearSelect"]) || isset($_POST["uploadedfile"]) ){
+	|| isset($_POST["yearSelect"]) || isset($_POST["ical"]) ){
 
 	$today = getdate();    	// today
 	$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
@@ -47,18 +47,18 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 	
+	$session_name = $title . "_" . $name;
+	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`";
+	session_start();
+	$_SESSION[$session_name] = $session_value;
+
 	if(isset($_POST["ical"])){
 		$path = "images/";
 		$path = $path . basename( $_FILES['uploadedfile']['name']); 
 		move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $path);
-		setcookie('calendar_ical', $path );
+		
+		$_SESSION['calendar_ical'] = $path;
 	}
-
-	$session_name = $title . "_" . $name;
-	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`";
-	
-	session_name('mwcalendar'); session_start();//set the session
-	$_SESSION[$session_name] = $session_value;
 }
 
 # Confirm MW environment
@@ -297,7 +297,7 @@ class Calendar extends CalendarArticles
 	function buildTemplateLink(){	
 		if(!$this->setting('usetemplates')) return "";
 
-		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "';\">";
+		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
 		
 		$month = strtolower($this->monthNames[$this->month-1]);
 		if($this->setting('locktemplates'))
@@ -309,10 +309,13 @@ class Calendar extends CalendarArticles
 	}
 
 	function loadiCalLink(){
+		$refresh = $this->wikiRoot .  $this->title . "&action=purge";	
 		
-		$ret = "Please specify an iCal format file (vcalendar).<br>"
+		$ret = "Please specify an ical format file (vcalendar).<br>"
 			. "<input name='uploadedfile' type='file' title='Browse to file location...' size='50'><br>"	
-			. "<input name='ical' class='btn' type='submit' title='' value='load'>";		
+			. "<input name='ical' class='btn' type='submit' title='load ical data into calendar' value='load'>&nbsp;&nbsp;"
+			. "<input class='btn' type=button value='reload page' title='Click to reload/refresh this wiki page' onClick=\"javascript:document.location='" . $refresh ."'\">";
+			
 		return $ret;
 	}
 	
@@ -464,7 +467,6 @@ class Calendar extends CalendarArticles
 		$tag_configButton = ""; 		// config page button
 		$tag_timeTrackValues = "";     	// summary of time tracked events
 		$tag_loadiCalButton = "";
-		$tag_refresh_purge = "";
 		$tag_about = "";
         
 	    /***** Calendar parts (loaded from template) *****/
@@ -509,8 +511,6 @@ class Calendar extends CalendarArticles
     		$tag_calendarName = "Public";
 	    }
     	
-		$refresh = $this->wikiRoot .  $this->title . "&action=purge";
-		$tag_refresh_purge = "<a title='Click to reload/refresh this wiki page' href='$refresh'>refresh</a>";
 		$tag_about = "<a title='Click here is learn more and get help' href='http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>...";
 		
 	    // set the month's mont and year tags
@@ -553,7 +553,7 @@ class Calendar extends CalendarArticles
 			$tag_eventStyleButton = "<input class='btn' type=\"button\" title=\"Set 'html/css' styles based on trigger words (vacation::color:red; font-style:italic)\" value= \"event styles\" onClick=\"javascript:document.location='" . $articleStyle;
 		}
 		
-		// build the hidden calendar date info (used to offset the calendar via cookies)
+		// build the hidden calendar date info (used to offset the calendar via sessions)
 		$tag_HiddenData = "<input class='btn' type='hidden' name='calendar_info' value='"
 			. $this->month . "`"
 			. $this->year . "`"
@@ -610,7 +610,6 @@ class Calendar extends CalendarArticles
 	    $ret = str_replace("[[CalendarName]]", $tag_calendarName, $ret);
 	    $ret = str_replace("[[CalendarMonth]]", $tag_calendarMonth, $ret); 
 	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);
-    	$ret = str_replace("[[refresh_purge]]", $tag_refresh_purge , $ret);
 		$ret = str_replace("[[About]]", $tag_about, $ret);
 		
 	    /***** Begin building the calendar days *****/
@@ -649,7 +648,6 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
-		$tempString = str_replace("[[cookie_set]]", $this->setting('cookie_set',false), $tempString);
 		
 	    $ret .= $tempString;
   		
@@ -738,13 +736,30 @@ class Calendar extends CalendarArticles
 			// enabling causes additional load times
 			if($this->setting('enablelegacy')){
 			
-				// with namespace...
-				$articleName = $this->legacyName1 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-				$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+				// initialize
+				$current_timestamp = mktime(0,0,0,$month,$day,$year);				
+				$legacy_timestamp = $current_timestamp +1;
 				
-				// without namespace...
-				$articleName = $this->legacyName2 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-				$this->addArticle($month, $day, $year, $articleName, $summaryLength);			
+				$legacy = split('-', $this->setting('enablelegacy', false));
+				
+				if(count($legacy) != 3)
+					$legacy = split('/', $this->setting('enablelegacy', false));
+
+				if(count($legacy) == 3)
+					$legacy_timestamp = mktime(0,0,0,$legacy[0],$legacy[1],$legacy[2]);
+
+				// if date is included with 'enablelegacy' then only pick up legacy events
+				// events if viewing those months that included them...
+				if($legacy_timestamp >= $current_timestamp){
+				
+					// with namespace...
+					$articleName = $this->legacyName1 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
+					$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+					
+					// without namespace...
+					$articleName = $this->legacyName2 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
+					$this->addArticle($month, $day, $year, $articleName, $summaryLength);		
+				}
 			}
 		}
     }
@@ -768,12 +783,13 @@ class Calendar extends CalendarArticles
 		$this->arrSettings[$params] = $value;
 	}
 	
+	// php has a defualt of 30sec to run a script, so it can timeout...
 	function load_iCal(){
 		$this->debug->set('load_iCal Started');
 		
 		$ical_data = $this->ical_data;		
 		$iCal = new ical_calendar;
-		
+
 		//make sure we're good before we go further
 		if(!$iCal->setFile($ical_data)) return;
 		$arr = $iCal->getData();
@@ -783,22 +799,21 @@ class Calendar extends CalendarArticles
 			if(isset($arr[$i]['DTSTART'])){
 				$date = $arr[$i]['DTSTART'];
 				
-				$year = substr($date,0,4);
-				$mon = substr($date,4,2) +0;
-				$day = substr($date,6,4) +0;
-				
-				if(strlen(trim($year)) == "") return; // bad data; usually $arr[0]
-				
+				$date_diff = (day_diff($arr[$i]['DTSTART'], $arr[$i]['DTEND'])) -1;
+	
 				$event = $arr[$i]['SUMMARY'];
-				$description = $arr[$i]['DESCRIPTION'];			
-				$date = "$mon-$day-$year";
+				$description = $arr[$i]['DESCRIPTION'];	
+				
+				$date = $date['mon']."-".$date['mday']."-".$date['year'];
 				
 				$ical_mode = $this->setting('ical',false);
-					if($ical_mode == 'usemultievent') $bMulti = true;
+				if($ical_mode == 'usemultievent') $bMulti = true;
 				
 				$page = $this->getNextAvailableArticle($this->calendarPageName, $date, $bMulti);
 
-				
+				if($date_diff > 0)
+					$event = $date_diff . "#" . $event;
+					
 				if($bMulti)
 					$this->createNewMultiPage($page, $event, $description, "iCal Import");
 				else
@@ -848,7 +863,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$calendar->calendarPageName = htmlspecialchars($title . "/" . $name);
 	$calendar->configPageName = htmlspecialchars("$title/$name/config");
 	
-	// disabling for now... causing wierd errors with mutiple calendar per page
+	// disabling for now... causing wierd errors with mutiple calendars per page
 	//(UNIQ249aadf6593f3f85-calendar-00000000-QINU}
 	//$calendar->createNewPage("$title/$name/config", buildConfigString());	
 	
@@ -893,7 +908,9 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$calendar->setName($name);
 
 	$session = $title . "_" . $name;
-	session_name('mwcalendar'); session_start(); //pull in the correctsession
+	//
+//$calendar->debug->set($session);
+//$calendar->debug->set($_SESSION[$session]);
 
 	if(isset($_SESSION[$session])){
 		$calendar->debug->set('session loaded');
@@ -902,7 +919,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->setMonth($arrSession[0]);
 		$calendar->setYear($arrSession[1]);	
 		$calendar->setTitle($arrSession[2]);				
-		$calendar->setName($arrSession[3]);					
+		$calendar->setName($arrSession[3]);			
 	}
 
 	if(isset($_SESSION['calendar_ical'])){
@@ -910,10 +927,10 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->ical_data = $_SESSION['calendar_ical'];
 		$calendar->load_iCal();
 
-		unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
-		$_SESSION['calendar_ical'] = "";
+		@unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
+		unset($_SESSION['calendar_ical']);
 	}
-
+	
 	return $calendar->renderCalendar();
 }
 
