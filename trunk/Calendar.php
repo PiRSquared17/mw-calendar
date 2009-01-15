@@ -195,14 +195,14 @@ class Calendar extends CalendarArticles
 		// build template
 		$data_start = "<!-- Calendar Start -->";
 		$css = $this->setting('css');		
-		$html_data = file_get_contents($extensionPath . "/calendar_template.html");
+		$html_data = file_get_contents($extensionPath . "/templates/calendar_template.html");
 		$data_end = "<!-- Calendar End -->";	
 		
 		//check for valid css file
 		if(file_exists($extensionPath . "/css/$css"))
-			$css_data = file_get_contents($extensionPath . "/css/$css");	
+			$css_data = file_get_contents($extensionPath . "/templates/css/$css");	
 		else
-			$css_data = file_get_contents($extensionPath . "/css/default.css");
+			$css_data = file_get_contents($extensionPath . "/templates/css/default.css");
 			
 
 		$this->html_template = $data_start . $css_data . $html_data . $data_end;
