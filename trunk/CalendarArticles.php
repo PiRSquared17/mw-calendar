@@ -110,7 +110,8 @@ class CalendarArticles
 		$cntEvents = count($this->arrArticles['events']);
 		$cntTemplates = count($this->arrArticles['templates']);
 		
-		$ret = "";
+		$ret = $list = "";
+		$bFound = false;
 
 		for($i=0; $i<$cntTemplates; $i++){
 			$cArticle = $this->arrArticles['templates'][$i];
@@ -122,15 +123,20 @@ class CalendarArticles
 		// we want to format the normal 'add event' items in 1 table cell
 		// this creates less spacing and creates a better <ul>
 		if($cntEvents > 0){
-			$ret .= "<tr cellpadding=0 cellspacing=0 ><td class='calendarTransparent singleEvent'>";
-			$ret .= "<ul class='bullets'>";
+			$head = "<tr cellpadding=0 cellspacing=0 ><td class='calendarTransparent singleEvent'>";
+			$head .= "<ul class='bullets'>";
+			
 			for($i=0; $i<$cntEvents; $i++){
 				$cArticle = $this->arrArticles['events'][$i];
 				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
-					$ret .= "<li>" . $cArticle->html . "</li>";
+					$list .= "<li>" . $cArticle->html . "</li>";
+					$bFound = true;
 				}
 			}
-			$ret .= "</ul></td></tr>";
+			
+			$foot = "</ul></td></tr>";		
+			if($bFound) 
+				$ret .= $head . $list . $foot;
 		}
 		
 		return $ret;
@@ -188,11 +194,11 @@ class CalendarArticles
 		$html = $this->articleLink($page, $temp);
 		
 		if($bRepeats){
-			$cArticle->html = "<tr><td class='repeatEvent'>$html<br>$cArticle->body</td></tr>";
+			$cArticle->html = "<tr><td class='repeatEvent'>$html\n$cArticle->body</td></tr>";
 			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
 		}
 		else{
-			$cArticle->html = "$html<br>$cArticle->body";
+			$cArticle->html = "$html\n$cArticle->body";
 			$this->arrArticles['events'][] = $cArticle;
 		}
 }

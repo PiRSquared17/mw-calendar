@@ -24,6 +24,7 @@
 	/* Style of event list*/
 	.calendarEventList {
 	  width:100%;
+	  background-color: transparent;
 	}
 	
 	/* defined in CalendarArticles.php*/
