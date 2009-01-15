@@ -90,8 +90,18 @@
 	}
 	
 	/* Style of event list*/
-	.calendarEventList li{
-	  margin-left: 3px;
+	.calendarEventList{
+	  background-color: transparent;
+	  width:100%;
+	 }
+	
+	/* Style of event list*/
+	.repeats{
+		xbackground-color: green;
+		border:1px solid #CCCCCC;
+		padding:0px;
+		text-align: center;
+		xmargin-left: 3px;
 	}
 	
 	/* the style to add to the calendarDay style if the displayed calendar day is today's date */

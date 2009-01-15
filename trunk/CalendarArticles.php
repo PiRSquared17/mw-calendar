@@ -97,13 +97,12 @@ class CalendarArticles
 		//check for repeating events
 		$arrEvent = split("#",$event);
 		if(isset($arrEvent[1]) && ($arrEvent[0] != 0)){
-			$this->add($month, $day++, $year, $arrEvent[1], $page, $body); //add no arrow
-			for($i=1; $i<$arrEvent[0]; $i++) {
-				$this->add($month, $day, $year, '&larr;'.$arrEvent[1], $page, $body, $isTemplate); //add with arrow
+			for($i=0; $i<$arrEvent[0]; $i++) {
+				$this->add($month, $day, $year, $arrEvent[1], $page, $body, $isTemplate, true); //add with arrow
 				getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($month, $day, $year, $event, $page, $body, $isTemplate);	
+			$this->add($month, $day, $year, "<li>$event</li>", $page, $body, $isTemplate);	
 	}
 
 	public function getArticleLinks($month, $day, $year){
@@ -114,7 +113,7 @@ class CalendarArticles
 			$cArticle = $this->arrArticles[$i];
 			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
 			//$this->debug->set($cArticle->eventname);
-				$ret .= "<li>" . $this->articleLink($cArticle->page, $cArticle->eventname). "</li>\n$cArticle->body";
+				$ret .= $cArticle->html;
 			}
 		}
 
@@ -156,7 +155,7 @@ class CalendarArticles
 		}	
 	}
 
-	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false){
+	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false, $bRepeats=false){
 		$cArticle = new CalendarArticle($month, $day, $year);
 
 		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
@@ -165,12 +164,21 @@ class CalendarArticles
 		$cArticle->day = $day;	
 		$cArticle->year = $year;	
 		$cArticle->page = $page;	
-		$cArticle->eventname = $temp."<br/>";
+		$cArticle->eventname = $temp;
 		if(trim($body) != "")
 			$cArticle->body = $body;
-
-		$this->arrArticles[] = $cArticle;
-	}
+		
+		$html = $this->articleLink($page, $temp);
+		
+		if($bRepeats){
+			$cArticle->html = "<tr><td class='repeats'>$html</td></tr>";
+			array_unshift($this->arrArticles,$cArticle); //put repeats on top of the event list
+		}
+		else{
+			$cArticle->html = "<tr><td class='calendarTransparent'>$html</td></tr>";
+			$this->arrArticles[] = $cArticle;
+		}
+}
 	
 	// this function checks a template event for a time trackable value
 	private function checkTimeTrack($month, $day, $year, $event, $isTemplate){
@@ -335,7 +343,6 @@ class CalendarArticles
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot  . htmlspecialchars($title) . "&action=edit'>$arrText[1]</a>";
 			else
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . htmlspecialchars($title)  . "'>$arrText[1]</a>";
-
 		return $ret;
     }
 	

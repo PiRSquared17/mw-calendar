@@ -38,6 +38,7 @@ class debugger{
 	}	
 	
 	private function setHTML($e, $steptime, $totaltime){
+		$e = htmlspecialchars($e);
 		return $this->debugData .= "<tr><td>$e</td><td align=center>$steptime</td><td align=center>$totaltime</td></tr>";
 	}
 	private function getHTML(){

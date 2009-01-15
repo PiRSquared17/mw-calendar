@@ -267,9 +267,9 @@ class Calendar extends CalendarArticles
 			//kludge... for some reason, the "\n" is removed in full calendar mode
 			if($this->calendarMode == "normal")
 				$tag_eventList = str_replace("\n", " ", $tag_eventList); 
-				
+		
 			$tempString = str_replace("[[AddEvent]]", $tag_addEvent, $tempString);
-			$tempString = str_replace("[[EventList]]", "<ul>" . $tag_eventList . "</ul>", $tempString);
+			$tempString = str_replace("[[EventList]]",  $tag_eventList, $tempString);
 			$tempString = str_replace("[[Alert]]", $tag_alerts, $tempString);
 		}
 		
