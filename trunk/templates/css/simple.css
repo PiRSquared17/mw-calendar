@@ -1,0 +1,136 @@
+<style type="text/css">
+	/* the calendar table style */
+	option.lst{
+		background-color:; 
+		color:;
+	}
+	
+	input.btn{
+		background-color:;
+		color:;
+	}	
+	
+	ul.bullets{
+		padding-left: 5px;
+		xlist-style-image: url('check.jpg');
+	}
+	
+	/* style of the cell with the "Add Event" link */
+	.calendarEventAdd {
+	}
+	
+	/* makes the content have a transparent background (for selected days) */
+	.calendarTransparent {
+	  background-color: transparent;
+	  border-spacing: 0px;
+	  width:100%;
+	}
+	
+	/* Style of event list*/
+	.calendarEventList {
+	  width:100%;
+	  background-color: transparent;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.repeatEvent{
+		background-color: #E8E8E8;
+		border:1px solid #CCCCCC;
+		padding:0px;
+		text-align: center;
+	}
+	
+	/* defined in CalendarArticles.php*/
+	.singleEvent{
+		border:0px solid #CCCCCC;
+		padding:0px;
+		text-align: left;
+		border-spacing: 0px;
+	}
+	
+	.calendar {
+	  padding:0px;
+	  border-spacing:0px;
+	  border:1px solid #808080;
+	  border-collapse:collapse;
+	  width:100%;
+	  background-color:;
+	}
+	
+	/* style for the table cell displaying the month title */
+	.calendarTitle {
+	  font-size:18px;
+	  text-align:center;
+	  font-weight:bold;
+	  font-style:; 
+	}
+	
+	/* style for the cell holding the year select box */
+	.calendarYearSelect {
+	  text-align:right;
+	  white-space:nowrap;
+	}
+	
+	/* style for the cell holding the month select box */
+	.calendarMonthSelect {
+	  white-space:nowrap;
+	}
+	
+	/* style for the week day headings */
+	.calendarWeekendHeading {
+	  text-align:center;
+	  font-weight:bold;
+	  background-color:#E0E0E0;	
+	  border:1px solid #808080;
+  	}
+	
+	.calendarWeekdayHeading {
+	  text-align:center;
+	  font-weight:bold;
+	  background-color:#E0E0E0;	  
+	  border:1px solid #808080;
+	}
+	
+	/* style for a cell representing an individual day on the calendar */
+	.calendarWeekend {
+	  width:14%;
+	  height:80px;
+	  vertical-align:top;
+	  border:1px solid #808080;
+	  font-size: 11px;
+	  background-color:#EEEEEE;
+	}
+	
+	.calendarWeekday{
+	  width:14%;
+	  height:80px;
+	  vertical-align:top;
+	  border:1px solid #808080;
+	  font-size: 11px;
+	  background-color:;
+	}
+
+	/* style of the cell displaying the number of the day in the month */
+	.calendarDayNumber {
+	  border:0px solid #CCCCCC;
+	  xbackground-color:#E0E0E0;	  
+	  width:20%;
+	  text-align: center;
+	  font-size: 12px;
+	  font-weight:bold;
+	}
+		
+	/* the style to add to the calendarDay style if the displayed calendar day is today's date */
+	.calendarToday {
+	  width:14%;
+	  height:80px;
+	  vertical-align:top;
+	  border:1px solid #808080;
+	  font-size: 11px;
+	  background-color: #FFFFDD;
+	}
+	
+	.alerts {
+	  text-align: left;
+	}	
+</style>
