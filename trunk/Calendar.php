@@ -610,7 +610,6 @@ class Calendar extends CalendarArticles
 	    $ret = str_replace("[[CalendarName]]", $tag_calendarName, $ret);
 	    $ret = str_replace("[[CalendarMonth]]", $tag_calendarMonth, $ret); 
 	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);
-		$ret = str_replace("[[About]]", $tag_about, $ret);
 		
 	    /***** Begin building the calendar days *****/
 	    // determine the starting day offset for the month
@@ -648,6 +647,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
+		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
 	    $ret .= $tempString;
   		

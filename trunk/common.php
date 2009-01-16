@@ -84,6 +84,8 @@ function getNextValidDate(&$month, &$day, &$year){
 	$day = $arr['mday'];
 	$month = $arr['mon'];
 	$year = $arr['year'];
+	
+	return $arr;
 }
 
 function day_diff($date1, $date2){
