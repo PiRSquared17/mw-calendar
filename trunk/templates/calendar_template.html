@@ -23,27 +23,27 @@
 <table class="calendar">
   <!-- Header Start -->
   <tr>
-    <td class="calendarMonthSelect" colspan="2"> [[PreviousMonthButton]]&nbsp;[[MonthSelect]]&nbsp;[[NextMonthButton]] </td>
+    <td class="calendarMonthSelect" colspan="2"> [[PreviousMonthButton]]&nbsp;[[MonthSelect]]&nbsp;[[NextMonthButton]]&nbsp;</td>
     <td class="calendarTitle" colspan="3"> [[CalendarName]]<br/>
       <font size="-1">[[CalendarMonth]], [[CalendarYear]]</font> </td>
-    <td class="calendarYearSelect" colspan="2">[[About]]&nbsp;&nbsp;[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]] </td>
+    <td class="calendarYearSelect" colspan="2">[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]]&nbsp;</td>
   </tr>
   <!-- Header End -->
   <!-- Day Heading Start -->
   <tr>
-    <td class="calendarWeekendHeading">Sun</td>
-    <td class="calendarWeekdayHeading">Mon</td>
-    <td class="calendarWeekdayHeading">Tue</td>
-    <td class="calendarWeekdayHeading">Wed</td>
-    <td class="calendarWeekdayHeading">Thu</td>
-    <td class="calendarWeekdayHeading">Fri</td>
-    <td class="calendarWeekendHeading">Sat</td>
+    <td class="calendarHeading">Sunday</td>
+    <td class="calendarHeading">Monday</td>
+    <td class="calendarHeading">Tuesday</td>
+    <td class="calendarHeading">Wednesday</td>
+    <td class="calendarHeading">Thursday</td>
+    <td class="calendarHeading">Friday</td>
+    <td class="calendarHeading">Saturday</td>
   </tr>
   <!-- Day Heading End -->
   <!-- Week Start -->
   <tr>
   	<!-- Sunday Start -->
-    <td class="calendarWeekend"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekend"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -56,7 +56,7 @@
 	</td>
 	<!-- Sunday End -->
 	<!-- Monday Start -->
-    <td class="calendarWeekday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -68,7 +68,7 @@
 	</td>
 	<!-- Monday End -->
 	<!-- Tuesday Start -->
-    <td class="calendarWeekday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -80,7 +80,7 @@
 	</td>
 	<!-- Tuesday End -->
 	<!-- Wednesday Start -->
-    <td class="calendarWeekday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -92,7 +92,7 @@
 	</td>
 	<!-- Wednesday End -->
 	<!-- Thursday Start -->
-    <td class="calendarWeekday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -104,7 +104,7 @@
 	</td>
 	<!-- Thursday End -->
 	<!-- Friday Start -->
-    <td class="calendarWeekday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -116,7 +116,7 @@
 	</td>
 	<!-- Friday End -->
 	<!-- Saturday Start -->
-    <td class="calendarWeekend"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekend"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -131,7 +131,7 @@
   <!-- Week End -->
   <tr>
 	<!-- Selected Sunday Start -->
-    <td class="calendarWeekend calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekend calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd calendarTransparent">[[AddEvent]]</td>
@@ -143,7 +143,7 @@
 	</td>
 	<!-- Selected Sunday End -->
 	<!-- Selected Monday Start -->
-    <td class="calendarWeekday calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]] </td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -155,7 +155,7 @@
 	</td>
 	<!-- Selected Monday End -->
 	<!-- Selected Tuesday Start -->
-    <td class="calendarWeekday calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -167,7 +167,7 @@
 	</td>
 	<!-- Selected Tuesday End -->
 	<!-- Selected Wednesday Start -->
-    <td class="calendarWeekday calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -179,7 +179,7 @@
 	</td>
 	<!-- Selected Wednesday End -->
 	<!-- Selected Thursday Start -->
-    <td class="calendarWeekday calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -191,7 +191,7 @@
 	</td>
 	<!-- Selected Thursday End -->
 	<!-- Selected Friday Start -->
-    <td class="calendarWeekday calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -203,7 +203,7 @@
 	</td>
 	<!-- Selected Friday End -->
 	<!-- Selected Saturday Start -->
-    <td class="calendarWeekday calendarToday"><table class="calendarTransparent">
+    <td class="daycommon calendarWeekday calendarToday"><table class="calendarTransparent">
         <tr>
           <td class="calendarDayNumber">[[Day]]</td>
           <td class="calendarEventAdd">[[AddEvent]]</td>
@@ -217,32 +217,32 @@
   </tr>
   <tr>
 	<!-- Missing Sunday Start -->
-    <td class="calendarWeekend">&nbsp;</td>
+    <td class="daycommon calendarWeekend">&nbsp;</td>
     <!-- Missing Sunday End -->
 	<!-- Missing Monday Start -->
-    <td class="calendarWeekday">&nbsp;</td>
+    <td class="daycommon calendarWeekday">&nbsp;</td>
     <!-- Missing Monday End -->
 	<!-- Missing Tuesday Start -->
-    <td class="calendarWeekday">&nbsp;</td>
+    <td class="daycommon calendarWeekday">&nbsp;</td>
     <!-- Missing Tuesday End -->
 	<!-- Missing Wednesday Start -->
-    <td class="calendarWeekday">&nbsp;</td>
+    <td class="daycommon calendarWeekday">&nbsp;</td>
     <!-- Missing Wednesday End -->
 	<!-- Missing Thursday Start -->
-    <td class="calendarWeekday">&nbsp;</td>
+    <td class="daycommon calendarWeekday">&nbsp;</td>
     <!-- Missing Thursday End -->
 	<!-- Missing Friday Start -->
-    <td class="calendarWeekday">&nbsp;</td>
+    <td class="daycommon calendarWeekday">&nbsp;</td>
     <!-- Missing Friday End -->
 	<!-- Missing Saturday Start -->
-    <td class="calendarWeekend">&nbsp;</td>
+    <td class="daycommon calendarWeekend">&nbsp;</td>
     <!-- Missing Saturday End -->
   </tr>
   <!-- Footer Start -->
 </table>
 <table width=100% border=0>
 <tr>
-  <td style="font-size:85%;">[[Version]]</td>
+  <td style="font-size:85%;">[[Version]]&nbsp;[[About]]&nbsp;&nbsp;</td>
   <td style="text-align:right; vertical-align:top;">[[EventStyleBtn]] [[TemplateButton]] [[ConfigurationButton]]</td>
 </tr>
   <tr>

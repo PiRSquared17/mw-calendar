@@ -712,6 +712,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("calendarSaturday", "", $tempString);	
 		$tempString = str_replace("calendarSunday", "", $tempString);	
 		
+		
 		return $tempString;
 	}
 
