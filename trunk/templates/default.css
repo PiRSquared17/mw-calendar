@@ -118,7 +118,7 @@
 	  border:1px solid #808080;
   	}
 
-	.miniCalendar {
+	.yearCalendar {
 	  vertical-align:top;
 	  padding:0px;
 	  border-spacing:0px;
@@ -129,7 +129,7 @@
 	  text-align: center;
 	}		
 	
-	.miniTitle {
+	.yearTitle {
 	  text-align:center;
 	  font-weight:bold;
 	  xbackground-color:#E0E0E0;	
@@ -137,7 +137,7 @@
 	  font-size: 11px;
   	}
 	
-	.miniHeading {
+	.yearHeading {
 	  text-align:center;
 	  font-weight:bold;
 	  background-color:#E0E0E0;	
@@ -145,16 +145,16 @@
 	  font-size: 11px;
   	}
 	
-	.miniWeekday {
+	.yearWeekday {
 	  text-align:center;
-	  border:0px solid #808080;
+	  border:1px solid #808080;
 	  font-size: 9px;
   	}
 	
-	.miniWeekend {
+	.yearWeekend {
 	  text-align:center;
 	  background-color:#EEEEEE;	
-	  border:0px solid #808080;
+	  border:1px solid #808080;
 	  font-size: 9px;
   	}
 	

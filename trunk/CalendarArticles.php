@@ -107,8 +107,14 @@ class CalendarArticles
 	}
 
 	public function getArticleLinks($month, $day, $year){
-		$cntEvents = count($this->arrArticles['events']);
-		$cntTemplates = count($this->arrArticles['templates']);
+	
+		$cntEvents = $cntTemplates = 0;
+	
+		if(isset($this->arrArticles['events']))
+			$cntEvents = count($this->arrArticles['events']);
+		
+		if(isset($this->arrArticles['templates']))
+			$cntTemplates = count($this->arrArticles['templates']);
 		
 		$ret = $list = "";
 		$bFound = false;

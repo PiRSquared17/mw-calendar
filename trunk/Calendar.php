@@ -1,5 +1,4 @@
 <?php
-
 /* Calendar.php
  *
  * - Eric Fortin (1/2009) < kenyu73@gmail.com >
@@ -9,6 +8,9 @@
  *   	Michael Walters < mcw6@aol.com > 
  * See Readme file for full details
  */
+ 
+//no clue why, but this needs to be out here...
+session_start();
 
 // this is the "refresh" code that allows the calendar to switch time periods
 if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) 
@@ -54,7 +56,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 	$session_name = $title . "_" . $name;
 	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $session_type . "`";
 	
-	@session_start();
+	//session_start();
 	$_SESSION[$session_name] = $session_value;
 
 	if(isset($_POST["ical"])){
@@ -804,10 +806,13 @@ class Calendar extends CalendarArticles
 		$styleHeader = "style='text-align:center; font-weight:bold; font-size: 11px; background-color:#E0E0E0;'";
 		$styleWeekday = "style='border:1px solid #CCCCCC;'";
 		$styleWeekend = "style='background-color:#EEEEEE; border:1px solid #CCCCCC;'";
+		$todayStyle = "style='background-color: #FFFFDD;'";
 		
 		$firstDate = getdate(mktime(0, 0, 0, $month, 1, $year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
+		$today = getdate();    	// today's date
+		
 		$dayOffset = -$first + 1;
     
 	    // determine the number of weeks in the month
@@ -819,18 +824,20 @@ class Calendar extends CalendarArticles
 		$monthname = $this->monthNames[$month - 1];
 		//$monthname = "<a href=''>$monthname";
 
-		$ret = "<tr><td $styleTitle colspan=7>" . $monthname . "</td></tr>";				
-		$ret .= "<tr $styleHeader><td>S</td><td>M</td><td>T</td><td>W</td><td>T</td><td>F</td><td>S</td></tr>";
+		$ret = "<tr><td class='yearTitle' colspan=7>" . $monthname . "</td></tr>";				
+		$ret .= "<tr class='yearHeading'><td>S</td><td>M</td><td>T</td><td>W</td><td>T</td><td>F</td><td>S</td></tr>";
 		
 		for ($i = 0; $i < $numWeeks; $i++) {	
 			for($j=0; $j < 7; $j++){
+				//if($year == $today['year'] && $month == $today['mon'] && $dayOffset == $today['mday'])
+					//$todayStyle = "style='background-color: #FFFFDD;'";
+					
 				if($dayOffset > 0 && $dayOffset <= $maxDays){
-				
 					$link = $this->buildAddEventLink($month, $dayOffset, $year, $text=$dayOffset);
 					if($j==0 || $j==6)
-						$row .= "<td $styleWeekend>$link</td>";
+						$row .= "<td class='yearWeekend'>$link</td>";
 					else
-						$row .= "<td $styleWeekday>$link</td>";
+						$row .= "<td class='yearWeekday'>$link</td>";
 				}
 				else{
 					$row .= "<td>&nbsp;</td>";	
@@ -842,42 +849,50 @@ class Calendar extends CalendarArticles
 			$row = "";
 		}
 		
-		return "<table $styleCalendar>$ret</table>";
+		return "<table class='yearCalendar'>$ret</table>";
 	}	
 
 	function renderYear(){
 	
 		$tag_mini_cal_year = "";
 		
-		$styleContainer = "style='width:100%; border:0px solid #CCCCCC;'";
+		$styleContainer = "style='width:100%; border:1px solid #CCCCCC; border-collapse:collapse;'";
 		$styleTitle = "style='text-align:center; font-size:24px; font-weight:bold;'";
 		
-		$html_head = "<table $styleContainer class='calendar'> <form  method='post'>";
+		$html_head = "<table $styleContainer><form  method='post'>";
 		$html_foot = "</table></form>";
 		
-		$ret = "";
+		$ret = ""; $cal = "";
 		$nextMon=1;
 		$nextYear = $this->year;
 		
 		$title = "$this->year";
 	
+		$css = $this->searchHTML($this->html_template, 
+			 "<!-- CSS Start -->", "<!-- CSS End -->");
+				 
+		$css = $this->stripLeadingSpace($css);
+		
 		$ret = "<tr><td></td><td $styleTitle colspan=2>$title</td><td align=right>$this->tag_views</td></tr>";
 
 		for($m=0;$m <12; $m++){
-			$ret .= "<td width=16% style='text-align:center; vertical-align:top;'>" . $this->buildSimpleCalendar($nextMon++, $nextYear, true) . "</td>";
+			$cal .= "<td width=16% style='text-align:center; vertical-align:top;'>" . $this->buildSimpleCalendar($nextMon++, $nextYear, true) . "</td>";
 			
-			if($m==3) 
-				$ret .= "<tr>$tag_mini_cal_year</tr>";
-				
-			if($m==7) 
-				$ret .= "<tr>$tag_mini_cal_year</tr>";	
+			if($m==3 || $m==7 || $m==11){
+				$ret .= "<tr>$cal</tr>";
+				$cal = "";
+			}	
 		}	
 		
-		return $html_head . $ret . $this->tag_HiddenData . $html_foot ;
+		return $css . $html_head . $ret . $this->tag_HiddenData . $html_foot ;
 	}
 	
 	function renderWeek($fiveDay=false){
 		$this->initalizeMonth(0,8);
+		
+		//defaults
+		$sunday = $saturday  = $ret = $week = ""; 
+		$colspan = 3; 
 		
 		$styleTable = "style='border-collapse:collapse; width:100%;'";
 		$styleTitle = "style='font-size: 24px;'";
@@ -899,8 +914,6 @@ class Calendar extends CalendarArticles
 				 
 		$css = $this->stripLeadingSpace($css);
 		
-		
-		$sunday = $saturday = ""; $colspan = 3; //defaults
 		if(!$fiveDay){
 			$sunday = "<td class='calendarHeading'>Sunday</td>";
 			$saturday = "<td class='calendarHeading'>Saturday</td>";
@@ -918,7 +931,6 @@ class Calendar extends CalendarArticles
 		$ret .= $saturday;
 		$ret .= "</tr>";
 		
-
 		for($i=0; $i<7; $i++){
 			if($fiveDay && $i==0) $i=2;
 			$week .= $this->getHTMLForDay($month, $day, $year, 'short', 'week');
@@ -1081,7 +1093,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 
 	$session = $title . "_" . $name;
 
-//session_start();
+	//session_start();
 	if(isset($_SESSION[$session])){
 		$calendar->debug->set('session loaded');
 
@@ -1101,7 +1113,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->load_iCal();
 
 		@unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
-		//unset($_SESSION['calendar_ical']);...bad juju...seems to stop sessions from working for a time
+		unset($_SESSION['calendar_ical']);
 	}
 
 	return $calendar->renderCalendar($userMode);
