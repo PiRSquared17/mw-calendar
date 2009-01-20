@@ -251,7 +251,7 @@ class Calendar extends CalendarArticles
     // Generate the HTML for a given month
     // $day may be out of range; if so, give blank HTML
     function getHTMLForDay($month, $day, $year, $dateFormat='default', $mode='month'){
-		$tag_eventList= "";
+		$tag_eventList = $tag_dayCustom = "";
 
 		$max = getDaysInMonth($month, $year);
 		
@@ -264,11 +264,7 @@ class Calendar extends CalendarArticles
 		
 		$display_day = $day;
 		if($dateFormat == 'long'){
-			$display_day = "<h4>" 
-				. $this->monthNames[$month -1] . " "
-				. $day . ", "
-				. $year
-				. "</h4>";
+			$display_day = $this->monthNames[$month -1] . " $day, $year";
 		}
 		
 		if($dateFormat == 'none')
@@ -284,36 +280,43 @@ class Calendar extends CalendarArticles
 		}
 					
 		// add event link value
-		if(!$this->setting('disableaddevent')){
+		if(!$this->setting('disableaddevent'))
 			$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
-		}
-		else {
+		else 
 			$tag_addEvent = "";
-		}
 
-		$tag_daycommon = 'normalMode';
-		if($mode == 'events')
-			$tag_daycommon = 'eventsMode';
-		if($mode == 'day')
-			$tag_daycommon = 'dayMode';
-		if($mode == 'week')
-			$tag_daycommon = 'weekMode';
+		$tag_mode = 'monthMode';
+		if($mode == 'events'){
+			$tag_mode = 'eventsMode';
+			$tag_dayCustom = "eventsDay";
+		}
+		if($mode=='week'){
+			$tag_mode = 'weekMode';
+		}
+		if($mode == 'day'){
+			$tag_mode = 'dayMode';
+			$tag_dayCustom = "singleDay";
+		}
 		
 		//build formatted event list
 		$tag_eventList = $this->getArticleLinks($month, $day, $year, true);
+		
+		// no events, then return nothing!
+		if((strlen($tag_eventList) == 0) && ($mode == 'events')) return "";
 		
 		$tempString = str_replace("[[Day]]", $display_day, $tempString);
 		
 		$tag_alerts = $this->buildAlertLink($day, $month);
 		
 		//kludge... for some reason, the "\n" is removed in full calendar mode
-		if($this->calendarMode == "normal")
+		if($Mode == "monthMode")
 			$tag_eventList = str_replace("\n", " ", $tag_eventList); 
 			
 		$tempString = str_replace("[[AddEvent]]", $tag_addEvent, $tempString);
 		$tempString = str_replace("[[EventList]]", "<ul>" . $tag_eventList . "</ul>", $tempString);
 		$tempString = str_replace("[[Alert]]", $tag_alerts, $tempString);
-		$tempString = str_replace("[[daycommon]]", $tag_daycommon, $tempString);
+		$tempString = str_replace("[[mode]]", $tag_mode, $tempString);
+		$tempString = str_replace("[[dayCustom]]", $tag_dayCustom, $tempString);
 		
 		return $tempString;
     }
@@ -474,7 +477,7 @@ class Calendar extends CalendarArticles
 		$css = $this->stripLeadingSpace($css);
 		
 		$ret = $this->buildConfigLink(true). $css
-			. $this->getHTMLForDay($this->month, $this->day, $this->year, 'long');
+			. $this->getHTMLForDay($this->month, $this->day, $this->year, 'long', 'day');
 			
 		$this->debug->set("renderDate Ended");		
 		return $ret;
@@ -799,15 +802,8 @@ class Calendar extends CalendarArticles
 	
 	function buildSimpleCalendar($month, $year, $sixRow=false){
 
-		$row = "";
-	
-		$styleCalendar = "style='width:100%; border-collapse:collapse;'";
-		$styleTitle = "style='font-weight:bold; font-size: 14px; border:1px solid #CCCCCC;'";
-		$styleHeader = "style='text-align:center; font-weight:bold; font-size: 11px; background-color:#E0E0E0;'";
-		$styleWeekday = "style='border:1px solid #CCCCCC;'";
-		$styleWeekend = "style='background-color:#EEEEEE; border:1px solid #CCCCCC;'";
-		$todayStyle = "style='background-color: #FFFFDD;'";
-		
+		$row = $todayStyle = "";
+
 		$firstDate = getdate(mktime(0, 0, 0, $month, 1, $year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
@@ -825,41 +821,52 @@ class Calendar extends CalendarArticles
 		//$monthname = "<a href=''>$monthname";
 
 		$ret = "<tr><td class='yearTitle' colspan=7>" . $monthname . "</td></tr>";				
-		$ret .= "<tr class='yearHeading'><td>S</td><td>M</td><td>T</td><td>W</td><td>T</td><td>F</td><td>S</td></tr>";
+		$ret .= "
+			<tr>
+				<td class='yearHeading'>S</td>
+				<td class='yearHeading'>M</td>
+				<td class='yearHeading'>T</td>
+				<td class='yearHeading'>W</td>
+				<td class='yearHeading'>T</td>
+				<td class='yearHeading'>F</td>
+				<td class='yearHeading'>S</td>
+			</tr>";
 		
 		for ($i = 0; $i < $numWeeks; $i++) {	
 			for($j=0; $j < 7; $j++){
-				//if($year == $today['year'] && $month == $today['mon'] && $dayOffset == $today['mday'])
-					//$todayStyle = "style='background-color: #FFFFDD;'";
+				if($year == $today['year'] && $month == $today['mon'] && $dayOffset == $today['mday'])
+					$todayStyle = "style='background-color: #808080;font-weight:bold;'";
 					
 				if($dayOffset > 0 && $dayOffset <= $maxDays){
 					$link = $this->buildAddEventLink($month, $dayOffset, $year, $text=$dayOffset);
 					if($j==0 || $j==6)
-						$row .= "<td class='yearWeekend'>$link</td>";
+						$row .= "<td class='yearWeekend $todayStyle'>$link</td>";
 					else
-						$row .= "<td class='yearWeekday'>$link</td>";
+						$row .= "<td class='yearWeekday' $todayStyle>$link</td>";
 				}
 				else{
 					$row .= "<td>&nbsp;</td>";	
 				}
 				
+				$todayStyle = "";
 				$dayOffset++;
 			}
+			
 			$ret .= "<tr>$row</tr>";
 			$row = "";
 		}
 		
-		return "<table class='yearCalendar'>$ret</table>";
+		return "<table class='yearCalendarMonth'>$ret</table>";
 	}	
 
 	function renderYear(){
 	
 		$tag_mini_cal_year = "";
 		
-		$styleContainer = "style='width:100%; border:1px solid #CCCCCC; border-collapse:collapse;'";
+		//$styleContainer = "style='width:100%; border:1px solid #CCCCCC; border-collapse:collapse;'";
 		$styleTitle = "style='text-align:center; font-size:24px; font-weight:bold;'";
 		
-		$html_head = "<table $styleContainer><form  method='post'>";
+		$html_head = "<table class='yearCalendar'><form  method='post'>";
 		$html_foot = "</table></form>";
 		
 		$ret = ""; $cal = "";
@@ -876,7 +883,7 @@ class Calendar extends CalendarArticles
 		$ret = "<tr><td></td><td $styleTitle colspan=2>$title</td><td align=right>$this->tag_views</td></tr>";
 
 		for($m=0;$m <12; $m++){
-			$cal .= "<td width=16% style='text-align:center; vertical-align:top;'>" . $this->buildSimpleCalendar($nextMon++, $nextYear, true) . "</td>";
+			$cal .= "<td style='text-align:center; vertical-align:top;'>" . $this->buildSimpleCalendar($nextMon++, $nextYear, true) . "</td>";
 			
 			if($m==3 || $m==7 || $m==11){
 				$ret .= "<tr>$cal</tr>";
@@ -1069,9 +1076,6 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$params['locktemplates'] = true;
 	}
 	
-	if(isset($params['useeventlist'])) $userMode = 'events';
-	if(isset($params['date'])) $userMode = 'day';	
-	
 	// this needs to be last after all required $params are updated, changed, defaulted or whatever
 	$calendar->arrSettings = $params;
 	
@@ -1115,6 +1119,9 @@ function displayCalendar($paramstring = "", $params = array()) {
 		@unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
 		unset($_SESSION['calendar_ical']);
 	}
+	
+	if(isset($params['useeventlist'])) $userMode = 'events';
+	if(isset($params['date'])) $userMode = 'day';	
 
 	return $calendar->renderCalendar($userMode);
 }
