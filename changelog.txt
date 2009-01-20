@@ -14,3 +14,5 @@ notes will be added to the next released 'Readme.txt'. The notes in this file wi
 
 # added effective date to 'enablelegacy' mode; this improves performace as the 
   code only looks for legacy events effective that day and prior.... the default is ALL
+
+# added month, week and year quick view buttons

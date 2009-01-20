@@ -1,3 +1,4 @@
+<!-- CSS Start -->
 <style type="text/css">
 	/* the calendar table style */
 	option.lst{}
@@ -8,19 +9,37 @@
 	}
 
 	.calendarWeekend {background-color:#EEEEEE;}	
-	.calendarEventAdd {}	
 	.calendarToday { background-color: #FFFFDD;} /* current day */
 	.alerts {text-align: left;}		
-	
-	.daycommon{
-	  width:14%;
-	  height:90px;
+
+	.normalMode{
+	  height:100px;
 	  vertical-align:top;
 	  font-size: 11px;	
 	  border:1px solid #808080;	 
 	  background-color:;
 	}
+	
+	.eventsMode{
+	}
+	
+	.dayMode{
+	}
+	
+	.weekMode{
+		border:1px solid #808080;
+		height:200px;
+		vertical-align:top;
+	}
 
+	.daymissing{
+	  height:90px;
+	  vertical-align:top;
+	  font-size: 11px;	
+	  border:1px solid #808080;	 
+	  text-align: center;
+	}
+	
 	/* makes the content have a transparent background (for selected days) */
 	.calendarTransparent {
 	  background-color: transparent;
@@ -28,10 +47,18 @@
 	  width:100%;
 	}
 	
+	.calendarAddEvent {
+	  text-align: left;  
+	  white-space:nowrap;
+	  height:5;
+	  border:0px solid #CCCCCC;
+	}		
+	
 	/* Style of event list*/
 	.calendarEventList {
 	  width:100%;
 	  background-color: transparent;
+	  border:0px solid #CCCCCC;
 	}
 	
 	/* defined in CalendarArticles.php*/
@@ -40,20 +67,25 @@
 		border:1px solid #CCCCCC;
 		padding:0px;
 		text-align: center;
+		border-spacing: 0px;
+		font-size:11px;
 	}
 	
+
 	/* defined in CalendarArticles.php*/
 	.singleEvent{
+		background-color:;
 		border:0px solid #CCCCCC;
 		padding:0px;
 		text-align: left;
 		border-spacing: 0px;
+		font-size:11px;
 	}
 	
 	.calendar {
 	  padding:0px;
 	  border-spacing:0px;
-	  border:1px solid #808080;
+	  border:0px solid #808080;
 	  border-collapse:collapse;
 	  width:100%;
 	  background-color:;
@@ -79,12 +111,53 @@
 	
 	/* style for the week day headings */
 	.calendarHeading {
+	 width:14%;
 	  text-align:center;
 	  font-weight:bold;
 	  background-color:#E0E0E0;	
 	  border:1px solid #808080;
   	}
 
+	.miniCalendar {
+	  vertical-align:top;
+	  padding:0px;
+	  border-spacing:0px;
+	  border:1px solid #808080;
+	  border-collapse:collapse;
+	  width:100%;
+	  background-color:;
+	  text-align: center;
+	}		
+	
+	.miniTitle {
+	  text-align:center;
+	  font-weight:bold;
+	  xbackground-color:#E0E0E0;	
+	  border:0px solid #808080;
+	  font-size: 11px;
+  	}
+	
+	.miniHeading {
+	  text-align:center;
+	  font-weight:bold;
+	  background-color:#E0E0E0;	
+	  border:1px solid #808080;
+	  font-size: 11px;
+  	}
+	
+	.miniWeekday {
+	  text-align:center;
+	  border:0px solid #808080;
+	  font-size: 9px;
+  	}
+	
+	.miniWeekend {
+	  text-align:center;
+	  background-color:#EEEEEE;	
+	  border:0px solid #808080;
+	  font-size: 9px;
+  	}
+	
 	/* style of the cell displaying the number of the day in the month */
 	.calendarDayNumber {
 	  border:1px solid #CCCCCC;
@@ -92,6 +165,8 @@
 	  width:20%;
 	  text-align: center;
 	  font-size: 12px;
+	  height:5px
 	}
 
 </style>
+<!-- CSS End -->

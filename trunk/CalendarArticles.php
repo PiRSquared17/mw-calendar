@@ -257,7 +257,7 @@ class CalendarArticles
 	}
 	
 	//find the number of current events and "build" the <add event> link
-    public function buildAddEventLink($month, $day, $year) {
+    public function buildAddEventLink($month, $day, $year, $text='<u>Add Event</u>') {
 		
     	$articleName = "";    	// the name of the article to check for
     	$articleCount = 1;    	// the article count
@@ -266,7 +266,7 @@ class CalendarArticles
 		$date = "$month-$day-$year";
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
-		$newURL = "<a title='add a new event' href='" . $this->wikiRoot . $articleName . "&action=edit'><u>Add Event</u></a>";
+		$newURL = "<a title='add a new event' href='" . $this->wikiRoot . $articleName . "&action=edit'>$text</a>";
 
 		return $newURL;
 	}
