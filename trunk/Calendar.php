@@ -171,7 +171,7 @@ class Calendar extends CalendarArticles
 			$ret = $this->renderMonth();
 		
 		if($userMode == 'week')
-			$ret = $this->renderWeek();		
+			$ret = $this->renderWeek(true);		
 			
 		if($userMode == 'day')
 			$ret = $this->renderDate();
@@ -309,7 +309,7 @@ class Calendar extends CalendarArticles
 		$tag_alerts = $this->buildAlertLink($day, $month);
 		
 		//kludge... for some reason, the "\n" is removed in full calendar mode
-		if($Mode == "monthMode")
+		if($mode == "monthMode")
 			$tag_eventList = str_replace("\n", " ", $tag_eventList); 
 			
 		$tempString = str_replace("[[AddEvent]]", $tag_addEvent, $tempString);
