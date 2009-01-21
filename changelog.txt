@@ -1,6 +1,12 @@
 This document lists most of the trunk/beta changes. Once the trunk is released, the 
 notes will be added to the next released 'Readme.txt'. The notes in this file will then be erased.
 
+
+********** v3.5.0.3 **********
+# modified event list date format
+# corrected an issue with session() states
+
+
 ********** v3.5.0.2 **********
 # fixed an issue with legacy events created in v3.0 and parts of v3.2; need to use 'enablelegacy' to view older events though
 
@@ -8,11 +14,3 @@ notes will be added to the next released 'Readme.txt'. The notes in this file wi
 
 
 ********** Trunk **********
-# re-ordered the template/add event list... it will now be templates 1st, then normal events
-
-# added initial logic for basic ical imports (VCALENDAR)...event, summary and date; use the 'ical' parameter to activate the tool... defaults to adding a new event, but 'ical=usemultievent' will add concat all events to '-event 0'
-
-# added effective date to 'enablelegacy' mode; this improves performace as the 
-  code only looks for legacy events effective that day and prior.... the default is ALL
-
-# added month, week and year quick view buttons
