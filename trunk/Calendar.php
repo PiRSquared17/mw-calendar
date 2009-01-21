@@ -174,11 +174,8 @@ class Calendar extends CalendarArticles
 		if($userMode == 'month')
 			$ret = $this->renderMonth();
 
-		if($userMode == '5dayweek')
-			$ret = $this->renderWeek($this->setting('5dayweek'));	
-
 		if($userMode == 'week')
-			$ret = $this->renderWeek();				
+			$ret = $this->renderWeek($this->setting('5dayweek'));		
 			
 		if($userMode == 'day')
 			$ret = $this->renderDate();
