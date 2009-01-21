@@ -9,7 +9,7 @@
  * See Readme file for full details
  */
  
-//no clue why, but this needs to be out here...
+//no clue why, but this needs to be out here for windows...
 session_start();
 
 // this is the "refresh" code that allows the calendar to switch time periods
@@ -114,6 +114,7 @@ class Calendar extends CalendarArticles
 	var $tag_year_view = "";
 	var $tag_month_view = "";
 	var $tag_day_view = "";
+	var $tag_views = "";
 
 	// setup calendar arrays
     var $daysInMonth = array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);   
@@ -122,7 +123,7 @@ class Calendar extends CalendarArticles
     var $monthNames = array("January", "February", "March", "April", "May", "June",
                             "July", "August", "September", "October", "November", "December");
 							
-	var $monthNames_short = array("Jan", "Feb", "Mar", "Apr", "May", "June",
+	var $monthNamesShort = array("Jan", "Feb", "Mar", "Apr", "May", "June",
 		"July", "Aug", "Sept", "Oct", "Nov", "Dec");
 					
     function Calendar($wikiRoot, $debug) {
@@ -172,9 +173,12 @@ class Calendar extends CalendarArticles
 			
 		if($userMode == 'month')
 			$ret = $this->renderMonth();
-		
+
+		if($userMode == '5dayweek')
+			$ret = $this->renderWeek($this->setting('5dayweek'));	
+
 		if($userMode == 'week')
-			$ret = $this->renderWeek(true);		
+			$ret = $this->renderWeek();				
 			
 		if($userMode == 'day')
 			$ret = $this->renderDate();
@@ -238,9 +242,11 @@ class Calendar extends CalendarArticles
 		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
 		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
 		
-		$this->tag_views  = "<input class='btn' name='mode' type='submit' value='year'>"
-			. "<input class='btn' name='mode' type='submit' value='month'>"
-			. "<input class='btn' name='mode' type='submit' value='week'>";
+		if(!$this->setting('disablemodes')){
+			$this->tag_views  = "<input class='btn' name='mode' type='submit' value='year'>"
+				. "<input class='btn' name='mode' type='submit' value='month'>"
+				. "<input class='btn' name='mode' type='submit' value='week'>";
+			}
 					
 		// build the hidden calendar date info (used to offset the calendar via sessions)
 		$this->tag_HiddenData = "<input class='btn' type='hidden' name='calendar_info' value='"
@@ -265,11 +271,11 @@ class Calendar extends CalendarArticles
 		$today = getdate();
 		$wday  = $thedate['wday'];
 		$weekday = $thedate['weekday'];
-		
+
 		$display_day = $day;
 		if($dateFormat == 'long'){
 			//$display_day = $this->monthNames[$month -1] . " $day, $year";
-			$display_day = $weekday . ", " . $this->monthNames_short[$month -1] . " $day";
+			$display_day = $weekday . ", " . $this->monthNamesShort[$month -1] . " $day";
 		}
 		
 		if($dateFormat == 'none')
@@ -284,11 +290,8 @@ class Calendar extends CalendarArticles
 			$tempString = $this->daysNormalHTML[$wday];
 		}
 					
-		// add event link value
-		if(!$this->setting('disableaddevent'))
-			$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
-		else 
-			$tag_addEvent = "";
+
+		$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
 
 		$tag_mode = 'monthMode';
 		if($mode == 'events'){
@@ -389,7 +392,7 @@ class Calendar extends CalendarArticles
 		$events = "";
 		
 		$setting = $this->setting('useeventlist',false);
-
+$this->debug->set($setting);
 		if($setting == "") return "";
 		
 		if($setting > 0){
@@ -840,7 +843,7 @@ class Calendar extends CalendarArticles
 		for ($i = 0; $i < $numWeeks; $i++) {	
 			for($j=0; $j < 7; $j++){
 				if($year == $today['year'] && $month == $today['mon'] && $dayOffset == $today['mday'])
-					$todayStyle = "style='background-color: #808080;font-weight:bold;'";
+					$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
 					
 				if($dayOffset > 0 && $dayOffset <= $maxDays){
 					$link = $this->buildAddEventLink($month, $dayOffset, $year, $text=$dayOffset);
@@ -932,7 +935,9 @@ class Calendar extends CalendarArticles
 			$colspan = 5; //adjuct for mode buttons
 		}
 		
-		$ret .= "<tr><td colspan=2 $styleTitle>$title</td><td align=right colspan=$colspan>$this->tag_views</td></tr>";
+		//hide mode buttons if selected via parameter tag
+
+		$ret .= "<tr><td colspan=2 $styleTitle>$title</td><td align=right colspan=$colspan>$this->tag_views</td></tr>";	
 		$ret .= "<tr>";
 		$ret .= $sunday;
 		$ret .= "<td class='calendarHeading'>Monday</td>";
@@ -942,6 +947,8 @@ class Calendar extends CalendarArticles
 		$ret .= "<td class='calendarHeading'>Friday</td>";
 		$ret .= $saturday;
 		$ret .= "</tr>";
+		
+		if($fiveDay) getNextValidDate($month, $day, $year);
 		
 		for($i=0; $i<7; $i++){
 			if($fiveDay && $i==0) $i=2;
@@ -1115,7 +1122,14 @@ function displayCalendar($paramstring = "", $params = array()) {
 		if(strlen($arrSession[4]) > 0)
 			$userMode = $arrSession[4];
 	}
-
+	else{
+		// defaults from the <calendar /> parameters; must restart browser to enable
+		if(isset($params['week'])) $userMode = 'week';
+		if(isset($params['year'])) $userMode = 'year';
+		if(isset($params['useeventlist'])) $userMode = 'events';
+		if(isset($params['date'])) $userMode = 'day';		
+	}
+	
 	if(isset($_SESSION['calendar_ical'])){
 		$calendar->debug->set('ical session loaded');		
 		$calendar->ical_data = $_SESSION['calendar_ical'];
@@ -1124,9 +1138,6 @@ function displayCalendar($paramstring = "", $params = array()) {
 		@unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
 		unset($_SESSION['calendar_ical']);
 	}
-	
-	if(isset($params['useeventlist'])) $userMode = 'events';
-	if(isset($params['date'])) $userMode = 'day';	
 
 	return $calendar->renderCalendar($userMode);
 }

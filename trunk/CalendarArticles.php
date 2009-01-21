@@ -268,6 +268,8 @@ class CalendarArticles
 	
 	//find the number of current events and "build" the <add event> link
     public function buildAddEventLink($month, $day, $year, $text='<u>Add Event</u>') {
+	
+		if($this->setting('disableaddevent')) return $day;
 		
     	$articleName = "";    	// the name of the article to check for
     	$articleCount = 1;    	// the article count

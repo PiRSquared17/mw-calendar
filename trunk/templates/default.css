@@ -32,7 +32,7 @@
 		padding:0px;
 		text-align: left;
 		border-spacing: 0px;
-		font-size:11px;
+		font-size:12px;
 	}
 
 	/* defined in CalendarArticles.php*/
@@ -42,7 +42,7 @@
 		padding:0px;
 		text-align: left;
 		border-spacing: 0px;
-		font-size:11px;
+		font-size:12px;
 	}
 	
 	.calendar {
@@ -101,23 +101,17 @@
 /******  Year View Options BEGIN  *******/
 	.yearCalendar {
 	  vertical-align:top;
-	  padding:0px;
-	  border-spacing:0px;
 	  border:0px solid #808080;
-	  border-collapse:collapse;
+	  xborder-collapse:collapse;
 	  width:100%;
-	  background-color:;
 	  text-align: center;
 	}		
 	
 	.yearCalendarMonth {
 	  vertical-align:top;
-	  padding:0px;
-	  border-spacing:0px;
 	  border:1px solid #808080;
 	  border-collapse:collapse;
 	  width:100%;
-	  background-color:;
 	  text-align: center;
 	}	
 	
@@ -125,7 +119,7 @@
 	  text-align:center;
 	  font-weight:bold;
 	  border:1px solid #808080;
-	  font-size: 11px;
+	  font-size: 14px;
   	}
 	
 	.yearHeading {
@@ -133,7 +127,7 @@
 	  font-weight:bold;
 	  background-color:#E0E0E0;	
 	  border:1px solid #808080;
-	  font-size: 14px;
+	  font-size: 12px;
   	}
 	
 	.yearWeekday {
