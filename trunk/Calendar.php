@@ -885,7 +885,7 @@ class Calendar extends CalendarArticles
 				 
 		$css = $this->stripLeadingSpace($css);
 		
-		$ret = "<tr><td></td><td $styleTitle colspan=2>$title</td><td align=right>$this->tag_views</td></tr>";
+		$ret = "<tr><td>" . $this->buildConfigLink(true) . "</td><td $styleTitle colspan=2>$title</td><td align=right>$this->tag_views</td></tr>";
 
 		for($m=0;$m <12; $m++){
 			$cal .= "<td style='text-align:center; vertical-align:top;'>" . $this->buildSimpleCalendar($nextMon++, $nextYear, true) . "</td>";
@@ -934,7 +934,9 @@ class Calendar extends CalendarArticles
 		
 		//hide mode buttons if selected via parameter tag
 
-		$ret .= "<tr><td colspan=2 $styleTitle>$title</td><td align=right colspan=$colspan>$this->tag_views</td></tr>";	
+		$ret .= "<tr><td $styleTitle>$title</td>" . "<td><i>". $this->buildConfigLink(true) . "</i></td>"
+			. "<td align=right colspan=$colspan>$this->tag_views</td></tr>";	
+			
 		$ret .= "<tr>";
 		$ret .= $sunday;
 		$ret .= "<td class='calendarHeading'>Monday</td>";
