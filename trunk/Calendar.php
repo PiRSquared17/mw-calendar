@@ -389,7 +389,7 @@ class Calendar extends CalendarArticles
 		$events = "";
 		
 		$setting = $this->setting('useeventlist',false);
-$this->debug->set($setting);
+
 		if($setting == "") return "";
 		
 		if($setting > 0){
@@ -982,6 +982,7 @@ $this->debug->set($setting);
 	function load_iCal(){
 		$this->debug->set('load_iCal Started');
 		
+		$bMulti = false;
 		$ical_data = $this->ical_data;		
 		$iCal = new ical_calendar;
 
@@ -989,12 +990,15 @@ $this->debug->set($setting);
 		if(!$iCal->setFile($ical_data)) return;
 		$arr = $iCal->getData();
 
-		for($i=0; $i<count($arr); $i++){
+		$ical_count = count($arr);
 		
+		set_time_limit(120); //increase the script timeout for this load to 2min
+		
+		for($i=0; $i<$ical_count; $i++){
 			if(isset($arr[$i]['DTSTART'])){
 				$date = $arr[$i]['DTSTART'];
 				
-				$date_diff = (day_diff($arr[$i]['DTSTART'], $arr[$i]['DTEND'])) -1;
+				$date_diff = day_diff($arr[$i]['DTSTART'], $arr[$i]['DTEND']);
 	
 				$event = $arr[$i]['SUMMARY'];
 				$description = $arr[$i]['DESCRIPTION'];	
@@ -1006,16 +1010,26 @@ $this->debug->set($setting);
 				
 				$page = $this->getNextAvailableArticle($this->calendarPageName, $date, $bMulti);
 
-				if($date_diff > 0)
-					$event = $date_diff . "#" . $event;
-					
+				if($date_diff > 0){
+					if($date_diff > 1)
+						$event = ceil($date_diff) . "#" . $event;
+					else
+						$event = $event;
+				}
+
 				if($bMulti)
 					$this->createNewMultiPage($page, $event, $description, "iCal Import");
 				else
 					$this->createNewPage($page, $event, $description, "iCal Import");
+
 			}
 		}
+		set_time_limit(30);
 		
+		echo "<html><script>alert('Completed the import of $ical_count records. Please click on the reload page button to clear the page cache.')</script></html>";	
+
+		// refresh the page
+		echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
 		$this->debug->set('load_iCal Ended');
 	}
 	
@@ -1136,6 +1150,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		unset($_SESSION['calendar_ical']);
 	}
 
+	
 	return $calendar->renderCalendar($userMode);
 }
 

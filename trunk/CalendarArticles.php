@@ -262,7 +262,7 @@ class CalendarArticles
 			
 			$ret = $html_head . $ret . $html_foot;
 		}
-//$this->debug->set($ret);	
+
 		return $ret;
 	}
 	

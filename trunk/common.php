@@ -89,9 +89,9 @@ function getNextValidDate(&$month, &$day, &$year){
 }
 
 function day_diff($date1, $date2){
-	
-	$start = mktime(0, 0, 0, $date1['mon'], $date1['mday'], $date1['year']);
-	$end = mktime(0, 0, 0, $date2['mon'], $date2['mday'], $date2['year']);
+
+	$start = mktime($date1['hours'], $date1['minutes'], $date1['seconds'], $date1['mon'], $date1['mday'], $date1['year']);
+	$end = mktime($date2['hours'], $date2['minutes'], $date2['seconds'], $date2['mon'], $date2['mday'], $date2['year']);
 	
 	return ($end - $start) / 86400; //seconds
 	
