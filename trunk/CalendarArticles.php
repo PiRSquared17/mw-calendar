@@ -199,6 +199,7 @@ class CalendarArticles
 		
 		$html = $this->articleLink($page, $temp);
 		
+		$bRepeats_disabled=false; // disabling the 'repeat' custom formatting code for now
 		if($bRepeats_disabled){
 			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
 			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
