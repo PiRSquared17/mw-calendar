@@ -10,6 +10,9 @@
  * See Readme file for full details
  */
 
+ //no clue why, but this needs to be out here for Windows...
+session_start();
+ 
 // this is the "refresh" code that allows the calendar to switch time periods
 if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) || isset($_POST["monthBack"])
 	|| isset($_POST["monthForward"]) || isset($_POST["monthSelect"]) || isset($_POST["yearSelect"])){
@@ -49,7 +52,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 
 	$session_name = $title . "_" . $name;
 	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`";
-	session_start();
+
 	$_SESSION[$session_name] = $session_value;
 }
 
@@ -96,7 +99,9 @@ class Calendar extends CalendarArticles
     var $dayNames   = array("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");	
     var $monthNames = array("January", "February", "March", "April", "May", "June",
                             "July", "August", "September", "October", "November", "December");
-
+							
+	var $monthNamesShort = array("Jan", "Feb", "Mar", "Apr", "May", "June",
+		"July", "Aug", "Sept", "Oct", "Nov", "Dec");
 						
     function Calendar($wikiRoot, $debug) {
 
@@ -288,6 +293,7 @@ class Calendar extends CalendarArticles
 		$thedate = getdate(mktime(12, 0, 0, $month, $day, $year));
 		$today = getdate();
 		$wday  = $thedate['wday'];
+		$weekday = $thedate['weekday'];
 
 		if ($thedate['mon'] == $today['mon']
 			&& $thedate['year'] == $today['year']
@@ -317,9 +323,9 @@ class Calendar extends CalendarArticles
 		
 		if(strlen($tag_eventList) > 0 && ($this->calendarMode == "eventlist")){
 			$format = "<h4>" 
-			. $this->monthNames[$month -1] . " "
-			. $day . ", "
-			. $year
+			. $weekday . ", "
+			. $this->monthNamesShort[$month -1] . " "
+			. $day
 			. "</h4>";
 		
 			$this->eventList .= $format . "<ul>" . $tag_eventList . "</ul>";
