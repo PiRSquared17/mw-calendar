@@ -199,12 +199,12 @@ class CalendarArticles
 		
 		$html = $this->articleLink($page, $temp);
 		
-		if($bRepeats){
-			$cArticle->html = "<tr><td class='repeatEvent'>$html\n$cArticle->body</td></tr>";
+		if($bRepeats_disabled){
+			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
 			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
 		}
 		else{
-			$cArticle->html = "$html\n$cArticle->body";
+			$cArticle->html = "$html<br/>$cArticle->body";
 			$this->arrArticles['events'][] = $cArticle;
 		}
 }
@@ -220,7 +220,9 @@ class CalendarArticles
 		$arrType = split(":",$arrEvent[1]);
 		if(count($arrType) == 1)
 			$arrType = split("-",$arrEvent[1]);
-			
+		
+		if(count($arrType) != 2) return $event;
+		
 		$type = trim(strtolower($arrType[0]));
 
 		// we only want the displayed calendar year totals
@@ -232,7 +234,7 @@ class CalendarArticles
 		}
 		
 		//piece together any prefixes that the code may have added - like (r) for repeat events
-		$ret = $arrEvent[0] . $arrType[0]; 
+		$ret = $arrType[0] . " <i>-(track)</i>"; 
 		
 		return $ret;
 	}
@@ -243,6 +245,7 @@ class CalendarArticles
 	
 		$ret = "";
 		$cntValue = count($this->arrTimeTrack);
+
 		$cntHead = split(",", $this->setting('timetrackhead',false));
 		$linktitle = "Time summaries of time specific enties. Prefix events with :: to track time values.";
 		
@@ -258,7 +261,7 @@ class CalendarArticles
 			
 			$ret = $html_head . $ret . $html_foot;
 		}
-	
+//$this->debug->set($ret);	
 		return $ret;
 	}
 	

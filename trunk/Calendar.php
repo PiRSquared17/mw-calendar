@@ -118,10 +118,13 @@ class Calendar extends CalendarArticles
 	// setup calendar arrays
     var $daysInMonth = array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);   
     var $dayNames   = array("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");	
+
     var $monthNames = array("January", "February", "March", "April", "May", "June",
                             "July", "August", "September", "October", "November", "December");
-
 							
+	var $monthNames_short = array("Jan", "Feb", "Mar", "Apr", "May", "June",
+		"July", "Aug", "Sept", "Oct", "Nov", "Dec");
+					
     function Calendar($wikiRoot, $debug) {
 		$this->wikiRoot = $wikiRoot;
 		
@@ -261,10 +264,12 @@ class Calendar extends CalendarArticles
 		$thedate = getdate(mktime(12, 0, 0, $month, $day, $year));
 		$today = getdate();
 		$wday  = $thedate['wday'];
+		$weekday = $thedate['weekday'];
 		
 		$display_day = $day;
 		if($dateFormat == 'long'){
-			$display_day = $this->monthNames[$month -1] . " $day, $year";
+			//$display_day = $this->monthNames[$month -1] . " $day, $year";
+			$display_day = $weekday . ", " . $this->monthNames_short[$month -1] . " $day";
 		}
 		
 		if($dateFormat == 'none')
@@ -393,8 +398,8 @@ class Calendar extends CalendarArticles
 
 			$month = $this->month;
 			$day = $this->day;
-			$year = $this->year;
-
+			$year = $this->year;			
+			
 			$this->updateSetting('charlimit',100);
 			
 			//build the days out....
@@ -414,7 +419,7 @@ class Calendar extends CalendarArticles
 			$ret = "<html><i> " . $this->buildConfigLink(true) . "</i>" 
 				. $css . $events . "</html>";
 
-			return $ret;	
+			return "<table>" . $ret . "</table>";	
 		}
 	}
 
@@ -670,7 +675,7 @@ class Calendar extends CalendarArticles
 			$ret .= $html_week_end; 		// add the week end code
 		}   
 		
-		$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
+		//$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
 		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
@@ -683,7 +688,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[EventStyleBtn]]", $tag_eventStyleButton, $tempString);
 		$tempString = str_replace("[[Version]]", $gVersion, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
-		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
+		//$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
