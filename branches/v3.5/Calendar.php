@@ -81,7 +81,7 @@ include ("CalendarArticles.php");
 
 class Calendar extends CalendarArticles
 {  
-	var $version = "v3.5.0.2 (1/14/2009)";
+	var $version = "v3.5.0.3 (1/21/2009)";
 	
 	var $arrSettings = array();
 	
