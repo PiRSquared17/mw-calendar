@@ -71,10 +71,15 @@ class ical_calendar{
 				if(substr($line,0,11) == 'DESCRIPTION'){
 					$arrSection['DESCRIPTION'] = trim($event[1]);
 				}
+				if(substr($line,0,5) == 'RRULE'){
+					$arrSection['RRULE'] = trim($event[1]);
+				}
 			}
 			
-			if(count($arrSection) > 0)
+			if(count($arrSection) > 0){
 				$arrEvents[] = $arrSection;
+				unset($arrSection);
+			}
 		}
 		
 		return $arrEvents;
@@ -86,15 +91,22 @@ class ical_calendar{
 	
 		$date_time = split("T", $date);
 		$date = $date_time[0];
-		$time = $date_time[1];
 	
 		$arr['year'] = substr($date,0,4);
 		$arr['mon'] = substr($date,4,2) +0;
 		$arr['mday'] = substr($date,6,4) +0;
 		
-		$arr['hours'] = substr($time,0,2) +0;
-		$arr['minutes'] = substr($time,2,2) +0;
-		$arr['seconds'] = substr($time,4,2) +0;
+		if(isset($date_time[1])){	
+			$time = $date_time[1];
+			$arr['hours'] = substr($time,0,2) +0;
+			$arr['minutes'] = substr($time,2,2) +0;
+			$arr['seconds'] = substr($time,4,2) +0;
+		}
+		else{
+			$arr['hours'] = 0;
+			$arr['minutes'] = 0;
+			$arr['seconds'] = 0;
+		}
 		
 		return $arr;
 	}

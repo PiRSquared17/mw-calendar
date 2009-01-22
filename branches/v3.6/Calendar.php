@@ -1001,37 +1001,39 @@ class Calendar extends CalendarArticles
 				$date = $arr[$i]['DTSTART'];
 				
 				$date_diff = day_diff($arr[$i]['DTSTART'], $arr[$i]['DTEND']);
-	
 				$event = $arr[$i]['SUMMARY'];
 				$description = $arr[$i]['DESCRIPTION'];	
-				
+					
 				$date = $date['mon']."-".$date['mday']."-".$date['year'];
 				
 				$ical_mode = $this->setting('ical',false);
-				if($ical_mode == 'usemultievent') $bMulti = true;
 				
-				$page = $this->getNextAvailableArticle($this->calendarPageName, $date, $bMulti);
+				$page = $this->getNextAvailableArticle($this->calendarPageName, $date, true);
 
-				if($date_diff > 0){
+				if($date_diff >= 0){
 					if($date_diff > 1)
 						$event = ceil($date_diff) . "#" . $event;
 					else
 						$event = $event;
 				}
 
-				if($bMulti)
-					$this->createNewMultiPage($page, $event, $description, "iCal Import");
-				else
-					$this->createNewPage($page, $event, $description, "iCal Import");
+				$this->createNewMultiPage($page, $event, $description, "iCal Import");
+/*
+				$rrule .= "DTSTART:$arr[$i]['DTSTART']";
+				$rrule = $arr[$i]['RRULE'] . ";SUMMARY:" . $event;
+				$recurrence_page = "$this->calendarPageName/recurrence";
 
+				$ret = $this->updateRecurrence($recurrence_page, $rrule, "iCal Import");
+*/
 			}
 		}
+		
 		set_time_limit(30);
 		
 		echo "<html><script>alert('Completed the import of $ical_count records. Please click on the reload page button to clear the page cache.')</script></html>";	
 
 		// refresh the page
-		echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
+		//echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
 		$this->debug->set('load_iCal Ended');
 	}
 	

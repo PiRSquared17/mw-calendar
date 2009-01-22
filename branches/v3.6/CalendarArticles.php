@@ -422,16 +422,13 @@ class CalendarArticles
 		return $ret;
 	}
 	
+	// creates a new page and populates it as required
 	function createNewPage($page, $event, $description, $summary){
 		$article = new Article(Title::newFromText($page));
-		$bExists = $article->exists();
 
 		$event = $event . "\n\n" . $description;
-		
-		if($bExists)
-			$article->doEdit($event, $summary, EDIT_UPDATE);
-		else
-			$article->doEdit($event, EDIT_NEW);
+
+		$article->doEdit($event, EDIT_NEW);
 	}
 	
 	function createNewMultiPage($page, $event, $description, $summary){
@@ -443,9 +440,30 @@ class CalendarArticles
 		if($bExists){
 			$body  = trim($article->fetchContent(0,false,false));
 			if(strlen($body) > 0) $body = "$body\n\n";
-			$article->doEdit($body . $event, $summary, EDIT_UPDATE);
+			$article->doEdit($body.$event, $summary, EDIT_UPDATE);
 		}
 		else
 			$article->doEdit($event, $summary, EDIT_NEW);
+	}
+	
+	function updateRecurrence($page, $event, $summary){
+		$article = new Article(Title::newFromText($page));
+		$bExists = $article->exists();
+
+		$event = trim($event);
+		
+		if($bExists){
+			$body  = trim($article->fetchContent(0,false,false));
+			
+			// lets not re-add duplicate RRULE lines
+			if((stripos($body, $event) === false)){
+				if(strlen($body) > 0) $body = "$body\n";
+				$article->doEdit($body."$event\n", $summary, EDIT_UPDATE);
+			}
+		}
+		else
+			$article->doEdit("$event\n", $summary, EDIT_NEW);
+		
+		return $body;
 	}
 }
