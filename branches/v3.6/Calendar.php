@@ -71,7 +71,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.6 (1/21/2009)";
+$gVersion = "3.6.0.1 (1/21/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
