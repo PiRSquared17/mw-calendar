@@ -1033,7 +1033,8 @@ class Calendar extends CalendarArticles
 		echo "<html><script>alert('Completed the import of $ical_count records. Please click on the reload page button to clear the page cache.')</script></html>";	
 
 		// refresh the page
-		//echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
+		echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
+		
 		$this->debug->set('load_iCal Ended');
 	}
 	

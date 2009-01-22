@@ -71,7 +71,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.6 (1/21/2009)";
+$gVersion = "3.6.0.1 (1/21/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -1033,7 +1033,8 @@ class Calendar extends CalendarArticles
 		echo "<html><script>alert('Completed the import of $ical_count records. Please click on the reload page button to clear the page cache.')</script></html>";	
 
 		// refresh the page
-		//echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
+		echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
+		
 		$this->debug->set('load_iCal Ended');
 	}
 	
