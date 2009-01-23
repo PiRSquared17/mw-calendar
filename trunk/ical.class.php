@@ -107,7 +107,7 @@ class ical_calendar{
 			$arr['seconds'] = substr($time,4,2) +0;
 		}
 		else{
-			$arr['hours'] = 0;
+			$arr['hours'] = 12;
 			$arr['minutes'] = 0;
 			$arr['seconds'] = 0;
 		}

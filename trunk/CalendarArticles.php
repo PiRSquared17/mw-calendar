@@ -520,7 +520,7 @@ class CalendarArticles
 				
 				// if we have something like -1SU; then handle it here...
 				if($num < 0)
-					$num = $wday_info['weeks'] + $num;	// get max weeks for that weekday
+					$num = ($wday_info['weeks'] +1) + $num;
 					
 				// kick back the week count if needed
 				if($offset > 0 && $num != 0) $num--;

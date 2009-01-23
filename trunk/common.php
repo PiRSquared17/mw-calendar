@@ -73,7 +73,7 @@ function limitText($text,$max) {
 function getDaysInMonth($month, $year) {
 	
 	// 't' = Number of days in the given month	
-	return date('t', mktime(0, 0, 0, $month, 1, $year)); 
+	return date('t', mktime(12, 0, 0, $month, 1, $year)); 
 }
 
 function getDateArr($month, $day, $year, $hour=0, $minutes=0, $seconds=0, $add_seconds=0){
@@ -107,7 +107,7 @@ function day_diff($date1, $date2){
 // get the offset info based on the 1st of the month
 function wdayOffset($month, $year, $weekday){
 
-	$timestamp = mktime(0, 0, 0, $month, 1, $year);
+	$timestamp = mktime(12, 0, 0, $month, 1, $year);
 	$max_days = date('t', $timestamp);	
 	$the_first = getdate($timestamp);
 	$wday = $the_first["wday"];	

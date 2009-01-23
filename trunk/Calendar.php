@@ -795,7 +795,7 @@ class Calendar extends CalendarArticles
 			if($this->setting('enablelegacy')){
 			
 				// initialize
-				$current_timestamp = mktime(0,0,0,$month,$day,$year);				
+				$current_timestamp = mktime(12,0,0,$month,$day,$year);				
 				$legacy_timestamp = $current_timestamp +1;
 				
 				$legacy = split('-', $this->setting('enablelegacy', false));
@@ -804,7 +804,7 @@ class Calendar extends CalendarArticles
 					$legacy = split('/', $this->setting('enablelegacy', false));
 
 				if(count($legacy) == 3)
-					$legacy_timestamp = mktime(0,0,0,$legacy[0],$legacy[1],$legacy[2]);
+					$legacy_timestamp = mktime(12,0,0,$legacy[0],$legacy[1],$legacy[2]);
 
 				// if date is included with 'enablelegacy' then only pick up legacy events
 				// events if viewing those months that included them...
@@ -826,7 +826,7 @@ class Calendar extends CalendarArticles
 
 		$row = $todayStyle = "";
 
-		$firstDate = getdate(mktime(0, 0, 0, $month, 1, $year));
+		$firstDate = getdate(mktime(12, 0, 0, $month, 1, $year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
 		$today = getdate();    	// today's date
