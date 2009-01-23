@@ -517,13 +517,16 @@ class CalendarArticles
 
 				$wday_info = wdayOffset($month,$year,$day);
 				$offset = $wday_info['offset'];
-	
-				if($offset >= 0 ) $num--;
-	
-				$theday = $offset + (7 * $num);
 				
-				if($num > 0)//dont yet support negitive BYDAY logic...
-					$this->buildEvent($month, $theday +1, $year, $rules['SUMMARY'], $articleName, "");
+				// if we have something like -1SU; then handle it here...
+				if($num < 0)
+					$num = $wday_info['weeks'] + $num;	// get max weeks for that weekday
+					
+				// kick back the week count if needed
+				if($offset > 0 && $num != 0) $num--;
+
+				$theday = $offset + (7 * $num);
+				$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "");
 			}
 			
 		}
