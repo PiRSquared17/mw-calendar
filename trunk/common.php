@@ -76,6 +76,11 @@ function getDaysInMonth($month, $year) {
 	return date('t', mktime(0, 0, 0, $month, 1, $year)); 
 }
 
+function getDateArr($month, $day, $year, $hour=0, $minutes=0, $seconds=0, $add_seconds=0){
+
+	return getdate(mktime($hour, $minutes, $seconds, $month, $day, $year) + $add_seconds);
+}
+
 function getNextValidDate(&$month, &$day, &$year){
 
 	$seconds = 86400; //1 day
@@ -98,3 +103,22 @@ function day_diff($date1, $date2){
 	return ($end - $start) / 86400; //seconds
 	
 }
+
+function wdayOffset($month, $year, $weekday){
+
+	$timestamp = mktime(0, 0, 0, $month, 1, $year);
+	$max_days = date('t', $timestamp) +7;	
+	$the_first = getdate($timestamp);
+	$wday = $the_first["wday"];	
+	
+	$offset = $weekday - $wday;
+	$weeks = floor(($max_days - $offset)/7); 
+	
+	$arr['offset'] = $offset +1;
+	$arr['maxdays'] = $max_days -7;
+	$arr['weeks'] = $weeks;
+	
+	return $arr;
+}
+
+

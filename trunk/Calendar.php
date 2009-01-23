@@ -71,7 +71,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.6.0.1 (1/21/2009)";
+$gVersion = "3.6.0.3 (1/22/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -126,17 +126,20 @@ class Calendar extends CalendarArticles
 	var $monthNamesShort = array("Jan", "Feb", "Mar", "Apr", "May", "June",
 		"July", "Aug", "Sept", "Oct", "Nov", "Dec");
 					
+	var $ical_short_day = array("SU"=>0,"MO"=>1,"TU"=>2,"WE"=>3,"TH"=>4,"FR"=>5,"SA"=>6);	
+					
     function Calendar($wikiRoot, $debug) {
 		$this->wikiRoot = $wikiRoot;
 		
 		$this->debug = new debugger('html');
 		$this->debug->enabled($debug);
 
-		// set the calendar's initial date to now
-		$today = getdate();    	
-		$this->month = $today['mon'];
-		$this->year = $today['year'];
-		$this->day = $today['mday'];
+		// set the calendar's initial date
+		$now = getdate();
+		
+		$this->month = $now['mon'];
+		$this->year = $now['year'];
+		$this->day = $now['mday'];
 		
 		$this->debug->set("Calendar Constructor Ended.");
     }
@@ -159,7 +162,8 @@ class Calendar extends CalendarArticles
 		
 		$this->initalizeHTML();		
 		$this->readStylepage();
-		$this->buildTemplateEvents();	
+		$this->buildTemplateEvents();
+		$this->buildVCalEvents();
 
 		//grab last months events for overlapped repeating events
 		if($this->setting('enablerepeatevents')) 
@@ -431,15 +435,28 @@ class Calendar extends CalendarArticles
 			
 			// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
 			for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
-				for($s=0;$s < count($this->subscribedPages);$s++){ //loop thru $i month per subscribed calendar
-					$this->addTemplate($month, $year, ($this->subscribedPages[$s]));
-				}
+				foreach($this->subscribedPages as $page)
+					$this->addTemplate($month, $year, $page);
+
 				
 				$this->addTemplate($month, $year, ($this->calendarPageName));		
 				$year = ($month == 12 ? ++$year : $year);
 				$month = ($month == 12 ? 1 : ++$month);
 			}
 		}
+	}
+	
+	// load ical RRULE (recurrence) events into memory
+	function buildVCalEvents(){	
+
+		$year = $this->year;
+		$month = $this->month;
+		
+		foreach($this->subscribedPages as $page){
+			$this->addVCalEvents($page, $year, $month);
+		}	
+		
+		$this->addVCalEvents($this->calendarPageName, $year, $month);
 	}
 	
 	// used for 'date' mode only...technically, this can be any date
@@ -539,7 +556,7 @@ class Calendar extends CalendarArticles
 	    $firstDate = getdate(mktime(12, 0, 0, $this->month, 1, $this->year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
-	    $today = getdate();    	// today's date
+	    //$today = getdate();    	// today's date
 	    $isSelected = false;    	// if the day being processed is today
 	    $isMissing = false;    	// if the calendar cell being processed is in the current month
 
@@ -988,49 +1005,81 @@ class Calendar extends CalendarArticles
 		$ical_data = $this->ical_data;		
 		$iCal = new ical_calendar;
 
+		$bExpired = false;
+		$bOverwrite = false;
+		$description = "";
+		$summary = "";
+		
 		//make sure we're good before we go further
 		if(!$iCal->setFile($ical_data)) return;
+		
 		$arr = $iCal->getData();
-
-		$ical_count = count($arr);
-		
-		set_time_limit(120); //increase the script timeout for this load to 2min
-		
-		for($i=0; $i<$ical_count; $i++){
-			if(isset($arr[$i]['DTSTART'])){
-				$date = $arr[$i]['DTSTART'];
+	
+		if($this->setting('ical', false) == 'overwrite')
+			$bOverwrite = true;
+	
+		set_time_limit(120); //increase the script timeout for this load to 2min	
+		$cnt = 0;
+		foreach($arr as $event){
+			$bExpired = false; //reset per loop
+			
+			if(isset($event['DTSTART'])){
+				$start = $event['DTSTART'];
 				
-				$date_diff = day_diff($arr[$i]['DTSTART'], $arr[$i]['DTEND']);
-				$event = $arr[$i]['SUMMARY'];
-				$description = $arr[$i]['DESCRIPTION'];	
+				if(isset($event['SUMMARY'])) 
+					$summary = $event['SUMMARY'];
 					
-				$date = $date['mon']."-".$date['mday']."-".$date['year'];
+				if(isset($event['DESCRIPTION'])) 
+					$description = $event['DESCRIPTION'];	
+					
+				if(!isset($event['DTEND'])) 
+					$event['DTEND'] = $event['DTSTART'];
 				
-				$ical_mode = $this->setting('ical',false);
-				
-				$page = $this->getNextAvailableArticle($this->calendarPageName, $date, true);
+				$date_string = $start['mon']."-".$start['mday']."-".$start['year'];	
+				$page = $this->getNextAvailableArticle($this->calendarPageName, $date_string, true);
 
-				if($date_diff >= 0){
-					if($date_diff > 1)
-						$event = ceil($date_diff) . "#" . $event;
-					else
-						$event = $event;
+				$date_diff = ceil(day_diff($event['DTSTART'], $event['DTEND']));
+				if($date_diff > 1)
+					$summary = $date_diff . "#" . $summary; //multiple day events
+				
+				// add events
+				if(!isset($event['RRULE'])){
+					$this->createNewMultiPage($page, $summary, $description, "iCal Import");
+					$cnt++;
 				}
+				else{
+					$recurrence_page = "$this->calendarPageName/recurrence";
+					
+					//clean up the RRULE some to fit this calendars need...
+					$byday = $bymonth = "";	
+					if(stripos($event['RRULE'], "BYDAY") === false) $byday = ";DAY=" . $start['mday'];	
+					if(stripos($event['RRULE'], "BYMONTH") === false) $bymonth = ";BYMONTH=" . $start['mon'];				
+	
+					$rrule = "RRULE:" . $event['RRULE']
+						. $bymonth
+						. $byday 
+						. ";SUMMARY=" . $summary;
 
-				$this->createNewMultiPage($page, $event, $description, "iCal Import");
-/*
-				$rrule .= "DTSTART:$arr[$i]['DTSTART']";
-				$rrule = $arr[$i]['RRULE'] . ";SUMMARY:" . $event;
-				$recurrence_page = "$this->calendarPageName/recurrence";
+					$rules = $this->convertRRULEs($rrule);
 
-				$ret = $this->updateRecurrence($recurrence_page, $rrule, "iCal Import");
-*/
+					if(isset($rules[0]['UNTIL'])){
+						$bExpired = $this->checkExpiredRRULE($rules[0]['UNTIL']);
+					}
+						
+					if(!$bExpired){
+						//add recurrences
+						$cnt += $this->updateRecurrence($recurrence_page, $rrule, $summary, "iCal Import", $bOverwrite);
+						$bOverwrite = false; //just need to hit the overwrite one time to delete the page...
+					}
+					
+					unset($rules);
+				}
 			}
 		}
 		
 		set_time_limit(30);
 		
-		echo "<html><script>alert('Completed the import of $ical_count records. Please click on the reload page button to clear the page cache.')</script></html>";	
+		echo "<html><script>alert('Completed the import of $cnt records. Please click on the reload page button to clear the page cache.')</script></html>";	
 
 		// refresh the page
 		echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";

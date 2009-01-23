@@ -51,7 +51,7 @@ class ical_calendar{
 		$arrEvents = array();
 
 		$sections = split("BEGIN:VEVENT", $this->data);
-	
+		
 		for($sec=0; $sec<count($sections); $sec++){
 			$lines = split("\n", $sections[$sec]);
 
@@ -85,8 +85,12 @@ class ical_calendar{
 		return $arrEvents;
 	}
 	
+	private function filterExpiredRRULE($rrule){
+	
+	}
+	
 	//ex: 20090116T150000Z
-	private function convertToPHPDate($date){
+	public function convertToPHPDate($date){
 		$date = trim($date);
 	
 		$date_time = split("T", $date);
