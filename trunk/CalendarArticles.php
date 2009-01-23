@@ -189,6 +189,8 @@ class CalendarArticles
 
 		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
 		
+		$temp = trim($temp);
+		
 		$cArticle->month = $month;	
 		$cArticle->day = $day;	
 		$cArticle->year = $year;	
@@ -196,9 +198,9 @@ class CalendarArticles
 		$cArticle->eventname = $temp;
 		if(trim($body) != "")
 			$cArticle->body = $body;
-		
+
 		$html = $this->articleLink($page, $temp);
-		
+	
 		$bRepeats_disabled=false; // disabling the 'repeat' custom formatting code for now
 		if($bRepeats_disabled){
 			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
@@ -208,7 +210,7 @@ class CalendarArticles
 			$cArticle->html = "$html<br/>$cArticle->body";
 			$this->arrArticles['events'][] = $cArticle;
 		}
-}
+	}
 	
 	// this function checks a template event for a time trackable value
 	private function checkTimeTrack($month, $day, $year, $event, $isTemplate){
@@ -461,19 +463,18 @@ class CalendarArticles
 		
 		if($bExists){
 			if($overwrite){
-				$article->doEdit("$rrule\n", $summary, EDIT_UPDATE);
+				$article->doEdit("$rrule", $summary, EDIT_UPDATE);
 			}
 			else{
 				$body  = trim($article->fetchContent(0,false,false));
-				if((stripos($body, $rrule) === false)){// lets not re-add duplicate rrule lines
-					if(strlen($body) > 0) $body = "$body\n";
-					$article->doEdit($body."$rrule\n", $summary, EDIT_UPDATE);
-					$ret = 1;
+				if((stripos($body, $rrule) === false)){ 	// lets not re-add duplicate rrule lines
+					$article->doEdit("$body\n" . "$rrule", $summary, EDIT_UPDATE);
 				}
+				$ret = 1;
 			}
 		}
 		else{
-			$article->doEdit("$event\n", $summary, EDIT_NEW);
+			$article->doEdit("$event", $summary, EDIT_NEW);
 			$ret = 1;
 		}
 		
@@ -481,9 +482,7 @@ class CalendarArticles
 	}
 	
 	// RRULE:FREQ=YEARLY;INTERVAL=1;BYMONTH=10;BYDAY=2MO;MONTH=10;DAY=14;SUMMARY=Columbus Day 
-	public function addVCalEvents($page, $year, $month){
-		$this->debug->set('addVCalEvents started');
-		
+	public function addVCalEvents($page, $year, $month){	
 		$arrRRULES = array();
 		
 		$articleName = "$page/recurrence";
