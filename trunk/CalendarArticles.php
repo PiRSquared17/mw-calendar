@@ -523,7 +523,7 @@ class CalendarArticles
 				$theday = $offset + (7 * $num);
 				
 				if($num > 0)//dont yet support negitive BYDAY logic...
-					$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "");
+					$this->buildEvent($month, $theday +1, $year, $rules['SUMMARY'], $articleName, "");
 			}
 			
 		}

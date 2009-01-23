@@ -114,7 +114,7 @@ function wdayOffset($month, $year, $weekday){
 	$offset = $weekday - $wday;
 	$weeks = floor(($max_days - $offset)/7); 
 	
-	$arr['offset'] = $offset +1;
+	$arr['offset'] = $offset;
 	$arr['maxdays'] = $max_days -7;
 	$arr['weeks'] = $weeks;
 	
