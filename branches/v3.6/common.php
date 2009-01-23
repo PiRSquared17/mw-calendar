@@ -73,7 +73,7 @@ function limitText($text,$max) {
 function getDaysInMonth($month, $year) {
 	
 	// 't' = Number of days in the given month	
-	return date('t', mktime(0, 0, 0, $month, 1, $year)); 
+	return date('t', mktime(12, 0, 0, $month, 1, $year)); 
 }
 
 function getDateArr($month, $day, $year, $hour=0, $minutes=0, $seconds=0, $add_seconds=0){
@@ -104,19 +104,30 @@ function day_diff($date1, $date2){
 	
 }
 
+// get the offset info based on the 1st of the month
 function wdayOffset($month, $year, $weekday){
 
-	$timestamp = mktime(0, 0, 0, $month, 1, $year);
-	$max_days = date('t', $timestamp) +7;	
+	$timestamp = mktime(12, 0, 0, $month, 1, $year);
+	$max_days = date('t', $timestamp);	
 	$the_first = getdate($timestamp);
 	$wday = $the_first["wday"];	
 	
-	$offset = $weekday - $wday;
-	$weeks = floor(($max_days - $offset)/7); 
+	$offset = ($weekday - $wday) +1; //relate $wday as a negative number
+	$month_offset = (7 + $offset);
 	
-	$arr['offset'] = $offset +1;
-	$arr['maxdays'] = $max_days -7;
-	$arr['weeks'] = $weeks;
+	$weeks = 4;
+	
+	// this $weekday is before the 1st
+	if($offset <= 0 )
+		if( ($month_offset + 28) <= $max_days)  $weeks = 5;
+	
+	// this $weekday is after the 1st
+	if($offset > 0 )
+		if( ($month_offset + 21) <= $max_days)  $weeks = 5;
+
+	$arr['offset'] = $offset; // delta between the 1st and the $weekday parameter(0-sun, 1-mon, etc)
+	$arr['maxdays'] = $max_days; //days in month
+	$arr['weeks'] = $weeks; //max weeks this weekday has
 	
 	return $arr;
 }

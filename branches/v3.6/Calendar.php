@@ -162,8 +162,12 @@ class Calendar extends CalendarArticles
 		
 		$this->initalizeHTML();		
 		$this->readStylepage();
-		$this->buildTemplateEvents();
-		$this->buildVCalEvents();
+		
+		if($this->setting('usetemplates'))
+			$this->buildTemplateEvents();
+		
+		if(!$this->setting('disablerecurrences'))
+			$this->buildVCalEvents();
 
 		//grab last months events for overlapped repeating events
 		if($this->setting('enablerepeatevents')) 
@@ -413,7 +417,10 @@ class Calendar extends CalendarArticles
 						     "<!-- CSS Start -->", "<!-- CSS End -->");
 			
 			for($i=0; $i < $daysOut; $i++){	
-				$events .= "<tr>" . $this->getHTMLForDay($month, $day, $year, 'long', 'events') . "</tr>";
+				$temp = $this->getHTMLForDay($month, $day, $year, 'long', 'events');
+				if(strlen(trim($temp)) > 0 ){
+					$events .= "<tr>" . $temp . "</tr>";
+				}				
 				getNextValidDate($month,$day,$year);//bump the date up by 1
 			}
 		
@@ -428,35 +435,41 @@ class Calendar extends CalendarArticles
 	}
 
 	function buildTemplateEvents(){	
-		if($this->setting('usetemplates')){
-			$year = $this->year;
-			$month = 1;//$this->month;
-			$additionMonths = $this->month + 12;
-			
-			// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
-			for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
-				foreach($this->subscribedPages as $page)
-					$this->addTemplate($month, $year, $page);
 
-				
-				$this->addTemplate($month, $year, ($this->calendarPageName));		
-				$year = ($month == 12 ? ++$year : $year);
-				$month = ($month == 12 ? 1 : ++$month);
-			}
+		$year = $this->year;
+		$month = 1;//$this->month;
+		$additionMonths = $this->month + 12;
+		
+		// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
+		for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
+			foreach($this->subscribedPages as $page)
+				$this->addTemplate($month, $year, $page);
+
+			
+			$this->addTemplate($month, $year, ($this->calendarPageName));		
+			$year = ($month == 12 ? ++$year : $year);
+			$month = ($month == 12 ? 1 : ++$month);
 		}
 	}
 	
 	// load ical RRULE (recurrence) events into memory
 	function buildVCalEvents(){	
-
+		$this->debug->set("buildVCalEvents started");
+		
 		$year = $this->year;
-		$month = $this->month;
+		$month = 1;//$this->month;
+		$additionMonths = $this->month + 12;
 		
-		foreach($this->subscribedPages as $page){
-			$this->addVCalEvents($page, $year, $month);
-		}	
-		
-		$this->addVCalEvents($this->calendarPageName, $year, $month);
+		// lets just grab the next 12 months...this load only takes about .01 second per subscribed calendar
+		for($i=0; $i < $additionMonths; $i++){ // loop thru 12 months
+			foreach($this->subscribedPages as $page){
+				$this->addVCalEvents($page, $year, $month);
+			}
+			
+			$this->addVCalEvents($this->calendarPageName, $year, $month);
+			$year = ($month == 12 ? ++$year : $year);
+			$month = ($month == 12 ? 1 : ++$month);
+		}
 	}
 	
 	// used for 'date' mode only...technically, this can be any date
@@ -795,7 +808,7 @@ class Calendar extends CalendarArticles
 			if($this->setting('enablelegacy')){
 			
 				// initialize
-				$current_timestamp = mktime(0,0,0,$month,$day,$year);				
+				$current_timestamp = mktime(12,0,0,$month,$day,$year);				
 				$legacy_timestamp = $current_timestamp +1;
 				
 				$legacy = split('-', $this->setting('enablelegacy', false));
@@ -804,7 +817,7 @@ class Calendar extends CalendarArticles
 					$legacy = split('/', $this->setting('enablelegacy', false));
 
 				if(count($legacy) == 3)
-					$legacy_timestamp = mktime(0,0,0,$legacy[0],$legacy[1],$legacy[2]);
+					$legacy_timestamp = mktime(12,0,0,$legacy[0],$legacy[1],$legacy[2]);
 
 				// if date is included with 'enablelegacy' then only pick up legacy events
 				// events if viewing those months that included them...
@@ -826,7 +839,7 @@ class Calendar extends CalendarArticles
 
 		$row = $todayStyle = "";
 
-		$firstDate = getdate(mktime(0, 0, 0, $month, 1, $year));
+		$firstDate = getdate(mktime(12, 0, 0, $month, 1, $year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
 		$today = getdate();    	// today's date
