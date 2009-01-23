@@ -517,11 +517,13 @@ class CalendarArticles
 
 				$wday_info = wdayOffset($month,$year,$day);
 				$offset = $wday_info['offset'];
-				
+	
 				if($offset >= 0 ) $num--;
 	
 				$theday = $offset + (7 * $num);
-				$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "");
+				
+				if($num > 0)//dont yet support negitive BYDAY logic...
+					$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "");
 			}
 			
 		}
