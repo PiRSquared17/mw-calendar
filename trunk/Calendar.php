@@ -181,6 +181,9 @@ class Calendar extends CalendarArticles
 			
 		if($userMode == 'month')
 			$ret = $this->renderMonth();
+			
+		if($userMode == 'simplemonth')
+			$ret = $this->renderSimpleMonth();
 
 		if($userMode == 'week')
 			$ret = $this->renderWeek($this->setting('5dayweek'));		
@@ -519,6 +522,18 @@ class Calendar extends CalendarArticles
 		
 	}
 
+	function renderSimpleMonth(){
+		 
+		 $css = $this->searchHTML($this->html_template, 
+			 "<!-- CSS Start -->", "<!-- CSS End -->");
+				 
+		$css = $this->stripLeadingSpace($css);
+		 
+		$ret = $this->buildSimpleCalendar($this->month, $this->year);
+		 
+		 return $css . $ret;
+	}
+	
     function renderMonth() {   
 		global $gVersion;
 			
@@ -1206,6 +1221,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		if(isset($params['year'])) $userMode = 'year';
 		if(isset($params['useeventlist'])) $userMode = 'events';
 		if(isset($params['date'])) $userMode = 'day';		
+		if(isset($params['simplemonth'])) $userMode = 'simplemonth';
 	}
 	
 	if(isset($_SESSION['calendar_ical'])){
