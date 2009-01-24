@@ -201,11 +201,13 @@ class CalendarArticles
 
 		$html = $this->articleLink($page, $temp);
 	
-		$bRepeats_disabled=false; // disabling the 'repeat' custom formatting code for now
-		if($bRepeats_disabled){
-			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
-			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
-		}
+		//$bRepeats=false; // disabling the 'repeat' custom formatting code for now
+		if($bRepeats){
+//			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
+			$cArticle->html = "<span class='repeatEvent'>$html</span><br/>$cArticle->body";
+			$this->arrArticles['events'][] = $cArticle; //put repeats on top of the event list
+//			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
+			}
 		else{
 			$cArticle->html = "$html<br/>$cArticle->body";
 			$this->arrArticles['events'][] = $cArticle;

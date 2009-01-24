@@ -25,17 +25,17 @@
 	  width:100%;
 	}
 
-	/* defined in CalendarArticles.php*/
+	/* defines the text for multi-day events */
 	.repeatEvent{
-		background-color: #E8E8E8;
-		border:1px solid #CCCCCC;
-		padding:0px;
+		background-color:;
+		font-weight:bold;
+		padding:1px;
 		text-align: left;
-		border-spacing: 0px;
+		border-spacing: 1px;
 		font-size:12px;
 	}
 
-	/* defined in CalendarArticles.php*/
+	/* defines the text for single day events */
 	.singleEvent{
 		background-color:;
 		border:0px solid #CCCCCC;
