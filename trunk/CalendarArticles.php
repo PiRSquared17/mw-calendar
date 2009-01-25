@@ -89,6 +89,12 @@ class CalendarArticles
 	
 	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate=false, $bRepeats=false){	
 	
+		// user triggered yearly repeat event...
+		if(stripos($event, ':#') !== false){
+			$event = trim(str_replace(":#", "", $event));
+			$this->buildRecurrenceEvent($month, $day, $year, $event, $page);
+		}
+	
 		// check for 'add event' type repeat events...templates can always repeat.
 		if(!$this->setting('enablerepeatevents')){
 			$this->add($month, $day, $year, $event, $page, $body, $isTemplate, $bRepeats);	
@@ -99,7 +105,7 @@ class CalendarArticles
 		$arrEvent = split("#",$event);
 		if(isset($arrEvent[1]) && ($arrEvent[0] != 0)){
 			for($i=0; $i<$arrEvent[0]; $i++) {
-				$this->add($month, $day, $year, $arrEvent[1], $page, $body, false, true); //add with arrow
+				$this->add($month, $day, $year, $arrEvent[1], $page, $body, false, true);
 				getNextValidDate($month, $day, $year);
 			}
 		}else
@@ -107,43 +113,35 @@ class CalendarArticles
 	}
 
 	public function getArticleLinks($month, $day, $year){
-	
-		$cntEvents = $cntTemplates = 0;
-	
-		if(isset($this->arrArticles['events']))
-			$cntEvents = count($this->arrArticles['events']);
-		
-		if(isset($this->arrArticles['templates']))
-			$cntTemplates = count($this->arrArticles['templates']);
-		
 		$ret = $list = "";
 		$bFound = false;
 
-		for($i=0; $i<$cntTemplates; $i++){
-			$cArticle = $this->arrArticles['templates'][$i];
-			if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
-				$ret .= $cArticle->html;
-			}
-		}	
+		// not using 'templates' array, but the purpose was to put all these events above other events...
+		if(isset($this->arrArticles['templates'])){	
+			foreach($this->arrArticles['templates'] as $cArticle){
+				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
+					$ret .= $cArticle->html;
+				}
+			}	
+		}
 		
 		// we want to format the normal 'add event' items in 1 table cell
 		// this creates less spacing and creates a better <ul>
-		if($cntEvents > 0){
-			$head = "<tr cellpadding=0 cellspacing=0 ><td class='calendarTransparent singleEvent'>";
-			$head .= "<ul class='bullets'>";
-			
-			for($i=0; $i<$cntEvents; $i++){
-				$cArticle = $this->arrArticles['events'][$i];
+		$head = "<tr cellpadding=0 cellspacing=0 ><td class='calendarTransparent singleEvent'>";
+		$head .= "<ul class='bullets'>";
+		$foot = "</ul></td></tr>";
+		
+		if(isset($this->arrArticles['events'])){		
+			foreach($this->arrArticles['events'] as $cArticle){
 				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
 					$list .= "<li>" . $cArticle->html . "</li>";
 					$bFound = true;
-				}
+				}	
 			}
-			
-			$foot = "</ul></td></tr>";		
-			if($bFound) 
-				$ret .= $head . $list . $foot;
 		}
+		
+		if($bFound) 
+			$ret .= $head . $list . $foot;
 		
 		return $ret;
 	}
@@ -201,11 +199,11 @@ class CalendarArticles
 
 		$html = $this->articleLink($page, $temp);
 	
-		//$bRepeats=false; // disabling the 'repeat' custom formatting code for now
+		// format for repeats can be different then single day events...
 		if($bRepeats){
-//			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
 			$cArticle->html = "<span class='repeatEvent'>$html</span><br/>$cArticle->body";
 			$this->arrArticles['events'][] = $cArticle; //put repeats on top of the event list
+//			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
 //			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
 			}
 		else{
@@ -456,6 +454,38 @@ class CalendarArticles
 		}
 	}
 	
+	// call this after adding/editing pages programmically
+	function purgeCalendar($bReload = false){
+		$article = new Article(Title::newFromText($this->title));
+		$article->doPurge();
+		
+		// reload the wiki calendar page post purge...
+		if($bReload)			
+			header("Location: " . $_SERVER['REQUEST_URI']);
+	}	
+	
+	private function buildRecurrenceEvent($month, $day, $year, $event, $page){
+		$this->debug->set('buildRecurrenceEvent started');
+		
+		$recurrence_page = "$this->calendarPageName/recurrence";
+		
+		$article = new Article(Title::newFromText($page));
+		$bExists = $article->exists();
+		
+		if($bExists){
+			$article->doEdit('', 'recurrence event moved...', EDIT_UPDATE);
+			unset($article);
+		}
+
+		$rrule = "RRULE:FREQ=YEARLY;INTERVAL=1"
+			. ";BYMONTH=$month"
+			. ";DAY=$day"
+			. ";SUMMARY=$event";
+		
+		$this->updateRecurrence($recurrence_page, $rrule, $event, 'recurrence update');	
+		$this->purgeCalendar();
+	}
+	
 	function updateRecurrence($page, $rrule, $event, $summary, $overwrite=false){
 		$article = new Article(Title::newFromText($page));
 		$bExists = $article->exists();
@@ -466,13 +496,14 @@ class CalendarArticles
 		if($bExists){
 			if($overwrite){
 				$article->doEdit("$rrule", $summary, EDIT_UPDATE);
+				$ret = 1;
 			}
 			else{
 				$body  = trim($article->fetchContent(0,false,false));
 				if((stripos($body, $rrule) === false)){ 	// lets not re-add duplicate rrule lines
 					$article->doEdit("$body\n" . "$rrule", $summary, EDIT_UPDATE);
+					$ret = 1;
 				}
-				$ret = 1;
 			}
 		}
 		else{
@@ -528,8 +559,7 @@ class CalendarArticles
 
 				$theday = $offset + (7 * $num);
 				$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "");
-			}
-			
+			}	
 		}
 		unset($rules);
 	}

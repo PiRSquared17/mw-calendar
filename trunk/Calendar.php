@@ -71,7 +71,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.6.0.2 (1/23/2009)";
+$gVersion = "3.6.0.3 (1/23/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -197,7 +197,7 @@ class Calendar extends CalendarArticles
 		//tag on extra info at the end of whatever is displayed
 		$ret .= $this->buildTrackTimeSummary();
 		$ret .= $this->debug->get();
-		
+	
 		return $ret;
 	 }
 	
@@ -370,12 +370,19 @@ class Calendar extends CalendarArticles
 	}
 
 	function loadiCalLink(){
-		$refresh = $this->wikiRoot .  $this->title . "&action=purge";	
-		
+
+		$note = "";
+		$sessionName = $this->calendarPageName . "_ical_count";
+		if(isset($_SESSION[$sessionName])){
+			$cnt = $_SESSION[$sessionName];
+			$note = "<font color=red>Completed the import of <b>$cnt</b> record(s).</font>";
+			//unset($_SESSION[$sessionName]);		
+		}
+
 		$ret = "Please specify an ical format file (vcalendar).<br>"
 			. "<input name='uploadedfile' type='file' title='Browse to file location...' size='50'><br>"	
 			. "<input name='ical' class='btn' type='submit' title='load ical data into calendar' value='load'>&nbsp;&nbsp;"
-			. "<input class='btn' type=button value='reload page' title='Click to reload/refresh this wiki page' onClick=\"javascript:document.location='" . $refresh ."'\">";
+			. $note;
 			
 		return $ret;
 	}
@@ -1106,16 +1113,13 @@ class Calendar extends CalendarArticles
 		}
 		
 		set_time_limit(30);
-		
-		echo "<html><script>alert('Completed the import of $cnt records. Please click on the reload page button to clear the page cache.')</script></html>";	
-
-		// refresh the page
-		echo "<script>window.onload=function() { document.forms['cal_frm'].submit(); }</script>";
-		
+		$sessionName = $this->calendarPageName . "_ical_count";
+		$_SESSION[$sessionName] = $cnt;
+				
 		$this->debug->set('load_iCal Ended');
 	}
 	
-	// Set/Get accessors	
+	// Set/Get accessors		
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
 	function setTitle($title) { $this->title = $title; }
@@ -1228,12 +1232,14 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->debug->set('ical session loaded');		
 		$calendar->ical_data = $_SESSION['calendar_ical'];
 		$calendar->load_iCal();
-
+		
 		@unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
 		unset($_SESSION['calendar_ical']);
+
+		// refresh the calendar's newly added events
+		$calendar->purgeCalendar(true);
 	}
 
-	
 	return $calendar->renderCalendar($userMode);
 }
 
