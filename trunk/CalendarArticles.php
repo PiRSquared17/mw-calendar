@@ -87,7 +87,7 @@ class CalendarArticles
 		}
 	}
 	
-	private function buildEvent($month, $day, $year, $event, $page, $body, $isTemplate=false, $bRepeats=false){	
+	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
 		if(stripos($event, ':#') !== false){
@@ -97,7 +97,7 @@ class CalendarArticles
 	
 		// check for 'add event' type repeat events...templates can always repeat.
 		if(!$this->setting('enablerepeatevents')){
-			$this->add($month, $day, $year, $event, $page, $body, $isTemplate, $bRepeats);	
+			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
 			return;
 		}
 		
@@ -109,7 +109,7 @@ class CalendarArticles
 				getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($month, $day, $year, "$event", $page, $body, $isTemplate, $bRepeats);	
+			$this->add($month, $day, $year, "$event", $page, $body, $eventType, $bRepeats);	
 	}
 
 	public function getArticleLinks($month, $day, $year){
@@ -170,23 +170,24 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
-							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", true, true);
+							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", "templates", true);
 							$day++;
 						}
 					}else{
-						$this->buildEvent($month, $day, $year, $arrEvent[1], $articleName, "", true);
+						$this->buildEvent($month, $day, $year, $arrEvent[1], $articleName, "", "templates");
 					}
 				}
 			}
 		}	
 	}
 
-	private function add($month, $day, $year, $eventname, $page, $body, $isTemplate=false, $bRepeats=false){
-		
-		$cArticle = new CalendarArticle($month, $day, $year);
+	private function add($month, $day, $year, $eventname, $page, $body, $eventType='default', $bRepeats=false){
+		// $eventType='default' -- addevent
+		// $eventType='recurrence'
+		// $eventType='template'
 
-		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $isTemplate);
-		
+		$cArticle = new CalendarArticle($month, $day, $year);
+		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $eventType);
 		$temp = trim($temp);
 		
 		$cArticle->month = $month;	
@@ -199,21 +200,21 @@ class CalendarArticles
 
 		$html = $this->articleLink($page, $temp);
 	
-		// format for repeats can be different then single day events...
-		if($bRepeats){
-			$cArticle->html = "<span class='repeatEvent'>$html</span><br/>$cArticle->body";
-			$this->arrArticles['events'][] = $cArticle; //put repeats on top of the event list
-//			$cArticle->html = "<tr><td class='repeatEvent'>$html<br/>$cArticle->body</td></tr>";
-//			$this->arrArticles['templates'][] = $cArticle; //put repeats on top of the event list
-			}
-		else{
-			$cArticle->html = "$html<br/>$cArticle->body";
-			$this->arrArticles['events'][] = $cArticle;
-		}
+		// format for different event types
+		$class = "baseEvent ";
+		if($bRepeats)
+			$class .= "repeatEvent ";
+			
+		if($eventType == "recurrence")
+			$class .= "recurrenceEvent ";
+		
+		$class = trim($class);
+		$cArticle->html = "<span class='$class'>$html</span><br/>$cArticle->body";
+		$this->arrArticles['events'][] = $cArticle;
 	}
 	
 	// this function checks a template event for a time trackable value
-	private function checkTimeTrack($month, $day, $year, $event, $isTemplate){
+	private function checkTimeTrack($month, $day, $year, $event, $eventType){
 	
 		if((stripos($event,"::") === false) || $this->setting('disabletimetrack'))
 			return $event;
@@ -230,7 +231,7 @@ class CalendarArticles
 
 		// we only want the displayed calendar year totals
 		if($this->year == $year){
-			if($isTemplate)
+			if($eventType='templates')
 				$this->arrTimeTrack[$type.' (y)'][] = $arrType[1];
 			else
 				$this->arrTimeTrack[$type.' (m)'][] = $arrType[1];
@@ -537,7 +538,7 @@ class CalendarArticles
 			if($bExpired) continue; // skip the rest of the current loop iteration
 		
 			if($rules['FREQ'] == 'YEARLY' && !isset($rules['BYDAY']) && $rules['BYMONTH'] == $month){ //std sameday recurrence
-				$this->buildEvent($month, $rules['DAY'], $year, $rules['SUMMARY'], $articleName, "");
+				$this->buildEvent($month, $rules['DAY'], $year, $rules['SUMMARY'], $articleName, "", 'recurrence');
 			}
 			else if ($rules['FREQ'] == 'YEARLY' && isset($rules['BYDAY']) && $rules['BYMONTH'] == $month){
 				$num = $rules['BYDAY'];
@@ -558,7 +559,7 @@ class CalendarArticles
 				if($offset > 0 && $num != 0) $num--;
 
 				$theday = $offset + (7 * $num);
-				$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "");
+				$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "", 'recurrence');
 			}	
 		}
 		unset($rules);

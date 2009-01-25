@@ -3,7 +3,7 @@
 	/* the calendar table style */
 	option.lst{}
 	input.btn{}	
-	ul.bullets {padding-left: 5px;}
+	ul.bullets {padding-left: 0px;}
 
 	.calendarWeekday {vertical-align:top; background-color:;}	
 	.calendarWeekend {vertical-align:top; background-color:#EEEEEE;}	
@@ -25,24 +25,21 @@
 	  width:100%;
 	}
 
-	/* defines the text for multi-day events */
-	.repeatEvent{
-		background-color:;
-		font-weight:;
-		padding:1px;
-		text-align: left;
-		border-spacing: 1px;
-		font-size:12px;
-	}
-
-	/* defines the text for single day events */
-	.singleEvent{
-		background-color:;
-		border:0px solid #CCCCCC;
+	/* defines the text for single day events... other events inherent these base values */
+	.baseEvent{
 		padding:0px;
+		border-spacing: 0px;		
 		text-align: left;
-		border-spacing: 0px;
-		font-size:12px;
+		font-size: 12px;
+	}	
+	
+	/* defines the text for multi-day events... inherents baseEvent */
+	.repeatEvent{
+	}
+	
+	/* defines the text for recurrence type events... inherents baseEvent */
+	.recurrenceEvent{
+		font-weight:bold;
 	}
 	
 	.calendar {
@@ -79,7 +76,7 @@
 	  font-size: 12px;
 	}
 	
-	/* eventlist mode day overrrides */
+	/* eventlist 'mode' day overrrides */
 	.eventsDay {
 	  background-color: transparent;
 	  border:0px;
