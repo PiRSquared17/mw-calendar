@@ -4,4 +4,6 @@ notes will be added to the next released 'Readme.txt'. The notes in this file wi
 
 ********** Trunk **********
 # added 'simplemonth' parameter; displays a simple month calendar (mini-calendar)
-# repeating events (multiday) events can be configured in the 'default.css' file under ".repeatEvent"
+# added style classes for .singleEvent, .repeatEvent and .recurrenceEvent in default.css
+# cleaning up the ical load tool by introducing purge/page refresh via code instead of the button
+# added user triggered yearly repeating events, but not solid on a delimiter yet..currently, it identifies a yearly repeat using the folowing ":# Eric's Birthday". This will take that event, convert it into an RRULE event and store it with under "page/name/recurrence"
