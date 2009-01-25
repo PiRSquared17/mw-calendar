@@ -459,7 +459,7 @@ class CalendarArticles
 		$article = new Article(Title::newFromText($this->title));
 		$article->doPurge();
 		
-		// reload the wiki calendar page post purge...
+		// we only need to relaunch the page if we're currently sitting on it...
 		if($bReload)			
 			header("Location: " . $_SERVER['REQUEST_URI']);
 	}	
