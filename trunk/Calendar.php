@@ -81,14 +81,18 @@ $wgExtensionCredits['parserhook'][] = array(
     'description'=>'MediaWiki Calendar',
     'version'=>$gVersion
 );
-	
+
+
 $wgExtensionFunctions[] = "wfCalendarExtension";
+$wgExtensionMessagesFiles['wfCalendarExtension'] = dirname( __FILE__ ) . '/calendar.i18n.php';
+
 
 
 // function adds the wiki extension
 function wfCalendarExtension() {
     global $wgParser;
     $wgParser->setHook( "calendar", "displayCalendar" );
+	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
 }
 
 require_once ("common.php");
@@ -115,14 +119,7 @@ class Calendar extends CalendarArticles
 	var $tag_month_view = "";
 	var $tag_day_view = "";
 	var $tag_views = "";
-
-	// setup calendar arrays
-    var $daysInMonth = array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);   
-    var $dayNames   = array("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");	
-
-    var $monthNames = array("January", "February", "March", "April", "May", "June",
-                            "July", "August", "September", "October", "November", "December");
-							
+					
 	var $monthNamesShort = array("Jan", "Feb", "Mar", "Apr", "May", "June",
 		"July", "Aug", "Sept", "Oct", "Nov", "Dec");
 					
@@ -130,7 +127,7 @@ class Calendar extends CalendarArticles
 					
     function Calendar($wikiRoot, $debug) {
 		$this->wikiRoot = $wikiRoot;
-		
+
 		$this->debug = new debugger('html');
 		$this->debug->enabled($debug);
 
@@ -146,11 +143,16 @@ class Calendar extends CalendarArticles
 
     function html_week_array($format){
 		
+		//search values for html template only, no need to translate...
+		$dayNames = array("Sunday","Monday","Tuesday",
+			"Wednesday","Thursday","Friday","Saturday");	
+
 		$ret = array();
 		for($i=0;$i<7;$i++){
 			$ret[$i] = $this->searchHTML($this->html_template,
-						 sprintf($format,$this->dayNames[$i],"Start"),
-						 sprintf($format,$this->dayNames[$i],"End"));
+						 sprintf($format,$dayNames[$i],"Start"),
+						 sprintf($format,$dayNames[$i],"End"));
+
 		}
 		return $ret;
     }
@@ -250,10 +252,15 @@ class Calendar extends CalendarArticles
 		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
 		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
 		
+		global $wgLang;
+		$year = translate('year');
+		$month = translate('month');
+		$week = translate('week');
+
 		if(!$this->setting('disablemodes')){
-			$this->tag_views  = "<input class='btn' name='mode' type='submit' value='year'>"
-				. "<input class='btn' name='mode' type='submit' value='month'>"
-				. "<input class='btn' name='mode' type='submit' value='week'>";
+			$this->tag_views  = "<input class='btn' name='mode' type='submit' value=\"$year\"/> "
+				. "<input class='btn' name='mode' type='submit' value=\"$month\"/>"
+				. "<input class='btn' name='mode' type='submit' value=\"$week\"/>";
 			}
 					
 		// build the hidden calendar date info (used to offset the calendar via sessions)
@@ -278,12 +285,11 @@ class Calendar extends CalendarArticles
 		$thedate = getdate(mktime(12, 0, 0, $month, $day, $year));
 		$today = getdate();
 		$wday  = $thedate['wday'];
-		$weekday = $thedate['weekday'];
+		$weekday = translate($wday+1, 'weekday');
 
 		$display_day = $day;
 		if($dateFormat == 'long'){
-			//$display_day = $this->monthNames[$month -1] . " $day, $year";
-			$display_day = $weekday . ", " . $this->monthNamesShort[$month -1] . " $day";
+			$display_day = $weekday . ", " . translate($month, 'month_short') . " $day";
 		}
 		
 		if($dateFormat == 'none')
@@ -360,17 +366,22 @@ class Calendar extends CalendarArticles
 
 		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
 		
-		$month = strtolower($this->monthNames[$this->month-1]);
+		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
+		$title = translate('template_btn_tip');
+	$this->debug->set($value);	
 		if($this->setting('locktemplates'))
-			$ret = "<input class='btn' type='button' title='Create a bunch of events in one page (20-25# Vacation)' disabled value='$month events' onClick=\"javascript:document.location='" . $articleName;
+			$ret = "<input class='btn' type='button' title='$title' disabled value=\"$value\" onClick=\"javascript:document.location='" . $articleName;
 		else
-			$ret = "<input class='btn' type='button' title='Create a bunch of events in one page (20-25# Vacation)' value='$month events' onClick=\"javascript:document.location='" . $articleName;
+			$ret = "<input class='btn' type='button' title='$title' value=\"$value\" onClick=\"javascript:document.location='" . $articleName;
 		
 		return $ret;			
 	}
 
 	function loadiCalLink(){
-
+		$ical_value  = translate('ical_btn');
+		$ical_title = translate('ical_btn_tip');
+		$bws_title = translate('ical_browse_tip');
+		
 		$note = "";
 		$sessionName = $this->calendarPageName . "_ical_count";
 		if(isset($_SESSION[$sessionName])){
@@ -379,9 +390,9 @@ class Calendar extends CalendarArticles
 			//unset($_SESSION[$sessionName]);		
 		}
 
-		$ret = "Please specify an ical format file (vcalendar).<br>"
-			. "<input name='uploadedfile' type='file' title='Browse to file location...' size='50'><br>"	
-			. "<input name='ical' class='btn' type='submit' title='load ical data into calendar' value='load'>&nbsp;&nbsp;"
+		$ret = translate('ical_inst') . "<br>"
+			. "<input name='uploadedfile' type='file' title=\"$bws_title\" size='50'><br>"	
+			. "<input name='ical' class='btn' type='submit' title=\"$ical_title\" value=\"$ical_value\">&nbsp;&nbsp;"
 			. $note;
 			
 		return $ret;
@@ -394,11 +405,14 @@ class Calendar extends CalendarArticles
 		
 		if($this->setting('useconfigpage',false) == 'disablelinks') return "";
 		
+		$value = translate('config_btn');
+		$title = translate('config_btn_tip');
+		
 		if(!$bTextLink){
 			$articleConfig = $this->wikiRoot . $this->configPageName . "&action=edit" . "';\">";
-			$ret = "<input class='btn' type='button' title='Add calendar parameters here' value='config' onClick=\"javascript:document.location='" . $articleConfig;
+			$ret = "<input class='btn' type='button' title='$title' value=\"$value\" onClick=\"javascript:document.location='" . $articleConfig;
 		}else
-			$ret = "<a href='" . $this->wikiRoot . $this->configPageName . "&action=edit'>(config...)</a>";
+			$ret = "<a href='" . $this->wikiRoot . $this->configPageName . "&action=edit'>($value...)</a>";
 
 		return $ret;			
 	}
@@ -606,27 +620,28 @@ class Calendar extends CalendarArticles
 		
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
-	    $tag_calendarName = str_replace('_', ' ', $this->name);
-	    if ($tag_calendarName == "") {
-    		$tag_calendarName = "Public";
-	    }
-    	
+		if($this->name == 'Public')
+			$tag_calendarName = translate('default_title');
+		else
+			$tag_calendarName = $this->name;
+			
 		$tag_about = "<a title='Click here is learn more and get help' href='http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>...";
 		
 	    // set the month's mont and year tags
-	    $tag_calendarMonth = $this->monthNames[$this->month - 1];
+		$tag_calendarMonth = translate($this->month, 'month');
 	    $tag_calendarYear = $this->year;
     	
 	    // build the month select box
 	    $tag_monthSelect = "<select name='monthSelect' method='post' onChange='javascript:this.form.submit()'>";
-	    for ($i = 0; $i < count($this->monthNames); $i += 1) {
-    		if ($i + 1 == $this->month) {
-		    $tag_monthSelect .= "<option class='lst' value='" . ($i + 1) . "' selected='true'>" . 
-			$this->monthNames[$i] . "</option>\n";
+
+		for ($i = 1; $i <= 12; $i++) {
+    		if ($i == $this->month) {
+				$tag_monthSelect .= "<option class='lst' value='" . ($i) . "' selected='true'>" . 
+				translate($i, 'month') . "</option>\n";
     		}
     		else {
-		    $tag_monthSelect .= "<option class='lst' value='" . ($i + 1) . "'>" . 
-			$this->monthNames[$i] . "</option>\n";
+				$tag_monthSelect .= "<option class='lst' value='" . ($i) . "'>" . 
+				translate($i, 'month') . "</option>\n";
     		}
 	    }
 	    $tag_monthSelect .= "</select>";
@@ -648,13 +663,17 @@ class Calendar extends CalendarArticles
 		$tag_templateButton = $this->buildTemplateLink();
 		$tag_configButton = $this->buildConfigLink(false);
 
+		$style_value = translate('styles_btn');
+		$style_tip = translate('styles_btn_tip');;
+		
 		if(!$this->setting("disablestyles")){
 			$articleStyle = $this->wikiRoot . $this->calendarPageName . "/style&action=edit" . "';\">";
-			$tag_eventStyleButton = "<input class='btn' type=\"button\" title=\"Set 'html/css' styles based on trigger words (vacation::color:red; font-style:italic)\" value= \"event styles\" onClick=\"javascript:document.location='" . $articleStyle;
+			$tag_eventStyleButton = "<input class='btn' type=\"button\" title=\"$style_tip\" value=\"$style_value\" onClick=\"javascript:document.location='" . $articleStyle;
 		}
 	
 		// build the 'today' button	
-	    $tag_todayButton = "<input class='btn' name='today' type='submit' value='today'>";
+		$btnToday = translate('today');
+	    $tag_todayButton = "<input class='btn' name='today' type='submit' value=\"$btnToday\">";
 		$tag_previousMonthButton = "<input class='btn' name='monthBack' type='submit' value='<<'>";
 		$tag_nextMonthButton = "<input class='btn' name='monthForward' type='submit' value='>>'>";
 		$tag_previousYearButton = "<input class='btn' name='yearBack' type='submit' value='<<'>";
@@ -705,6 +724,14 @@ class Calendar extends CalendarArticles
 		$ret = str_replace("[[MonthView]]", $this->tag_month_view, $ret);
 		$ret = str_replace("[[DayView]]", $this->tag_views, $ret);
 		
+		$ret = str_replace("[[Sunday]]", translate(1,'weekday'), $ret);
+		$ret = str_replace("[[Monday]]", translate(2,'weekday'), $ret);
+		$ret = str_replace("[[Tuesday]]", translate(3,'weekday'), $ret);
+		$ret = str_replace("[[Wednesday]]", translate(4,'weekday'), $ret);
+		$ret = str_replace("[[Thursday]]", translate(5,'weekday'), $ret);
+		$ret = str_replace("[[Friday]]", translate(6,'weekday'), $ret);
+		$ret = str_replace("[[Saturday]]", translate(7,'weekday'), $ret);
+		
 		
 	    /***** Begin building the calendar days *****/
 	    // determine the starting day offset for the month
@@ -734,6 +761,7 @@ class Calendar extends CalendarArticles
 		
 		if($this->setting('ical'))
 			$tag_loadiCalButton = $this->loadiCalLink();
+			
 		// replace potential variables in footer
 		$tempString = str_replace("[[TodayData]]", $this->tag_HiddenData, $tempString);
 		$tempString = str_replace("[[TemplateButton]]", $tag_templateButton, $tempString);
@@ -873,8 +901,8 @@ class Calendar extends CalendarArticles
 	    $numWeeks = floor(($maxDays - $dayOffset + 7) / 7);  	
 
 		if($sixRow) $numWeeks = 6;
-		
-		$monthname = $this->monthNames[$month - 1];
+
+		$monthname = translate($month,'month');
 		//$monthname = "<a href=''>$monthname";
 
 		$ret = "<tr><td class='yearTitle' colspan=7>" . $monthname . "</td></tr>";				
@@ -895,7 +923,7 @@ class Calendar extends CalendarArticles
 					$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
 					
 				if($dayOffset > 0 && $dayOffset <= $maxDays){
-					$link = $this->buildAddEventLink($month, $dayOffset, $year, $text=$dayOffset);
+					$link = $this->buildAddEventLink($month, $dayOffset, $year, $dayOffset);
 					if($j==0 || $j==6)
 						$row .= "<td class='yearWeekend $todayStyle'>$link</td>";
 					else
@@ -1134,12 +1162,11 @@ function displayCalendar($paramstring = "", $params = array()) {
     global $wgParser;
 	global $wgScript;
 	global $wgTitle;
-	global $wgOut, $wgRequest;
 
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
 	$userMode = 'month';
-
+	
 	// grab the page title
 	//$title = $wgTitle->getPrefixedText();	
 	$title = $wgParser->getVariableValue("fullpagename");
@@ -1239,7 +1266,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		// refresh the calendar's newly added events
 		$calendar->purgeCalendar(true);
 	}
-
+	//$lang = new Language;
 	return $calendar->renderCalendar($userMode);
 }
 
@@ -1268,7 +1295,6 @@ function buildConfigString(){
 		
 	return $string;
 }
-
 
 } //end define MEDIAWIKI
 ?>
