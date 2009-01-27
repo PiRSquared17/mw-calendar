@@ -1,7 +1,7 @@
 <?php
 
-$linkTrail = '/^([a-zàâçéèêîôûäëïöüùÇÉÂÊÎÔÛÄËÏÖÜÀÈÙ]+)(.*)$/sDu';
-$separatorTransformTable = array( ',' => "\xc2\xa0", '.' => ',' );
+# if additional languages are needed, simply copy a new $messages['??'] array 
+# and populate the translations.
 
 	$messages = array();
 	$messages['en'] = array(
