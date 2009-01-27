@@ -90,8 +90,8 @@ class CalendarArticles
 	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
-		if(stripos($event, ':#') !== false){
-			$event = trim(str_replace(":#", "", $event));
+		if(substr($event,0,2) == '##'){
+			$event = trim(str_replace("##", "", $event));
 			$this->buildRecurrenceEvent($month, $day, $year, $event, $page);
 		}
 	

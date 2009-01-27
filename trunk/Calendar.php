@@ -1,7 +1,7 @@
 <?php
 /* Calendar.php
  *
- * - Eric Fortin (1/2009) < kenyu73@gmail.com >
+ * - Eric Fortin < kenyu73@gmail.com >
  *
  * - Original author(s):
  *   	Simson L. Garfinkel < simsong@acm.org >
@@ -71,7 +71,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.6.0.3 (beta)";
+$gVersion = "3.7 (1/27/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
