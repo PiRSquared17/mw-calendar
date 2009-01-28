@@ -231,7 +231,7 @@ class CalendarArticles
 
 		// we only want the displayed calendar year totals
 		if($this->year == $year){
-			if($eventType='templates')
+			if($eventType=='templates')
 				$this->arrTimeTrack[$type.' (y)'][] = $arrType[1];
 			else
 				$this->arrTimeTrack[$type.' (m)'][] = $arrType[1];
@@ -250,6 +250,8 @@ class CalendarArticles
 		$ret = "";
 		$cntValue = count($this->arrTimeTrack);
 
+		if($cntValue == 0) return "";
+	
 		$cntHead = split(",", $this->setting('timetrackhead',false));
 		$linktitle = "Time summaries of time specific enties. Prefix events with :: to track time values.";
 		
@@ -258,15 +260,11 @@ class CalendarArticles
 			. "(m) - total month only; doesn't add to year total <br/>"
 			. "(y) - total year; must use monthly templates<br/></small>";
 
-		if(count($this->arrTimeTrack) > 0){
-			while (list($key,$val) = each($this->arrTimeTrack)) {
-				$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
-			}
-			
-			$ret = $html_head . $ret . $html_foot;
+		while (list($key,$val) = each($this->arrTimeTrack)) {
+			$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
 		}
 
-		return $ret;
+		return $html_head . $ret . $html_foot;
 	}
 	
 	//find the number of current events and "build" the <add event> link

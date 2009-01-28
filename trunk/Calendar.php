@@ -368,7 +368,7 @@ class Calendar extends CalendarArticles
 		
 		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
 		$title = translate('template_btn_tip');
-	$this->debug->set($value);	
+
 		if($this->setting('locktemplates'))
 			$ret = "<input class='btn' type='button' title='$title' disabled value=\"$value\" onClick=\"javascript:document.location='" . $articleName;
 		else
@@ -752,9 +752,7 @@ class Calendar extends CalendarArticles
 				$dayOffset += 1;
 			}
 			$ret .= $html_week_end; 		// add the week end code
-		}   
-		
-		$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
+		}   	
 		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
@@ -777,9 +775,9 @@ class Calendar extends CalendarArticles
 	    /***** Do calendar end code *****/
 	    $ret .= $html_calendar_end;
  			
-		$this->debug->set("renderMonth Ended");	
 		$ret = "<html>" . $this->stripLeadingSpace($ret) . "</html>";
-			
+		
+		$this->debug->set("renderMonth Ended");		
 	    return $ret;	
 	}
 
@@ -850,7 +848,6 @@ class Calendar extends CalendarArticles
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
 				$this->addArticle($month, $day, $year, $articleName, $summaryLength);				
-				
 			}
 			
 			// check for legacy events (prior to 1/1/2009 or so...) format - "name (12-15-2008) - Event 1"
@@ -883,7 +880,7 @@ class Calendar extends CalendarArticles
 				}
 			}
 		}
-    }	
+	}
 	
 	function buildSimpleCalendar($month, $year, $sixRow=false){
 

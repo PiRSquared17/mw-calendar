@@ -12,7 +12,7 @@ class debugger{
 		
 		$this->startTime = $this->markTime = microtime(1);
 	}
-	
+	public function getTotalTime() {return round(microtime(1) - $this->startTime,2);}
 	public function enabled($bEnabled) {$this->enabled = $bEnabled;}
 	
 	public function set($e){
