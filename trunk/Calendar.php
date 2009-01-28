@@ -754,7 +754,7 @@ class Calendar extends CalendarArticles
 			$ret .= $html_week_end; 		// add the week end code
 		}   
 		
-		//$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
+		$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
 		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
@@ -768,7 +768,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[EventStyleBtn]]", $tag_eventStyleButton, $tempString);
 		$tempString = str_replace("[[Version]]", $gVersion, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
-		//$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
+		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
