@@ -8,9 +8,6 @@
  *   	Michael Walters < mcw6@aol.com > 
  * See Readme file for full details
  */
- 
-//no clue why, but this needs to be out here for windows...
-session_start();
 
 // this is the "refresh" code that allows the calendar to switch time periods
 if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) 
@@ -48,30 +45,32 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 		$year = ($month == 12 ? ++$year : $year);		
 		$month = ($month == 12 ? 1 : ++$month);
 	}
-	
-	$session_type = '';
-	if(isset($_POST["mode"]))
-		$session_type = $_POST["mode"]; //year, month, week, day, list
-	
-	$session_name = $title . "_" . $name;
-	$session_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $session_type . "`";
-	
-	//session_start();
-	$_SESSION[$session_name] = $session_value;
 
+	$mode = "";
+	if(isset($_POST["mode"]))
+		$mode = $_POST["mode"]; //year, month, week, day, list
+	
+	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
+	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
+	setcookie($cookie_name, $cookie_value);
+	
 	if(isset($_POST["ical"])){
 		$path = "images/";
 		$path = $path . basename( $_FILES['uploadedfile']['name']); 
 		move_uploaded_file($_FILES['uploadedfile']['tmp_name'], $path);
 		
-		$_SESSION['calendar_ical'] = $path;
-	}
+		setcookie('calendar_ical', $path);
+	}	
+	
+	// reload the page..clear any purge commands that may be in it from an ical load...
+	$url = str_replace("&action=purge", "", $_SERVER['REQUEST_URI']);
+	header("Location: " . $url);
 }
 
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.7 (1/27/2009)";
+$gVersion = "3.7.01 (1/29/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -86,13 +85,13 @@ $wgExtensionCredits['parserhook'][] = array(
 $wgExtensionFunctions[] = "wfCalendarExtension";
 $wgExtensionMessagesFiles['wfCalendarExtension'] = dirname( __FILE__ ) . '/calendar.i18n.php';
 
-
-
 // function adds the wiki extension
 function wfCalendarExtension() {
     global $wgParser;
     $wgParser->setHook( "calendar", "displayCalendar" );
 	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
+	
+	//session_start();
 }
 
 require_once ("common.php");
@@ -368,7 +367,7 @@ class Calendar extends CalendarArticles
 		
 		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
 		$title = translate('template_btn_tip');
-	$this->debug->set($value);	
+
 		if($this->setting('locktemplates'))
 			$ret = "<input class='btn' type='button' title='$title' disabled value=\"$value\" onClick=\"javascript:document.location='" . $articleName;
 		else
@@ -383,11 +382,11 @@ class Calendar extends CalendarArticles
 		$bws_title = translate('ical_browse_tip');
 		
 		$note = "";
-		$sessionName = $this->calendarPageName . "_ical_count";
-		if(isset($_SESSION[$sessionName])){
-			$cnt = $_SESSION[$sessionName];
+		$cookieName = str_replace(' ', '_', ($this->calendarPageName . "_ical_count"));
+		if(isset($_COOKIE[$cookieName])){
+			$cnt = $_COOKIE[$cookieName];
 			$note = "<font color=red>Completed the import of <b>$cnt</b> record(s).</font>";
-			//unset($_SESSION[$sessionName]);		
+			setcookie($cookieName, "", time() -3600);
 		}
 
 		$ret = translate('ical_inst') . "<br>"
@@ -454,7 +453,7 @@ class Calendar extends CalendarArticles
 			$ret = "<html><i> " . $this->buildConfigLink(true) . "</i>" 
 				. $css . $events . "</html>";
 
-			return "<table>" . $ret . "</table>";	
+			return "<table width=100%>" . $ret . "</table>";	
 		}
 	}
 
@@ -608,15 +607,6 @@ class Calendar extends CalendarArticles
 	    //$today = getdate();    	// today's date
 	    $isSelected = false;    	// if the day being processed is today
 	    $isMissing = false;    	// if the calendar cell being processed is in the current month
-
-	    // referrer (the page with the calendar currently displayed)
-	    $referrerURL = $_SERVER['PHP_SELF'];
-	    if ($_SERVER['QUERY_STRING'] != '') {
-			$str = split("&",$_SERVER['QUERY_STRING']); //strip any &parameters
-    		$referrerURL .= "?" . $str[0];
-	    }
-		
-		$this->referrerURL = $referrerURL;		
 		
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
@@ -752,9 +742,7 @@ class Calendar extends CalendarArticles
 				$dayOffset += 1;
 			}
 			$ret .= $html_week_end; 		// add the week end code
-		}   
-		
-		//$tag_timeTrackValues = $this->buildTrackTimeSummary();  	
+		}   	
 		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
@@ -768,7 +756,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[EventStyleBtn]]", $tag_eventStyleButton, $tempString);
 		$tempString = str_replace("[[Version]]", $gVersion, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
-		//$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
+		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
@@ -777,9 +765,9 @@ class Calendar extends CalendarArticles
 	    /***** Do calendar end code *****/
 	    $ret .= $html_calendar_end;
  			
-		$this->debug->set("renderMonth Ended");	
 		$ret = "<html>" . $this->stripLeadingSpace($ret) . "</html>";
-			
+		
+		$this->debug->set("renderMonth Ended");		
 	    return $ret;	
 	}
 
@@ -850,7 +838,6 @@ class Calendar extends CalendarArticles
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
 				$this->addArticle($month, $day, $year, $articleName, $summaryLength);				
-				
 			}
 			
 			// check for legacy events (prior to 1/1/2009 or so...) format - "name (12-15-2008) - Event 1"
@@ -883,7 +870,7 @@ class Calendar extends CalendarArticles
 				}
 			}
 		}
-    }	
+	}
 	
 	function buildSimpleCalendar($month, $year, $sixRow=false){
 
@@ -1061,11 +1048,10 @@ class Calendar extends CalendarArticles
 	}
 	
 	// php has a defualt of 30sec to run a script, so it can timeout...
-	function load_iCal(){
+	function load_iCal($ical_data){
 		$this->debug->set('load_iCal Started');
 		
 		$bMulti = false;
-		$ical_data = $this->ical_data;		
 		$iCal = new ical_calendar;
 
 		$bExpired = false;
@@ -1141,8 +1127,9 @@ class Calendar extends CalendarArticles
 		}
 		
 		set_time_limit(30);
-		$sessionName = $this->calendarPageName . "_ical_count";
-		$_SESSION[$sessionName] = $cnt;
+		
+		$cookieName = str_replace(' ', '_', ($this->calendarPageName . "_ical_count"));
+		setcookie($cookieName,$cnt);
 				
 		$this->debug->set('load_iCal Ended');
 	}
@@ -1231,13 +1218,11 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$calendar->setTitle($title);
 	$calendar->setName($name);
 
-	$session = $title . "_" . $name;
+	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
+	if(isset($_COOKIE[$cookie_name])){
+		$calendar->debug->set('cookie loaded');
 
-	//session_start();
-	if(isset($_SESSION[$session])){
-		$calendar->debug->set('session loaded');
-
-		$arrSession = split("`", $_SESSION[$session]);
+		$arrSession = split("`", $_COOKIE[$cookie_name]);
 		$calendar->setMonth($arrSession[0]);
 		$calendar->setYear($arrSession[1]);	
 		$calendar->setTitle($arrSession[2]);				
@@ -1255,18 +1240,21 @@ function displayCalendar($paramstring = "", $params = array()) {
 		if(isset($params['simplemonth'])) $userMode = 'simplemonth';
 	}
 	
-	if(isset($_SESSION['calendar_ical'])){
-		$calendar->debug->set('ical session loaded');		
-		$calendar->ical_data = $_SESSION['calendar_ical'];
-		$calendar->load_iCal();
+	if(isset($_COOKIE['calendar_ical'])){
+		$calendar->debug->set('ical cookie loaded');		
+
+		$calendar->load_iCal($_COOKIE['calendar_ical']);
 		
-		@unlink($_SESSION['calendar_ical']); //delete ical file in "mediawiki/images" folder	
-		unset($_SESSION['calendar_ical']);
+		//delete ical file in "mediawiki/images" folder	
+		@unlink($_COOKIE['calendar_ical']); 
+		
+		// delete the ical path cookie
+		setcookie('calendar_ical', "", time() -3600);
 
 		// refresh the calendar's newly added events
 		$calendar->purgeCalendar(true);
 	}
-	//$lang = new Language;
+
 	return $calendar->renderCalendar($userMode);
 }
 
