@@ -12,13 +12,16 @@
 // this is the "refresh" code that allows the calendar to switch time periods
 if(count($_POST) > 0){
 	$today = getdate();    	// today
-	$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
+	
+	if(isset($_POST["calendar_info"])){
+		$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
 
-	// set the initial values
-	$month = $temp[0];
-	$year = $temp[1];	
-	$title =  $temp[2];
-	$name =  $temp[3];
+		// set the initial values
+		$month = $temp[0];
+		$year = $temp[1];	
+		$title =  $temp[2];
+		$name =  $temp[3];
+	}
 	
 	// the yearSelect and monthSelect must be on top... the onChange triggers  
 	// whenever the other buttons are clicked
@@ -88,8 +91,6 @@ function wfCalendarExtension() {
     global $wgParser;
     $wgParser->setHook( "calendar", "displayCalendar" );
 	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
-	
-	//session_start();
 }
 
 require_once ("common.php");
