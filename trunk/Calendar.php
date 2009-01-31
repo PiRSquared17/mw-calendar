@@ -10,10 +10,7 @@
  */
 
 // this is the "refresh" code that allows the calendar to switch time periods
-if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearForward"]) 
-	|| isset($_POST["monthBack"]) || isset($_POST["monthForward"]) || isset($_POST["monthSelect"]) 
-	|| isset($_POST["yearSelect"]) || isset($_POST["ical"]) || isset($_POST["mode"]) ){
-
+if(count($_POST) > 0){
 	$today = getdate();    	// today
 	$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
 
@@ -47,8 +44,9 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 	}
 
 	$mode = "";
-	if(isset($_POST["mode"]))
-		$mode = $_POST["mode"]; //year, month, week, day, list
+	if(isset($_POST["year"])) $mode = 'year';
+	if(isset($_POST["month"])) $mode = 'month';
+	if(isset($_POST["week"])) $mode = 'week';
 	
 	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
 	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
@@ -70,7 +68,7 @@ if (isset($_POST["today"]) || isset($_POST["yearBack"]) || isset($_POST["yearFor
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.7.01 (1/29/2009)";
+$gVersion = "3.7.0.2 (1/31/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -251,15 +249,14 @@ class Calendar extends CalendarArticles
 		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
 		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
 		
-		global $wgLang;
 		$year = translate('year');
 		$month = translate('month');
 		$week = translate('week');
 
 		if(!$this->setting('disablemodes')){
-			$this->tag_views  = "<input class='btn' name='mode' type='submit' value=\"$year\"/> "
-				. "<input class='btn' name='mode' type='submit' value=\"$month\"/>"
-				. "<input class='btn' name='mode' type='submit' value=\"$week\"/>";
+			$this->tag_views  = "<input class='btn' name='year' type='submit' value=\"$year\"/> "
+				. "<input class='btn' name='month' type='submit' value=\"$month\"/>"
+				. "<input class='btn' name='week' type='submit' value=\"$week\"/>";
 			}
 					
 		// build the hidden calendar date info (used to offset the calendar via sessions)
@@ -986,7 +983,8 @@ class Calendar extends CalendarArticles
 		$day = $date['mday'];
 		$year = $date['year'];
 		
-		$title = $date['month'];
+		//$title = $date['month'];
+		$title = translate($month, 'month');
 		
 		$css = $this->searchHTML($this->html_template, 
 				 "<!-- CSS Start -->", "<!-- CSS End -->");
@@ -994,23 +992,22 @@ class Calendar extends CalendarArticles
 		$css = $this->stripLeadingSpace($css);
 		
 		if(!$fiveDay){
-			$sunday = "<td class='calendarHeading'>Sunday</td>";
-			$saturday = "<td class='calendarHeading'>Saturday</td>";
+			$sunday = "<td class='calendarHeading'>" . translate(1, 'weekday'). "</td>";
+			$saturday = "<td class='calendarHeading'>" . translate(7, 'weekday'). "</td>";
 			$colspan = 5; //adjuct for mode buttons
 		}
 		
 		//hide mode buttons if selected via parameter tag
-
 		$ret .= "<tr><td $styleTitle>$title</td>" . "<td><i>". $this->buildConfigLink(true) . "</i></td>"
 			. "<td align=right colspan=$colspan>$this->tag_views</td></tr>";	
 			
 		$ret .= "<tr>";
 		$ret .= $sunday;
-		$ret .= "<td class='calendarHeading'>Monday</td>";
-		$ret .= "<td class='calendarHeading'>Tuesday</td>";
-		$ret .= "<td class='calendarHeading'>Wednesday</td>";
-		$ret .= "<td class='calendarHeading'>Thursday</td>";
-		$ret .= "<td class='calendarHeading'>Friday</td>";
+		$ret .= "<td class='calendarHeading'>" . translate(2, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . translate(3, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . translate(4, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . translate(5, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . translate(6, 'weekday'). "</td>";
 		$ret .= $saturday;
 		$ret .= "</tr>";
 		
@@ -1254,7 +1251,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		// refresh the calendar's newly added events
 		$calendar->purgeCalendar(true);
 	}
-
+$calendar->debug->set(count($_POST));
 	return $calendar->renderCalendar($userMode);
 }
 
