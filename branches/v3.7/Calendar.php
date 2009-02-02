@@ -10,18 +10,16 @@
  */
 
 // this is the "refresh" code that allows the calendar to switch time periods
-if(count($_POST) > 0){
+if (isset($_POST["calendar_info"]) ){
 	$today = getdate();    	// today
 	
-	if(isset($_POST["calendar_info"])){
-		$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
+	$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
 
-		// set the initial values
-		$month = $temp[0];
-		$year = $temp[1];	
-		$title =  $temp[2];
-		$name =  $temp[3];
-	}
+	// set the initial values
+	$month = $temp[0];
+	$year = $temp[1];	
+	$title =  $temp[2];
+	$name =  $temp[3];
 	
 	// the yearSelect and monthSelect must be on top... the onChange triggers  
 	// whenever the other buttons are clicked
@@ -71,7 +69,7 @@ if(count($_POST) > 0){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.7.0.2 (1/31/2009)";
+$gVersion = "3.7.0.3 (2/2/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(

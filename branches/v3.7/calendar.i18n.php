@@ -72,4 +72,27 @@
 		'' => "",
 		'' => "",
 	);
+	
+	$messages['de'] = array(
+		'default_title' => "Öffentlich",
+		'year' => "Jahr",
+		'month' => "Monat",
+		'week' => "Woche",
+		'ical_inst' => "Bestimme eine iCal-Format-Datei (vcalendar).",
+		'add_event' => "Ereignis zufügen",
+		'add_event_tip' => "Neues Ereignis zufügen",
+		'styles_btn' => "Event Styles",
+		'styles_btn_tip' => "Bestimme auf Trigger Words basierende CSS-Styles",
+		'template_btn' => "Ereignisse",
+		'template_btn_tip' => "Viele Ereignisse auf einer Seite erstellen...",
+		'ical_btn' => "laden",
+		'ical_btn_tip' => "Ausgewählte Datei hinzufügen",
+		'ical_browse_tip' => "Bestimme eine hochzuladene iCal-Datei...",
+		'config_btn' => "Einstellungen",
+		'config_btn_tip' => "Kalender-Parameter hinzufügen",
+		'today' => "Heute",
+		'' => "",
+		'' => "",
+		'' => "",
+	);
 ?>
