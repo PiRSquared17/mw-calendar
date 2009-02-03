@@ -95,4 +95,27 @@
 		'' => "",
 		'' => "",
 	);
+	
+	$messages['fi'] = array(
+		'default_title' => "Julkinen",
+		'year' => "Vuosi",
+		'month' => "Kuukausi",
+		'week' => "Viikko",
+		'ical_inst' => "Määritä ical-muototiedosto (vcalendar).",
+		'add_event' => "Lisää...",
+		'add_event_tip' => "Lisää uusi tapahtuma",
+		'styles_btn' => "Tapahtumien muotoilu",
+		'styles_btn_tip' => "Aseta CSS-tyyli avainsanojen mukaan",
+		'template_btn' => "Tapahtumat",
+		'template_btn_tip' => "Luo monta tapahtumaa samalle sivulle",
+		'ical_btn' => "Lataa",
+		'ical_btn_tip' => "Lähetä valittu tiedosto",
+		'ical_browse_tip' => "Valitse ladattava ical-tiedosto",
+		'config_btn' => "Asetukset",
+		'config_btn_tip' => "Muuta kalenterin määrityksiä",
+		'today' => "Tänään",
+		'' => "",
+		'' => "",
+		'' => "",
+	);
 ?>
