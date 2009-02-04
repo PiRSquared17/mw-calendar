@@ -139,6 +139,9 @@ function translate($value, $key=""){
 	case 'month':
 		return $wgLang->getMonthName($value);
 		
+	case 'month-gen': //genitive case or possessive case
+		return $wgLang->getMonthNameGen($value);
+		
 	case 'month_short':
 		return $wgLang->getMonthAbbreviation($value);
 		
