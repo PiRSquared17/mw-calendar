@@ -210,6 +210,7 @@ class CalendarArticles
 		
 		$class = trim($class);
 		$cArticle->html = "<span class='$class'>$html</span><br/>$cArticle->body";
+
 		$this->arrArticles['events'][] = $cArticle;
 	}
 	
@@ -617,4 +618,15 @@ class CalendarArticles
 
 		return $events;
 	}
+/*	
+	public function chkConfigToolPage($configToolPage){
+	
+		$article = new Article(Title::newFromText($configToolPage));
+		
+		if(!$article->exists())
+			$article->doEdit("<config/>", "", EDIT_NEW);
+		elseif(trim($article->fetchContent()) == "")
+			$article->doEdit("<config/>", "", EDIT_UPDATE);
+	}	
+*/
 }
