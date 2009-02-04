@@ -10,18 +10,16 @@
  */
 
 // this is the "refresh" code that allows the calendar to switch time periods
-if(count($_POST) > 0){
-	$today = getdate();    	// today
+if (isset($_POST["calendar_info"]) ){
 	
-	if(isset($_POST["calendar_info"])){
-		$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
+	$today = getdate();    	// today
+	$temp = split("`", $_POST["calendar_info"]); // calling calendar info (name,title, etc..)
 
-		// set the initial values
-		$month = $temp[0];
-		$year = $temp[1];	
-		$title =  $temp[2];
-		$name =  $temp[3];
-	}
+	// set the initial values
+	$month = $temp[0];
+	$year = $temp[1];	
+	$title =  $temp[2];
+	$name =  $temp[3];
 	
 	// the yearSelect and monthSelect must be on top... the onChange triggers  
 	// whenever the other buttons are clicked
@@ -363,7 +361,8 @@ class Calendar extends CalendarArticles
 
 		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
 		
-		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
+//		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
+		$value = translate('template_btn');
 		$title = translate('template_btn_tip');
 
 		if($this->setting('locktemplates'))
@@ -1252,7 +1251,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 		// refresh the calendar's newly added events
 		$calendar->purgeCalendar(true);
 	}
-$calendar->debug->set(count($_POST));
+
 	return $calendar->renderCalendar($userMode);
 }
 
