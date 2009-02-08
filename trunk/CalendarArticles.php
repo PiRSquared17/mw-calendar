@@ -12,13 +12,10 @@ class CalendarArticle
 	var $day = "";
 	var $month = "";
 	var $year = "";
-	
 	var $page = ""; //full wiki page name
-	var $eventname = ""; //1st line of body
-	var $body = "";
-	var $htmllink = "";
-	var $plaintext = "";
-	var $style = "";
+	var $eventname = ""; //1st line of body; unformated plain text
+	var $body = ""; // everything except line 1 in the event page
+	var $html = ""; // html link displayed in calendar
 	
 	function CalendarArticle($month, $day, $year){
 		$this->month = $month;
@@ -41,7 +38,9 @@ class CalendarArticles
 	private $arrTimeTrack = array();
 	private $arrStyle = array();
 	
-	public function addArticle($month, $day, $year, $page, $charlimit){
+	private $ical_short_day = array("SU"=>0,"MO"=>1,"TU"=>2,"WE"=>3,"TH"=>4,"FR"=>5,"SA"=>6);	
+
+	public function addArticle($month, $day, $year, $page){
 		$lines = array();
 		$temp = "";		
 		$head = array();
@@ -56,10 +55,28 @@ class CalendarArticles
 			 $redirectCount += 1;
 		 }
 
-		$body = $article->fetchContent(0,false,false);
+		$body = $article->fetchContent();
+		
+		//clean the article of any unwanted special MW code
+		$body = $this->cleanEventData($body); 
 	
 		if(strlen(trim($body)) == 0) return "";
+/*			
+		$i = 0;
+		$section = $article->getSection($body, $i);
+$this->debug->set($section );	
+		while(strlen($section) > 0){
+			$lines = split("\n", $section);
 		
+			$key = str_replace('==', '', $lines[0]);
+			$body = str_replace($key , '', $section);
+			
+			$head[$key] = $body;
+			
+			$section = $article->getSection($body, $i++);
+		}
+	*/	
+	
 		$lines = split("\n",$body);
 		$cntLines = count($lines);
 	
@@ -83,8 +100,9 @@ class CalendarArticles
 		}
 
 		while (list($event,$body) = each($head)){
-			$this->buildEvent($month, $day, $year, $event, $page, limitText($body, $charlimit));
+			$this->buildEvent($month, $day, $year, $event, $page, $body);
 		}
+
 	}
 	
 	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
@@ -94,7 +112,7 @@ class CalendarArticles
 			$event = trim(str_replace("##", "", $event));
 			$this->buildRecurrenceEvent($month, $day, $year, $event, $page);
 		}
-	
+
 		// check for 'add event' type repeat events...templates can always repeat.
 		if(!$this->setting('enablerepeatevents')){
 			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
@@ -109,7 +127,7 @@ class CalendarArticles
 				getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($month, $day, $year, "$event", $page, $body, $eventType, $bRepeats);	
+			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
 	}
 
 	public function getArticleLinks($month, $day, $year){
@@ -189,27 +207,25 @@ class CalendarArticles
 		$cArticle = new CalendarArticle($month, $day, $year);
 		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $eventType);
 		$temp = trim($temp);
+		$summaryLength = $this->setting('enablesummary',false);
+		
+		$html_link = $this->articleLink($page, $temp);
+		
+		// format for different event types
+		$class = "baseEvent ";
+		if($bRepeats) $class .= "repeatEvent ";
+		if($eventType == "recurrence") $class .= "recurrenceEvent ";
+		$class = trim($class);		
 		
 		$cArticle->month = $month;	
 		$cArticle->day = $day;	
 		$cArticle->year = $year;	
 		$cArticle->page = $page;	
 		$cArticle->eventname = $temp;
-		if(trim($body) != "")
-			$cArticle->body = $body;
-
-		$html = $this->articleLink($page, $temp);
-	
-		// format for different event types
-		$class = "baseEvent ";
-		if($bRepeats)
-			$class .= "repeatEvent ";
-			
-		if($eventType == "recurrence")
-			$class .= "recurrenceEvent ";
+		$cArticle->body = $body;		
 		
-		$class = trim($class);
-		$cArticle->html = "<span class='$class'>$html</span><br/>$cArticle->body";
+		// this will be the main link displayed in the calendar....
+		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . limitText($cArticle->body, $summaryLength);
 
 		$this->arrArticles['events'][] = $cArticle;
 	}
@@ -617,6 +633,17 @@ class CalendarArticles
 		}
 
 		return $events;
+	}
+	
+	// any custom MW tags or code can be filtered out here...
+	private function cleanEventData($content){
+		
+		$ret = $content;
+	
+		$ret = preg_replace('[(\[\[)+.+(\]\])]', '', $ret); // string [[ xyz ]]  (like categories...)
+		$ret = preg_replace('[(__)+.+(__)]', '', $ret); // string __NOTOC__ 
+		
+		return $ret;
 	}
 /*	
 	public function chkConfigToolPage($configToolPage){

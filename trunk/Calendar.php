@@ -38,7 +38,7 @@ if (isset($_POST["calendar_info"]) ){
 		$year = ($month == 1 ? --$year : $year);	
 		$month = ($month == 1 ? 12 : --$month);
 	}
-	
+
 	if(isset($_POST["monthForward"])){
 		$year = ($month == 12 ? ++$year : $year);		
 		$month = ($month == 12 ? 1 : ++$month);
@@ -69,7 +69,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "3.7.0.2 (1/31/2009)";
+$gVersion = "3.7.0.4 (2/xx/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -115,12 +115,7 @@ class Calendar extends CalendarArticles
 	var $tag_month_view = "";
 	var $tag_day_view = "";
 	var $tag_views = "";
-					
-	var $monthNamesShort = array("Jan", "Feb", "Mar", "Apr", "May", "June",
-		"July", "Aug", "Sept", "Oct", "Nov", "Dec");
-					
-	var $ical_short_day = array("SU"=>0,"MO"=>1,"TU"=>2,"WE"=>3,"TH"=>4,"FR"=>5,"SA"=>6);	
-					
+												
     function Calendar($wikiRoot, $debug) {
 		$this->wikiRoot = $wikiRoot;
 
@@ -140,14 +135,14 @@ class Calendar extends CalendarArticles
     function html_week_array($format){
 		
 		//search values for html template only, no need to translate...
-		$dayNames = array("Sunday","Monday","Tuesday",
-			"Wednesday","Thursday","Friday","Saturday");	
-
-		$ret = array();
+		$days = array("weekend","weekday","weekday",
+			"weekday","weekday","weekday","weekend");	
+		
+		$ret = array();			 	
 		for($i=0;$i<7;$i++){
 			$ret[$i] = $this->searchHTML($this->html_template,
-						 sprintf($format,$dayNames[$i],"Start"),
-						 sprintf($format,$dayNames[$i],"End"));
+						 sprintf($format,$days[$i],"Start"),
+						 sprintf($format,$days[$i],"End"));
 
 		}
 		return $ret;
@@ -253,7 +248,7 @@ class Calendar extends CalendarArticles
 		$week = translate('week');
 
 		if(!$this->setting('disablemodes')){
-			$this->tag_views  = "<input class='btn' name='year' type='submit' value=\"$year\"/> "
+			$this->tag_views = "<input class='btn' name='year' type='submit' value=\"$year\"/> "
 				. "<input class='btn' name='month' type='submit' value=\"$month\"/>"
 				. "<input class='btn' name='week' type='submit' value=\"$week\"/>";
 			}
@@ -298,7 +293,6 @@ class Calendar extends CalendarArticles
 		else {
 			$tempString = $this->daysNormalHTML[$wday];
 		}
-					
 
 		$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
 
@@ -679,13 +673,11 @@ class Calendar extends CalendarArticles
 	    $html_day_heading = $this->searchHTML($this->html_template,
 						  "<!-- Day Heading Start -->",
 						  "<!-- Day Heading End -->");
+						  
 	    // the calendar week pieces
-	    $html_week_start = $this->searchHTML($this->html_template,
-						 "<!-- Week Start -->", "<!-- Sunday Start -->");
-	    $html_week_end = $this->searchHTML($this->html_template,
-					       "<!-- Saturday End -->", "<!-- Week End -->");
-	    // the individual day cells
-        
+	    $html_week_start = "<tr>";
+	    $html_week_end = "</tr>";
+ 
 	    // the calendar footer
 	    $html_footer = $this->searchHTML($this->html_template,
 					     "<!-- Footer Start -->", "<!-- Footer End -->");
@@ -722,11 +714,14 @@ class Calendar extends CalendarArticles
 		
 	    /***** Begin building the calendar days *****/
 	    // determine the starting day offset for the month
+		//$wday_info = wdayOffset($this->month,$this->year,$first);
+		//$dayOffset = $wday_info['offset'] +1;
 	    $dayOffset = -$first + 1;
 		
 	    $maxDays = getDaysInMonth($this->month,$this->year);
 
 	    // determine the number of weeks in the month
+		//$numWeeks = $wday_info['weeks'] +1;
 	    $numWeeks = floor(($maxDays - $dayOffset + 7) / 7);  	
 
 	    // begin writing out month weeks
@@ -825,16 +820,14 @@ class Calendar extends CalendarArticles
     function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
 
-		$summaryLength = $this->setting('enablesummary',false);
-
 		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
 			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
-			$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+			$this->addArticle($month, $day, $year, $articleName);
 
 			// subscribed events
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
-				$this->addArticle($month, $day, $year, $articleName, $summaryLength);				
+				$this->addArticle($month, $day, $year, $articleName);				
 			}
 			
 			// check for legacy events (prior to 1/1/2009 or so...) format - "name (12-15-2008) - Event 1"
@@ -859,11 +852,11 @@ class Calendar extends CalendarArticles
 				
 					// with namespace...
 					$articleName = $this->legacyName1 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-					$this->addArticle($month, $day, $year, $articleName, $summaryLength);
+					$this->addArticle($month, $day, $year, $articleName);
 					
 					// without namespace...
 					$articleName = $this->legacyName2 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-					$this->addArticle($month, $day, $year, $articleName, $summaryLength);		
+					$this->addArticle($month, $day, $year, $articleName);		
 				}
 			}
 		}

@@ -19,226 +19,96 @@
 		Email: kenyu73@gmail.com
 		
 -->
+<!-- Header Start -->
 <form name='cal_frm' enctype="multipart/form-data" method="post"> <!-- enctype enables uploads -->
 <table class="calendar">
-  <!-- Header Start -->
-  <tr>
-    <td class="calendarMonthSelect" colspan="3">[[PreviousMonthButton]]&nbsp;[[MonthSelect]]&nbsp;[[NextMonthButton]]&nbsp;</td>
-    <td class="calendarTitle" nowrap>[[CalendarName]]<br/>
-      <font size="-1">[[CalendarMonth]], [[CalendarYear]]</font> </td>
-    <td class="calendarYearSelect" colspan="3">[[YearView]][[MonthView]][[DayView]]&nbsp;&nbsp;&nbsp;&nbsp;[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]]&nbsp;</td>
-  </tr>
-  <!-- Header End -->
-  <!-- Day Heading Start -->
-  <tr>
-    <td class="calendarHeading">[[Sunday]]</td>
-    <td class="calendarHeading">[[Monday]]</td>
-    <td class="calendarHeading">[[Tuesday]]</td>
-    <td class="calendarHeading">[[Wednesday]]</td>
-    <td class="calendarHeading">[[Thursday]]</td>
-    <td class="calendarHeading">[[Friday]]</td>
-    <td class="calendarHeading">[[Saturday]]</td>
-  </tr>
-  <!-- Day Heading End -->
-  <!-- Week Start -->
-  <tr>
-  	<!-- Sunday Start -->
-    <td class="[[mode]] calendarWeekend"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-        </tr>
-      </table>
-	</td>
-	<!-- Sunday End -->
-	<!-- Monday Start -->
-    <td class="[[mode]] calendarWeekday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Monday End -->
-	<!-- Tuesday Start -->
-    <td class="[[mode]] calendarWeekday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Tuesday End -->
-	<!-- Wednesday Start -->
-    <td class="[[mode]] calendarWeekday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Wednesday End -->
-	<!-- Thursday Start -->
-    <td class="[[mode]] calendarWeekday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Thursday End -->
-	<!-- Friday Start -->
-    <td class="[[mode]] calendarWeekday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Friday End -->
-	<!-- Saturday Start -->
-    <td class="[[mode]] calendarWeekend"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Saturday End -->
-  </tr>
-  <!-- Week End -->
-  <tr>
-	<!-- Selected Sunday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Sunday End -->
-	<!-- Selected Monday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Monday End -->
-	<!-- Selected Tuesday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Tuesday End -->
-	<!-- Selected Wednesday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Wednesday End -->
-	<!-- Selected Thursday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Thursday End -->
-	<!-- Selected Friday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Friday End -->
-	<!-- Selected Saturday Start -->
-    <td class="[[mode]] calendarToday"><table class="calendarTransparent">
-        <tr>
-          <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-		  <td class="alerts">[[Alert]]</td>
-          <td class="calendarAddEvent">[[AddEvent]]</td>
-        </tr>
-        <tr>
-          <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
-      </table>
-	</td>
-	<!-- Selected Saturday End -->
-  </tr>
-  <tr>
-	<!-- Missing Sunday Start -->
-    <td class="daymissing calendarWeekend">&nbsp;</td>
-    <!-- Missing Sunday End -->
-	<!-- Missing Monday Start -->
-    <td class="daymissing calendarWeekday">&nbsp;</td>
-    <!-- Missing Monday End -->
-	<!-- Missing Tuesday Start -->
-    <td class="daymissing calendarWeekday">&nbsp;</td>
-    <!-- Missing Tuesday End -->
-	<!-- Missing Wednesday Start -->
-    <td class="daymissing calendarWeekday">&nbsp;</td>
-    <!-- Missing Wednesday End -->
-	<!-- Missing Thursday Start -->
-    <td class="daymissing calendarWeekday">&nbsp;</td>
-    <!-- Missing Thursday End -->
-	<!-- Missing Friday Start -->
-    <td class="daymissing calendarWeekday">&nbsp;</td>
-    <!-- Missing Friday End -->
-	<!-- Missing Saturday Start -->
-    <td class="daymissing calendarWeekend">&nbsp;</td>
-    <!-- Missing Saturday End -->
-  </tr>
-  <!-- Footer Start -->
+<tr>
+	<td class="calendarMonthSelect" colspan="3">[[PreviousMonthButton]]&nbsp;[[MonthSelect]]&nbsp;[[NextMonthButton]]&nbsp;</td>
+	<td class="calendarTitle" nowrap>[[CalendarName]]<br/>
+	  <font size="-1">[[CalendarMonth]], [[CalendarYear]]</font> </td>
+	<td class="calendarYearSelect" colspan="3">[[YearView]][[MonthView]][[DayView]]&nbsp;&nbsp;&nbsp;&nbsp;[[TodayButton]]&nbsp;[[PreviousYearButton]]&nbsp;[[YearSelect]]&nbsp;[[NextYearButton]]&nbsp;</td>
+</tr>
+<!-- Header End -->
+  
+<!-- Day Heading Start -->
+<tr>
+	<td class="calendarHeading">[[Sunday]]</td>
+	<td class="calendarHeading">[[Monday]]</td>
+	<td class="calendarHeading">[[Tuesday]]</td>
+	<td class="calendarHeading">[[Wednesday]]</td>
+	<td class="calendarHeading">[[Thursday]]</td>
+	<td class="calendarHeading">[[Friday]]</td>
+	<td class="calendarHeading">[[Saturday]]</td>
+</tr>
+<!-- Day Heading End -->
+
+<!-- weekend Start -->
+<td class="[[mode]] calendarWeekend">
+  <table class="calendarTransparent">
+	<tr>
+	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
+	  <td class="alerts">[[Alert]]</td>
+	  <td class="calendarAddEvent">[[AddEvent]]</td>
+	</tr>
+	<tr>
+	  <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
+	</tr>
+  </table>
+</td>
+<!-- weekend End -->
+	
+<!-- weekday Start -->
+<td class="[[mode]] calendarWeekday">
+  <table class="calendarTransparent">
+	<tr>
+	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
+	  <td class="alerts">[[Alert]]</td>
+	  <td class="calendarAddEvent">[[AddEvent]]</td>
+	</tr>
+	<tr>
+	  <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td>
+	</tr>
+  </table>
+</td>
+<!-- weekday End -->
+
+<!-- Selected weekend Start -->
+<td class="[[mode]] calendarToday">
+  <table class="calendarTransparent">
+	<tr>
+	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
+	  <td class="alerts">[[Alert]]</td>
+	  <td class="calendarAddEvent">[[AddEvent]]</td>
+	</tr>
+	<tr>
+	  <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
+  </table>
+</td>
+<!-- Selected weekend End -->
+
+<!-- Selected weekday Start -->
+<td class="[[mode]] calendarToday">
+  <table class="calendarTransparent">
+	<tr>
+	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
+	  <td class="alerts">[[Alert]]</td>
+	  <td class="calendarAddEvent">[[AddEvent]]</td>
+	</tr>
+	<tr>
+	  <td colspan="3"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td></tr>
+  </table>
+</td>
+<!-- Selected weekday End -->
+
+<!-- Missing weekend Start -->
+<td class="daymissing calendarWeekend">&nbsp;</td>
+<!-- Missing weekend End -->
+
+<!-- Missing weekday Start -->
+<td class="daymissing calendarWeekday">&nbsp;</td>
+<!-- Missing weekday End -->
+
+<!-- Footer Start -->
 </table>
 <table width=100% border=0><tr>
 <td style="font-size:85%;">[[Version]]&nbsp;[[About]]</td>
