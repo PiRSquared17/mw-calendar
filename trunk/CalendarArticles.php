@@ -38,8 +38,6 @@ class CalendarArticles
 	private $arrTimeTrack = array();
 	private $arrStyle = array();
 	
-	private $ical_short_day = array("SU"=>0,"MO"=>1,"TU"=>2,"WE"=>3,"TH"=>4,"FR"=>5,"SA"=>6);	
-
 	public function addArticle($month, $day, $year, $page){
 		$lines = array();
 		$temp = "";		
@@ -61,21 +59,6 @@ class CalendarArticles
 		$body = $this->cleanEventData($body); 
 	
 		if(strlen(trim($body)) == 0) return "";
-/*			
-		$i = 0;
-		$section = $article->getSection($body, $i);
-$this->debug->set($section );	
-		while(strlen($section) > 0){
-			$lines = split("\n", $section);
-		
-			$key = str_replace('==', '', $lines[0]);
-			$body = str_replace($key , '', $section);
-			
-			$head[$key] = $body;
-			
-			$section = $article->getSection($body, $i++);
-		}
-	*/	
 	
 		$lines = split("\n",$body);
 		$cntLines = count($lines);
@@ -546,6 +529,8 @@ $this->debug->set($section );
 	public function addVCalEvents($page, $year, $month){	
 		$arrRRULES = array();
 		
+		$ical_short_day = array("SU"=>0,"MO"=>1,"TU"=>2,"WE"=>3,"TH"=>4,"FR"=>5,"SA"=>6);	
+		
 		$articleName = "$page/recurrence";
 		$article = new Article(Title::newFromText($articleName));
 		$bExists = $article->exists();
@@ -573,7 +558,7 @@ $this->debug->set($section );
 				// parse the ical format for BYDAY (1MO, 4TH, 2WE, etc)
 				settype($num, 'integer'); //get the numeric value of BYDAY
 				$ical_weekday = str_replace($num, "", $rules['BYDAY']); //get the weekday text value of BYDAY
-				$day = $this->ical_short_day[$ical_weekday]; // take the text and get the 0-6 numeric value (SU=0, MO=1, etc)
+				$day = $ical_short_day[$ical_weekday]; // take the text and get the 0-6 numeric value (SU=0, MO=1, etc)
 
 				$wday_info = wdayOffset($month,$year,$day);
 				$offset = $wday_info['offset'];
@@ -639,9 +624,15 @@ $this->debug->set($section );
 	private function cleanEventData($content){
 		
 		$ret = $content;
-	
-		$ret = preg_replace('[(\[\[)+.+(\]\])]', '', $ret); // string [[ xyz ]]  (like categories...)
-		$ret = preg_replace('[(__)+.+(__)]', '', $ret); // string __NOTOC__ 
+		
+		// remove [[xyz]] type strings...
+		$ret = preg_replace('[(\[\[)+.+(\]\])]', '', $ret); 
+		
+		// remove  __xyz__   type strings...
+		$ret = preg_replace('[(__)+.+(__)]', '', $ret); 
+		
+		// remove  {{xyz}}  type strings...
+		$ret = preg_replace('[({{)+.+(}})]', '', $ret); 
 		
 		return $ret;
 	}
