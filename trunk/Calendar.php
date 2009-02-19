@@ -69,7 +69,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "beta";
+$gVersion = "v3.7.0.4 (2/12/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -111,9 +111,6 @@ class Calendar extends CalendarArticles
 	var $arrAlerts = array();
 	var $subscribedPages = array();
 	
-	var $tag_year_view = "";
-	var $tag_month_view = "";
-	var $tag_day_view = "";
 	var $tag_views = "";
 												
     function Calendar($wikiRoot, $debug) {
@@ -249,9 +246,8 @@ class Calendar extends CalendarArticles
 
 		if(!$this->setting('disablemodes')){
 			$this->tag_views = "<input class='btn' name='year' type='submit' value=\"$year\"/> "
-				. "<input class='btn' name='month' type='submit' value=\"$month\"/>"
-				. "<input class='btn' name='week' type='submit' value=\"$week\"/>";
-			}
+				. "<input class='btn' name='month' type='submit' value=\"$month\"/>";
+		}
 					
 		// build the hidden calendar date info (used to offset the calendar via sessions)
 		$this->tag_HiddenData = "<input class='btn' type='hidden' name='calendar_info' value='"
@@ -699,9 +695,7 @@ class Calendar extends CalendarArticles
 	    $ret = str_replace("[[CalendarName]]", $tag_calendarName, $ret);
 	    $ret = str_replace("[[CalendarMonth]]", $tag_calendarMonth, $ret); 
 	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);
-		$ret = str_replace("[[YearView]]", $this->tag_year_view, $ret);
-		$ret = str_replace("[[MonthView]]", $this->tag_month_view, $ret);
-		$ret = str_replace("[[DayView]]", $this->tag_views, $ret);
+		$ret = str_replace("[[Views]]", $this->tag_views, $ret);
 		
 		$ret = str_replace("[[Sunday]]", translate(1,'weekday'), $ret);
 		$ret = str_replace("[[Monday]]", translate(2,'weekday'), $ret);
