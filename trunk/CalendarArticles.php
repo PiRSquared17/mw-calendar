@@ -55,7 +55,7 @@ class CalendarArticles
 
 		$body = $article->fetchContent();
 		
-		//clean the article of any unwanted special MW code
+		//clean calendar display data; doesn't effect the wiki page itself
 		$body = $this->cleanEventData($body); 
 	
 		if(strlen(trim($body)) == 0) return "";
@@ -621,6 +621,7 @@ class CalendarArticles
 	}
 	
 	// any custom MW tags or code can be filtered out here...
+	// this is only for calendar event display and doesn't edit the article itself
 	private function cleanEventData($content){
 		
 		$ret = $content;
