@@ -80,9 +80,10 @@ $wgExtensionCredits['parserhook'][] = array(
     'version'=>$gVersion
 );
 
+$path = dirname( __FILE__ );
 
 $wgExtensionFunctions[] = "wfCalendarExtension";
-$wgExtensionMessagesFiles['wfCalendarExtension'] = dirname( __FILE__ ) . '/calendar.i18n.php';
+$wgExtensionMessagesFiles['wfCalendarExtension'] = "$path/calendar.i18n.php";
 
 // function adds the wiki extension
 function wfCalendarExtension() {
@@ -91,10 +92,10 @@ function wfCalendarExtension() {
 	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
 }
 
-require_once ("common.php");
-require_once ("CalendarArticles.php");
-require_once ("ical.class.php");
-require_once ("debug.class.php");
+require_once ("$path/common.php");
+require_once ("$path/CalendarArticles.php");
+require_once ("$path/ical.class.php");
+require_once ("$path/debug.class.php");
 
 class Calendar extends CalendarArticles
 {  
