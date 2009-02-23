@@ -118,4 +118,27 @@
 		'' => "",
 		'' => "",
 	);
+	
+        $messages['hu'] = array(
+	        'default_title' => "Naptár",
+                'year' => "év",
+                'month' => "hónap",
+                'week' => "nap",
+                'ical_inst' => "Adj meg egy ical formátumú állományt (vcalendar).",
+                'add_event' => "Új esemény",
+                'add_event_tip' => "új esemény hozzáadása",
+                'styles_btn' => "eseménystílusok",
+                'styles_btn_tip' => "CSS stílus beállítása bizonyos hívószavakra",
+                'template_btn' => "események",
+		'template_btn_tip' => "Több esemény létrehozása egy oldalon...",
+                'ical_btn' => "betöltés",
+                'ical_btn_tip' => "kiválasztott állomány importálása",
+                'ical_browse_tip' => "a feltöltendo ical állomány kiválasztása...",
+                'config_btn' => "beállítások",
+                'config_btn_tip' => "Itt adhatod meg a naptár beállításait",
+                'today' => "ma",
+                '' => "",
+                '' => "",
+                '' => "",
+        );
 ?>
