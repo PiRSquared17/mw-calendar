@@ -1140,9 +1140,8 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$userMode = 'month';
 	
 	// grab the page title
-	//$title = $wgTitle->getPrefixedText();	
-	//$title = $wgParser->getVariableValue("fullpagename");	
-	$title = $wgTitle->getText();
+	$title = $wgTitle->getPrefixedText();	
+
 	
 	$config_page = " ";
 
@@ -1194,7 +1193,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 
 	// subscriber only calendar...basically, taking the subscribers identity fully...ie: "title/name" format
 	if(isset($params["fullsubscribe"])) 
-		if($params["fullsubscribe"] != "fullsubscribe") $calendar->calendarPageName = htmlspecialchars($params["fullsubscribe"]);
+		if($params["fullsubscribe"] != "fullsubscribe") $calendar->calendarPageName = $params["fullsubscribe"];
 
 	//calendar name itself (this is only for (backwards compatibility)
 	$calendar->legacyName1 = "CalendarEvents:" .$name;
