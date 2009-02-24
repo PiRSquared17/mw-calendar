@@ -1,6 +1,6 @@
 <?php
 
-# only none dependent functions here...basically reusable helper functions
+# only non-dependent functions here...basically re-usable helper functions
 # might make this a helper class later.
 #
 

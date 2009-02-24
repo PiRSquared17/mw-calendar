@@ -284,8 +284,7 @@ class CalendarArticles
 		$date = "$month-$day-$year";
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
-		$newURL = "<a title='$tip' href='" . $this->wikiRoot . $articleName . "&action=edit'>$text</a>";
-
+		$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit'>$text</a>";
 		return $newURL;
 	}
 
@@ -381,9 +380,9 @@ class CalendarArticles
 			$ret = "<a $style>" . $arrText[1] . "</a>";
 		else
 			if($this->setting('defaultedit'))
-				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot  . htmlspecialchars($title) . "&action=edit'>$arrText[1]</a>";
+				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title) . "&action=edit'>$arrText[1]</a>";
 			else
-				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . htmlspecialchars($title)  . "'>$arrText[1]</a>";
+				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title)  . "'>$arrText[1]</a>";
 		return $ret;
     }
 	

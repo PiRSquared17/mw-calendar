@@ -350,7 +350,7 @@ class Calendar extends CalendarArticles
 	function buildTemplateLink(){	
 		if(!$this->setting('usetemplates')) return "";
 
-		$articleName = $this->wikiRoot . $this->calendarPageName . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
+		$articleName = $this->wikiRoot . wfUrlencode($this->calendarPageName) . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
 		
 //		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
 		$value = translate('template_btn');
@@ -396,10 +396,10 @@ class Calendar extends CalendarArticles
 		$title = translate('config_btn_tip');
 		
 		if(!$bTextLink){
-			$articleConfig = $this->wikiRoot . $this->configPageName . "&action=edit" . "';\">";
+			$articleConfig = $this->wikiRoot . wfUrlencode($this->configPageName) . "&action=edit" . "';\">";
 			$ret = "<input class='btn' type='button' title='$title' value=\"$value\" onClick=\"javascript:document.location='" . $articleConfig;
 		}else
-			$ret = "<a href='" . $this->wikiRoot . $this->configPageName . "&action=edit'>($value...)</a>";
+			$ret = "<a href='" . $this->wikiRoot . wfUrlencode($this->configPageName) . "&action=edit'>($value...)</a>";
 
 		return $ret;			
 	}
@@ -645,7 +645,7 @@ class Calendar extends CalendarArticles
 		$style_tip = translate('styles_btn_tip');;
 		
 		if(!$this->setting("disablestyles")){
-			$articleStyle = $this->wikiRoot . $this->calendarPageName . "/style&action=edit" . "';\">";
+			$articleStyle = $this->wikiRoot . wfUrlencode($this->calendarPageName) . "/style&action=edit" . "';\">";
 			$tag_eventStyleButton = "<input class='btn' type=\"button\" title=\"$style_tip\" value=\"$style_value\" onClick=\"javascript:document.location='" . $articleStyle;
 		}
 	
@@ -1141,7 +1141,8 @@ function displayCalendar($paramstring = "", $params = array()) {
 	
 	// grab the page title
 	//$title = $wgTitle->getPrefixedText();	
-	$title = $wgParser->getVariableValue("fullpagename");
+	//$title = $wgParser->getVariableValue("fullpagename");	
+	$title = $wgTitle->getText();
 	
 	$config_page = " ";
 
@@ -1156,8 +1157,8 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$name = checkForMagicWord($params["name"]);
 		
 	// normal calendar...
-	$calendar->calendarPageName = htmlspecialchars($title . "/" . $name);
-	$calendar->configPageName = htmlspecialchars("$title/$name/config");
+	$calendar->calendarPageName = "$title/$name";
+	$calendar->configPageName = "$title/$name/config";
 	
 	// disabling for now... causing wierd errors with mutiple calendars per page
 	//(UNIQ249aadf6593f3f85-calendar-00000000-QINU}
