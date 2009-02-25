@@ -81,7 +81,7 @@ function getDateArr($month, $day, $year, $hour=0, $minutes=0, $seconds=0, $add_s
 	return getdate(mktime($hour, $minutes, $seconds, $month, $day, $year) + $add_seconds);
 }
 
-function getNextValidDate(&$month, &$day, &$year, &$date){
+function getNextValidDate(&$month, &$day, &$year){
 
 	$seconds = 86400; //1 day
 	$arr = getdate(mktime(12, 0, 0, $month, $day, $year) + $seconds);
@@ -89,8 +89,6 @@ function getNextValidDate(&$month, &$day, &$year, &$date){
 	$day = $arr['mday'];
 	$month = $arr['mon'];
 	$year = $arr['year'];
-	
-	$date = formatDate($year,$month,$day);
 	
 	return $arr;
 }
@@ -155,16 +153,6 @@ function translate($value, $key=""){
 		return utf8_encode(wfMsg($value));
 	}
 	return "";
-}
-
-//return yyyymmdd
-function formatDate($year, $month, $day){
-	
-	$ret = trim($year)
-		. str_pad( trim($month), 2, '0', STR_PAD_LEFT )
-		. str_pad( trim($day), 2, '0', STR_PAD_LEFT );	
-
-	return $ret;
 }
 
 

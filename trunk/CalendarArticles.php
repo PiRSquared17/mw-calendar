@@ -17,8 +17,10 @@ class CalendarArticle
 	var $body = ""; // everything except line 1 in the event page
 	var $html = ""; // html link displayed in calendar
 	
-	function CalendarArticle($date){
-		$this->date;	
+	function CalendarArticle($month, $day, $year){
+		$this->month = $month;
+		$this->day = $day;
+		$this->year = $year;	
 	}
 }
 
@@ -36,12 +38,12 @@ class CalendarArticles
 	private $arrTimeTrack = array();
 	private $arrStyle = array();
 	
-	// here is where all the special logic is handled
-	function getArticleInfo($page, $date){
-		
-		//$summaryLength = $this->setting('enablesummary',false);
-		
-		$article = new Article(Title::newFromText( $page ));
+	public function addArticle($month, $day, $year, $page){
+		$lines = array();
+		$temp = "";		
+		$head = array();
+
+		$article = new Article(Title::newFromText($page));
 		if(!$article->exists()) return "";
 
 		$redirectCount = 0;
@@ -53,20 +55,9 @@ class CalendarArticles
 
 		$body = $article->fetchContent();
 		
-		$list = $this->parseArticle($date, $page, $body);
-
-		// all special event formattin stuff is done; lets return the link
-		return $list;
-	}
-	
-	public function parseArticle($date, $page, $body){
-		$lines = array();
-		$temp = "";		
-		$head = array();
-		
 		//clean calendar display data; doesn't effect the wiki page itself
 		$body = $this->cleanEventData($body); 
-		
+	
 		if(strlen(trim($body)) == 0) return "";
 	
 		$lines = split("\n",$body);
@@ -90,38 +81,24 @@ class CalendarArticles
 				}
 			}
 		}
-		
-		
-		$list = "";
 
-		while (list($event, $body) = each($head)){
-			$list .= $this->buildEvent($date, $page, $event, $body);
+		while (list($event,$body) = each($head)){
+			$this->buildEvent($month, $day, $year, $event, $page, $body);
 		}
-		
-		return $list;
+
 	}
 	
-	private function buildEvent($date, $page, $event, $body){	
+	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
-/*		if(substr($event,0,2) == '##'){
+		if(substr($event,0,2) == '##'){
 			$event = trim(str_replace("##", "", $event));
-			//$this->buildRecurrenceEvent($date, $event, $page); //todo
+			$this->buildRecurrenceEvent($month, $day, $year, $event, $page);
 		}
-*/		
-		//$event = $this->checkTimeTrack($date, $event);
-		
-		$summaryLength = $this->setting('enablesummary',false);
-		$body = limitText($body, $summaryLength);
-		
-		$link = $this->articleLink($page, $event);
 
-		return "<li>$link<br>$body</li>";
-
-/*
 		// check for 'add event' type repeat events...templates can always repeat.
 		if(!$this->setting('enablerepeatevents')){
-			$this->add($date, $event, $page, $body, $eventType, $bRepeats);	
+			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
 			return;
 		}
 		
@@ -129,57 +106,55 @@ class CalendarArticles
 		$arrEvent = split("#",$event);
 		if(isset($arrEvent[1]) && ($arrEvent[0] != 0)){
 			for($i=0; $i<$arrEvent[0]; $i++) {
-				$this->add($date, $arrEvent[1], $page, $body, false, true);
-				getNextValidDate($month, $day, $year, $date);
+				$this->add($month, $day, $year, $arrEvent[1], $page, $body, false, true);
+				getNextValidDate($month, $day, $year);
 			}
 		}else
-			$this->add($date, $event, $page, $body, $eventType, $bRepeats);
-*/
+			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
 	}
 
-	// this is the primary entry point for ALL events
-	// this is called for each day in the required display
-	public function getArticleLinks($date){
+	public function getArticleLinks($month, $day, $year){
 		$ret = $list = "";
 		$bFound = false;
-		
-		$searchKey = "$this->calendarPageName/$date";
-		
-		$pages = PrefixSearch::titleSearch( $searchKey, 10, array($this->namespace));
 
+		// not using 'templates' array, but the purpose was to put all these events above other events...
+		if(isset($this->arrArticles['templates'])){	
+			foreach($this->arrArticles['templates'] as $cArticle){
+				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
+					$ret .= $cArticle->html;
+				}
+			}	
+		}
+		
 		// we want to format the normal 'add event' items in 1 table cell
 		// this creates less spacing and creates a better <ul>
 		$head = "<tr cellpadding=0 cellspacing=0 ><td class='calendarTransparent singleEvent'>";
 		$head .= "<ul class='bullets'>";
 		$foot = "</ul></td></tr>";
-
-		// new event stucture 2/24/2009
-		//$page = array_pop($this->eventList[$date]);
-		$page = array_pop($pages);
 		
-		while( isset($page) ){
-			$bFound = true;
-			$list = $this->getArticleInfo($page, $date);
-
-			// clear $page and attempt to find another...
-			unset($page);
-			$page = array_pop( $this->eventList[$date] );
-		}	
-			
-		if($bFound) {
-			$ret = $head . $list . $foot;
+		if(isset($this->arrArticles['events'])){		
+			foreach($this->arrArticles['events'] as $cArticle){
+				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
+					$list .= "<li>" . $cArticle->html . "</li>";
+					$bFound = true;
+				}	
+			}
 		}
+		
+		if($bFound) 
+			$ret .= $head . $list . $foot;
 		
 		return $ret;
 	}
 	
 	// when the calendar loads, we want to put all the template events into memory
 	// so we dont have to read the wiki db for every day
-	public function addTemplate($month, $year, $page){
+	public function addTemplate($month, $year, $pagename){
 		$displayText = "";
 		$arrEvent = array();
 	
-		$article = new Article(Title::newFromText($page));
+		$articleName = $pagename . "/" . $month . "-" . $year . " -Template";
+		$article = new Article(Title::newFromText($articleName));
 
 		if (!$article->exists()) return "";
 		
@@ -196,27 +171,24 @@ class CalendarArticles
 					if(count($arrRepeat) > 1){
 						$day = $arrRepeat[0];
 						while($day <= $arrRepeat[1]){
-							$date = formatDate($year,$month,$day);
-
-							$this->eventList[$date][] =  $page;
+							$this->buildEvent($month, $day, $year,  $arrEvent[1], $articleName, "", "templates", true);
 							$day++;
 						}
 					}else{
-						$date = formatDate($year,$month,$day);
-						$this->eventList[$date][] =  $page;
+						$this->buildEvent($month, $day, $year, $arrEvent[1], $articleName, "", "templates");
 					}
 				}
 			}
 		}	
 	}
 
-	private function add($date, $eventname, $page, $body, $eventType='default', $bRepeats=false){
+	private function add($month, $day, $year, $eventname, $page, $body, $eventType='default', $bRepeats=false){
 		// $eventType='default' -- addevent
 		// $eventType='recurrence'
 		// $eventType='template'
 
-		$cArticle = new CalendarArticle($date);
-		$temp = $this->checkTimeTrack($date, $eventname, $eventType);
+		$cArticle = new CalendarArticle($month, $day, $year);
+		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $eventType);
 		$temp = trim($temp);
 		$summaryLength = $this->setting('enablesummary',false);
 		
@@ -228,7 +200,9 @@ class CalendarArticles
 		if($eventType == "recurrence") $class .= "recurrenceEvent ";
 		$class = trim($class);		
 		
-		$cArticle->date = $date;
+		$cArticle->month = $month;	
+		$cArticle->day = $day;	
+		$cArticle->year = $year;	
 		$cArticle->page = $page;	
 		$cArticle->eventname = $temp;
 		$cArticle->body = $body;		
@@ -240,7 +214,7 @@ class CalendarArticles
 	}
 	
 	// this function checks a template event for a time trackable value
-	private function checkTimeTrack($date, $event, $eventType=''){
+	private function checkTimeTrack($month, $day, $year, $event, $eventType){
 	
 		if((stripos($event,"::") === false) || $this->setting('disabletimetrack'))
 			return $event;
@@ -256,7 +230,6 @@ class CalendarArticles
 		$type = trim(strtolower($arrType[0]));
 
 		// we only want the displayed calendar year totals
-		$year = substr($date,0,4);
 		if($this->year == $year){
 			if($eventType=='templates')
 				$this->arrTimeTrack[$type.' (y)'][] = $arrType[1];
@@ -295,7 +268,7 @@ class CalendarArticles
 	}
 	
 	//find the number of current events and "build" the <add event> link
-    public function buildAddEventLink($date, $text="") {
+    public function buildAddEventLink($month, $day, $year, $text="") {
 	
 		if($this->setting('disableaddevent') && strlen($text) == 0) return "";
 		if($this->setting('disableaddevent') && strlen($text) > 0) return $day;
@@ -307,14 +280,11 @@ class CalendarArticles
 			$text = "<u>" . translate("add_event") . "</u>";
 			
 		$tip = translate('add_event_tip');
-
+		
 		$date = "$month-$day-$year";
-		//$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
-		$name = $this->wikiRoot . wfUrlencode($this->calendarPageName);
+		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
 		$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit'>$text</a>";
-		//$newURL = "<a title='$tip' href=\"javascript:addEvent('$name', '$date')\">$text</a>";
-		
 		return $newURL;
 	}
 
@@ -399,13 +369,7 @@ class CalendarArticles
 	
     // returns the link for an article, along with summary in the title tag, given a name
     private function articleLink($title, $text){
-		
-		// format for different event types
-		$class = "baseEvent ";
-		if($bRepeats) $class .= "repeatEvent ";
-		if($eventType == "recurrence") $class .= "recurrenceEvent ";
-		$class = trim($class);
-
+			
 		if(strlen($text)==0) return "";
 
 		$arrText = $this->buildTextAndHTMLString($text);
@@ -413,12 +377,12 @@ class CalendarArticles
 
 		//locked links
 		if($this->setting('disablelinks'))
-			$ret = "<a class='$class' $style>" . $arrText[1] . "</a>";
+			$ret = "<a $style>" . $arrText[1] . "</a>";
 		else
 			if($this->setting('defaultedit'))
-				$ret = "<a  class='$class' $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title) . "&action=edit'>$arrText[1]</a>";
+				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title) . "&action=edit'>$arrText[1]</a>";
 			else
-				$ret = "<a  class='$class' $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title)  . "'>$arrText[1]</a>";
+				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title)  . "'>$arrText[1]</a>";
 		return $ret;
     }
 	
@@ -585,9 +549,7 @@ class CalendarArticles
 			if($bExpired) continue; // skip the rest of the current loop iteration
 		
 			if($rules['FREQ'] == 'YEARLY' && !isset($rules['BYDAY']) && $rules['BYMONTH'] == $month){ //std sameday recurrence
-				$date = formatdate($year, $month, $rules['DAY']);
-				$this->eventList[$date][] = $articleName;
-				//$this->buildEvent($month, $rules['DAY'], $year, $rules['SUMMARY'], $articleName, "", 'recurrence');
+				$this->buildEvent($month, $rules['DAY'], $year, $rules['SUMMARY'], $articleName, "", 'recurrence');
 			}
 			else if ($rules['FREQ'] == 'YEARLY' && isset($rules['BYDAY']) && $rules['BYMONTH'] == $month){
 				$num = $rules['BYDAY'];
@@ -608,10 +570,7 @@ class CalendarArticles
 				if($offset > 0 && $num != 0) $num--;
 
 				$theday = $offset + (7 * $num);
-				
-				$date = formatdate($year, $month, $theday);
-				$this->eventList[$date][] = $articleName;
-				//$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "", 'recurrence');
+				$this->buildEvent($month, $theday, $year, $rules['SUMMARY'], $articleName, "", 'recurrence');
 			}	
 		}
 		unset($rules);
