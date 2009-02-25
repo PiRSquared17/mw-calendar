@@ -39,10 +39,10 @@ class CalendarArticles
 	private $arrStyle = array();
 	
 	public function addArticle($month, $day, $year, $page){
-		$lines = array();
-		$temp = "";		
-		$head = array();
-
+		$lines = array();	
+		$head = "";
+		$i=0;
+		
 		$article = new Article(Title::newFromText($page));
 		if(!$article->exists()) return "";
 
@@ -56,36 +56,28 @@ class CalendarArticles
 		$body = $article->fetchContent();
 		
 		//clean calendar display data; doesn't effect the wiki page itself
-		$body = $this->cleanEventData($body); 
+		//$body = $this->cleanEventData($body); 
 	
-		if(strlen(trim($body)) == 0) return "";
-	
-		$lines = split("\n",$body);
-		$cntLines = count($lines);
-	
-		for($i=0; $i<$cntLines; $i++){
-			$line = $lines[$i];
-			if(substr($line,0,2) == '=='){
-				$arr = split("==",$line);
-				$key = $arr[1];
-				$head[$key] = ""; $temp = "";
-			}
-			else{
-				if($i == 0){ // $i=0  means this is a one event page no (==event==) data
-					$key = $line; //initalize the key
-					$head[$key] = ""; 
-				}
-				else{
-					$temp .= "$line\n";
-					$head[$key] = cleanWiki($temp);
-				}
-			}
+		if(strlen(trim($body)) == 0) 
+			return "";
+		
+		// section 0 is the text before any sections
+		$section = $article->getSection($body, $i);
+		if($section == ''){
+			$section = $article->getSection($body, ++$i);
 		}
+		
+		while ($section != '') {
+			$lines = split("\n", $section);
 
-		while (list($event,$body) = each($head)){
-			$this->buildEvent($month, $day, $year, $event, $page, $body);
+			$head = trim($lines[0]);
+			$event = str_replace('=', '', $head);
+			$section = trim(str_replace($lines[0], '', $section));
+			
+			$this->buildEvent($month, $day, $year, $event, $page, $section);
+
+			$section = $article->getSection($body, ++$i);
 		}
-
 	}
 	
 	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
@@ -284,7 +276,12 @@ class CalendarArticles
 		$date = "$month-$day-$year";
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
-		$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit'>$text</a>";
+		// lets use the section=new wiki page (the discussion "+" page...
+		if($this->setting('usemultievent')) {
+			$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit&section=new'>$text</a>";
+		}else{
+			$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit'>$text</a>";
+		}
 		return $newURL;
 	}
 
