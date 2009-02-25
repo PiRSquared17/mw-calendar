@@ -130,6 +130,26 @@ class Calendar extends CalendarArticles
 		$this->debug->set("Calendar Constructor Ended.");
     }
 
+	function buildEventList(){
+		
+		$prefixSearch = PrefixSearch::titleSearch( $this->calendarPageName, 1000, array($this->namespace));
+	
+		//move the date into the array key position
+		foreach($prefixSearch as $event){
+
+			//old format: /.../.../3-24-2009 -Event 1
+			if(strpos($event, ' -Event ') > 0) {
+				$temp = split('/', $event);
+				$temp = split('-', $temp[ count($temp) -1 ]);
+				$key = formatDate($temp[2], $temp[0], $temp[1]);
+			}else{	
+				$arr = split('/', $event);
+				$key = $arr[ count($arr) -1 ];
+			}
+			$this->eventList[$key][] = $event;
+		}
+	}
+	
     function html_week_array($format){
 		
 		//search values for html template only, no need to translate...
@@ -154,6 +174,8 @@ class Calendar extends CalendarArticles
 		$this->initalizeHTML();		
 		$this->readStylepage();
 		
+		$this->buildEventList();
+		
 		if($this->setting('usetemplates'))
 			$this->buildTemplateEvents();
 		
@@ -161,11 +183,11 @@ class Calendar extends CalendarArticles
 			$this->buildVCalEvents();
 
 		//grab last months events for overlapped repeating events
-		if($this->setting('enablerepeatevents')) 
+/*		if($this->setting('enablerepeatevents')) 
 			$this->initalizeMonth($this->day +15, 0); // this checks 1/2 way into the previous month
 		else
 			$this->initalizeMonth($this->day, 0); // just go back to the 1st of the current month
-		
+*/		
 		// what mode we going into
 		if($userMode == 'year')
 			$ret = $this->renderYear();		
@@ -247,7 +269,7 @@ class Calendar extends CalendarArticles
 
 		if(!$this->setting('disablemodes')){
 			$this->tag_views = "<input class='btn' name='year' type='submit' value=\"$year\"/> "
-				. "<input class='btn' name='month' type='submit' value=\"$month\"/>";
+				. "<input class='btn' name='month' type='submit' value=\"$month\"/> <input class='btn' name='week' type='submit' value=\"$week\"/>";
 		}
 					
 		// build the hidden calendar date info (used to offset the calendar via sessions)
@@ -291,7 +313,8 @@ class Calendar extends CalendarArticles
 			$tempString = $this->daysNormalHTML[$wday];
 		}
 
-		$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
+		//$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
+		$tag_addEvent = $this->buildAddEventLink( formatDate($year, $month, $day) );
 
 		$tag_mode = 'monthMode';
 		if($mode == 'events'){
@@ -307,7 +330,8 @@ class Calendar extends CalendarArticles
 		}
 		
 		//build formatted event list
-		$tag_eventList = $this->getArticleLinks($month, $day, $year, true);
+		$date = formatDate($year,$month,$day);
+		$tag_eventList = $this->getArticleLinks($date);
 		
 		// no events, then return nothing!
 		if((strlen($tag_eventList) == 0) && ($mode == 'events')) return "";
@@ -586,7 +610,7 @@ class Calendar extends CalendarArticles
 		
 		//build events into memory for the remainder of the month
 		//the previous days have already been loaded
-		$this->initalizeMonth(0, (32 - $this->day));
+		//$this->initalizeMonth(0, (32 - $this->day));
 		
 	    // the date for the first day of the month
 	    $firstDate = getdate(mktime(12, 0, 0, $this->month, 1, $this->year));
@@ -815,6 +839,15 @@ class Calendar extends CalendarArticles
     function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
 
+		$date = formatDate($year, $month, $day);				
+
+		// new event stucture 2/24/2009
+		$event = array_pop($this->eventList[$date]);
+		while ( isset($event) ){
+			$this->addArticle($date, $event, true);
+			$event = array_pop($this->eventList[$date]);
+		}		
+/*		
 		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
 			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
 			$this->addArticle($month, $day, $year, $articleName);
@@ -855,6 +888,7 @@ class Calendar extends CalendarArticles
 				}
 			}
 		}
+*/
 	}
 	
 	function buildSimpleCalendar($month, $year, $sixRow=false){
@@ -895,7 +929,8 @@ class Calendar extends CalendarArticles
 					$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
 					
 				if($dayOffset > 0 && $dayOffset <= $maxDays){
-					$link = $this->buildAddEventLink($month, $dayOffset, $year, $dayOffset);
+					$link = $this->buildAddEventLink( formatDate($year, $month, $dayOffset), $dayOffset);
+					//$link = $this->buildAddEventLink($month, $dayOffset, $year, $dayOffset);
 					if($j==0 || $j==6)
 						$row .= "<td class='yearWeekend $todayStyle'>$link</td>";
 					else
@@ -952,7 +987,7 @@ class Calendar extends CalendarArticles
 	}
 	
 	function renderWeek($fiveDay=false){
-		$this->initalizeMonth(0,8);
+		//$this->initalizeMonth(0,8);
 		
 		//defaults
 		$sunday = $saturday  = $ret = $week = ""; 
@@ -1069,8 +1104,11 @@ class Calendar extends CalendarArticles
 				if(!isset($event['DTEND'])) 
 					$event['DTEND'] = $event['DTSTART'];
 				
-				$date_string = $start['mon']."-".$start['mday']."-".$start['year'];	
-				$page = $this->getNextAvailableArticle($this->calendarPageName, $date_string, true);
+//				$date_string = $start['mon']."-".$start['mday']."-".$start['year'];	
+//				$page = $this->getNextAvailableArticle($this->calendarPageName, $date_string, true);
+				
+				$date = formatDate( $start['year'], $start['mon'], $start['mday'] );
+				$page = $this->calendarPageName . "/$summary/$date";
 
 				$date_diff = ceil(day_diff($event['DTSTART'], $event['DTEND']));
 				if($date_diff > 1)
@@ -1140,9 +1178,10 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$userMode = 'month';
 	
 	// grab the page title
-	$title = $wgTitle->getPrefixedText();	
+	//$title = $wgTitle->getPrefixedText();	
+	$calendar->namespace = $wgTitle->getNsText();
+	$title = $wgTitle->getText();
 
-	
 	$config_page = " ";
 
 	$calendar = null;	
@@ -1150,19 +1189,16 @@ function displayCalendar($paramstring = "", $params = array()) {
 
 	if(!isset($params["name"])) $params["name"] = "Public";
 	
-	// set path		
-	$params['path'] = str_replace("\\", "/", dirname(__FILE__));
+	// set path	
+	$path = str_replace("\\", "/", dirname(__FILE__));
+	$params['path'] = $path;
 		
 	$name = checkForMagicWord($params["name"]);
 		
 	// normal calendar...
 	$calendar->calendarPageName = "$title/$name";
 	$calendar->configPageName = "$title/$name/config";
-	
-	// disabling for now... causing wierd errors with mutiple calendars per page
-	//(UNIQ249aadf6593f3f85-calendar-00000000-QINU}
-	//$calendar->createNewPage("$title/$name/config", buildConfigString());	
-	
+		
 	if(isset($params["useconfigpage"])) {	
 		$configs = $calendar->getConfig("$title/$name");
 		
@@ -1240,7 +1276,9 @@ function displayCalendar($paramstring = "", $params = array()) {
 		$calendar->purgeCalendar(true);
 	}
 
-	return $calendar->renderCalendar($userMode);
+	$script = "<SCRIPT type='text/javascript' src='$path/Calendar.js'></script>";
+
+	return $calendar->renderCalendar($userMode) . $script;
 }
 
 // setup the config page with a listing of current parameters
