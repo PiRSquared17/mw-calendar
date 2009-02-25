@@ -135,18 +135,30 @@ class Calendar extends CalendarArticles
 		$prefixSearch = PrefixSearch::titleSearch( $this->calendarPageName, 1000, array($this->namespace));
 	
 		//move the date into the array key position
-		foreach($prefixSearch as $event){
-
+		foreach($prefixSearch as $page){
+		
 			//old format: /.../.../3-24-2009 -Event 1
-			if(strpos($event, ' -Event ') > 0) {
-				$temp = split('/', $event);
+			if(strpos($page, ' -Event ') > 0) {
+				$temp = split('/', $page);
 				$temp = split('-', $temp[ count($temp) -1 ]);
 				$key = formatDate($temp[2], $temp[0], $temp[1]);
+				$this->eventList[$key][] = $page;
 			}else{	
-				$arr = split('/', $event);
-				$key = $arr[ count($arr) -1 ];
+				$arr = split('/', $page);
+				$key = $arr[ count($arr) -2 ];
+				//$this->eventList[$key][] = $page;
 			}
-			$this->eventList[$key][] = $event;
+			
+			// format: Main Page/Public/2-2009 -Template
+			if(strpos($page, ' -Template') > 0) {
+				$this->buildTemplateEvents($page);
+			}
+			
+//			if(strpos($page, 'recurrence') > 0) {
+//				$this->buildVCalEvents();
+//			}
+			
+			//$this->eventList[$key][] = $page;
 		}
 	}
 	
@@ -174,13 +186,13 @@ class Calendar extends CalendarArticles
 		$this->initalizeHTML();		
 		$this->readStylepage();
 		
-		$this->buildEventList();
+		//$this->buildEventList();
 		
-		if($this->setting('usetemplates'))
-			$this->buildTemplateEvents();
+		//if($this->setting('usetemplates'))
+			//$this->buildTemplateEvents();
 		
-		if(!$this->setting('disablerecurrences'))
-			$this->buildVCalEvents();
+		//if(!$this->setting('disablerecurrences'))
+			//$this->buildVCalEvents();
 
 		//grab last months events for overlapped repeating events
 /*		if($this->setting('enablerepeatevents')) 
@@ -331,7 +343,9 @@ class Calendar extends CalendarArticles
 		
 		//build formatted event list
 		$date = formatDate($year,$month,$day);
-		$tag_eventList = $this->getArticleLinks($date);
+
+		//$tag_eventList = $this->getArticleLinks($date);
+		$tag_eventList = $this->getArticleLinks("$month-$day-$year");
 		
 		// no events, then return nothing!
 		if((strlen($tag_eventList) == 0) && ($mode == 'events')) return "";
@@ -469,7 +483,7 @@ class Calendar extends CalendarArticles
 		}
 	}
 
-	function buildTemplateEvents(){	
+	function buildTemplateEvents($mainpage){	
 
 		$year = $this->year;
 		$month = 1;//$this->month;
@@ -481,7 +495,7 @@ class Calendar extends CalendarArticles
 				$this->addTemplate($month, $year, $page);
 
 			
-			$this->addTemplate($month, $year, ($this->calendarPageName));		
+			$this->addTemplate($month, $year, $mainpage);		
 			$year = ($month == 12 ? ++$year : $year);
 			$month = ($month == 12 ? 1 : ++$month);
 		}
@@ -834,7 +848,7 @@ class Calendar extends CalendarArticles
 		
 		return $tempString;
 	}
-
+/*
     // builds the day events into memory
     function buildArticlesForDay($month, $day, $year) {
     	$articleName = "";    	// the name of the article to check for
@@ -844,18 +858,18 @@ class Calendar extends CalendarArticles
 		// new event stucture 2/24/2009
 		$event = array_pop($this->eventList[$date]);
 		while ( isset($event) ){
-			$this->addArticle($date, $event, true);
+			//$this->addArticle($date, $event, true);
 			$event = array_pop($this->eventList[$date]);
 		}		
-/*		
+		
 		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
 			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
-			$this->addArticle($month, $day, $year, $articleName);
+			//$this->addArticle($month, $day, $year, $articleName);
 
 			// subscribed events
 			for($s=0; $s < count($this->subscribedPages); $s++){
 				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
-				$this->addArticle($month, $day, $year, $articleName);				
+				//$this->addArticle($month, $day, $year, $articleName);				
 			}
 			
 			// check for legacy events (prior to 1/1/2009 or so...) format - "name (12-15-2008) - Event 1"
@@ -880,17 +894,17 @@ class Calendar extends CalendarArticles
 				
 					// with namespace...
 					$articleName = $this->legacyName1 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-					$this->addArticle($month, $day, $year, $articleName);
+					//$this->addArticle($month, $day, $year, $articleName);
 					
 					// without namespace...
 					$articleName = $this->legacyName2 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-					$this->addArticle($month, $day, $year, $articleName);		
+					//$this->addArticle($month, $day, $year, $articleName);		
 				}
 			}
 		}
-*/
+
 	}
-	
+*/
 	function buildSimpleCalendar($month, $year, $sixRow=false){
 
 		$row = $todayStyle = "";

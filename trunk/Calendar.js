@@ -1,12 +1,12 @@
 function addEvent(name, date) {
 
-	var event = prompt ("Event Name:","");
+	var event = prompt ("Please enter an event name:","");
 
 	if(event == null || event == "") {
 		return document.location = "";
 	}
 	
-	name += "/" + event + "/" + date + "&action=edit";
+	name += "/" + date + "/" + event + "&action=edit";
 
 	document.location = name;
 }
