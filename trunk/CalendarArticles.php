@@ -85,7 +85,7 @@
 		}
 	}
  
-	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
+	public function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
 		if(substr($event,0,2) == '##'){
@@ -142,6 +142,34 @@
 			$ret .= $head . $list . $foot;
 		
 		return $ret;
+	}
+	
+	public function buildSimpleEvent($month, $day, $year, $event, $body, $page){
+		
+		$cArticle = new CalendarArticle($month, $day, $year);
+		$temp = $this->checkTimeTrack($month, $day, $year, $event, '');
+		$temp = trim($temp);
+		$summaryLength = $this->setting('enablesummary',false);
+		
+		$html_link = $this->articleLink('', $temp, true);
+		
+		// format for different event types
+		$class = "baseEvent ";
+		//if($bRepeats) $class .= "repeatEvent ";
+		//if($eventType == "recurrence") $class .= "recurrenceEvent ";
+		$class = trim($class);		
+		
+		$cArticle->month = $month;	
+		$cArticle->day = $day;	
+		$cArticle->year = $year;	
+		$cArticle->page = $page;	
+		$cArticle->eventname = $event;
+		$cArticle->body = $body;		
+		
+		// this will be the main link displayed in the calendar....
+		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . limitText($cArticle->body, $summaryLength);
+
+		$this->arrArticles['events'][] = $cArticle;	
 	}
 	
 	// when the calendar loads, we want to put all the template events into memory
@@ -365,7 +393,7 @@
 	}
 	
     // returns the link for an article, along with summary in the title tag, given a name
-    private function articleLink($title, $text){
+    private function articleLink($title, $text, $noLink=false){
 			
 		if(strlen($text)==0) return "";
 
@@ -373,7 +401,7 @@
 		$style = $arrText[2];
 
 		//locked links
-		if($this->setting('disablelinks'))
+		if($this->setting('disablelinks') || $noLink)
 			$ret = "<a $style>" . $arrText[1] . "</a>";
 		else
 			if($this->setting('defaultedit'))

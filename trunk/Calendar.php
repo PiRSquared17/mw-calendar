@@ -69,7 +69,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "v3.7.0.5 (2/23/2009)";
+$gVersion = "v3.7.1 (beta)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -159,6 +159,9 @@ class Calendar extends CalendarArticles
 		
 		if(!$this->setting('disablerecurrences'))
 			$this->buildVCalEvents();
+	
+		if($this->paramstring != '')
+			$this->buildTagEvents($this->paramstring);
 
 		//grab last months events for overlapped repeating events
 		if($this->setting('enablerepeatevents')) 
@@ -832,7 +835,7 @@ class Calendar extends CalendarArticles
 		}
 		
 		// depreciated
-		if($this->setting('enablelegacyx')){
+		if($this->setting('enablelegacy')){
 			$name = $this->setting('name');
 		
 			$search = "$name ($date)";
@@ -848,6 +851,26 @@ class Calendar extends CalendarArticles
 				$this->addArticle($month, $day, $year, $page);	
 			}
 			unset ($pages);
+		}
+	}
+
+	function buildTagEvents($paramstring){
+	
+		$events = split("\n", $paramstring);
+		
+		foreach($events as $event) {
+			$arr = split(':', $event);
+			$date = array_shift($arr);
+			$event = array_shift($arr);
+			
+			$body = implode(':',$arr);
+			
+			$arrDate = split('-',$date);
+			$month = $arrDate[0];
+			$day = $arrDate[1];
+			$year = $arrDate[2];
+
+			$this->buildEvent($month, $day, $year, $event, $this->title, 20);
 		}
 	}
 	
@@ -1124,7 +1147,7 @@ class Calendar extends CalendarArticles
 
 // called to process <Calendar> tag.
 // most $params[] values are passed right into the calendar as is...
-function displayCalendar($paramstring = "", $params = array()) {
+function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript;
 	global $wgTitle;
@@ -1142,6 +1165,8 @@ function displayCalendar($paramstring = "", $params = array()) {
 	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
 
 	if(!isset($params["name"])) $params["name"] = "Public";
+	
+	$calendar->paramstring = $paramstring;
 	
 	// set path		
 	$params['path'] = str_replace("\\", "/", dirname(__FILE__));
