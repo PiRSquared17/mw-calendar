@@ -813,47 +813,41 @@ class Calendar extends CalendarArticles
 
     // builds the day events into memory
     function buildArticlesForDay($month, $day, $year) {
-    	$articleName = "";    	// the name of the article to check for
+		
+		$date = "$month-$day-$year";
 
-		for ($i = 0; $i <= $this->setting('maxdailyevents',false); $i++) {
-			$articleName = $this->calendarPageName . "/" . $month . "-" . $day . "-" . $year . " -Event " . $i;	
-			$this->addArticle($month, $day, $year, $articleName);
-
-			// subscribed events
-			for($s=0; $s < count($this->subscribedPages); $s++){
-				$articleName = $this->subscribedPages[$s] . "/" .  $month . "-" . $day . "-" . $year . " -Event " . $i;		
-				$this->addArticle($month, $day, $year, $articleName);				
+		$search = "$this->calendarPageName/$date";
+		$pages = PrefixSearch::titleSearch( $search, '100');
+		foreach($pages as $page) {
+			$this->addArticle($month, $day, $year, $page);
+		}
+		unset ($pages);
+		
+		// subscribed events
+		foreach($this->subscribedPages as $subscribedPage){
+			$search = "$subscribedPage/$date";
+			$pages = PrefixSearch::titleSearch( $search, '100' );
+			foreach($pages as $page)
+				$this->addArticle($month, $day, $year, $page);			
+		}
+		
+		// depreciated
+		if($this->setting('enablelegacyx')){
+			$name = $this->setting('name');
+		
+			$search = "$name ($date)";
+			$pages = PrefixSearch::titleSearch( $search, '100' );
+			foreach($pages as $page) {
+				$this->addArticle($month, $day, $year, $page);
 			}
-			
-			// check for legacy events (prior to 1/1/2009 or so...) format - "name (12-15-2008) - Event 1"
-			// enabling causes additional load times
-			if($this->setting('enablelegacy')){
-			
-				// initialize
-				$current_timestamp = mktime(12,0,0,$month,$day,$year);				
-				$legacy_timestamp = $current_timestamp +1;
-				
-				$legacy = split('-', $this->setting('enablelegacy', false));
-				
-				if(count($legacy) != 3)
-					$legacy = split('/', $this->setting('enablelegacy', false));
+			unset ($pages);
 
-				if(count($legacy) == 3)
-					$legacy_timestamp = mktime(12,0,0,$legacy[0],$legacy[1],$legacy[2]);
-
-				// if date is included with 'enablelegacy' then only pick up legacy events
-				// events if viewing those months that included them...
-				if($legacy_timestamp >= $current_timestamp){
-				
-					// with namespace...
-					$articleName = $this->legacyName1 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-					$this->addArticle($month, $day, $year, $articleName);
-					
-					// without namespace...
-					$articleName = $this->legacyName2 . " (" . $month . "-" . $day . "-" . $year . ") - Event " . $i;
-					$this->addArticle($month, $day, $year, $articleName);		
-				}
+			$search = "CalendarEvents:$name ($date)";
+			$pages = PrefixSearch::titleSearch( $search, '100' );
+			foreach($pages as $page) {
+				$this->addArticle($month, $day, $year, $page);	
 			}
+			unset ($pages);
 		}
 	}
 	
@@ -1141,7 +1135,6 @@ function displayCalendar($paramstring = "", $params = array()) {
 	
 	// grab the page title
 	$title = $wgTitle->getPrefixedText();	
-
 	
 	$config_page = " ";
 
@@ -1193,11 +1186,7 @@ function displayCalendar($paramstring = "", $params = array()) {
 
 	// subscriber only calendar...basically, taking the subscribers identity fully...ie: "title/name" format
 	if(isset($params["fullsubscribe"])) 
-		if($params["fullsubscribe"] != "fullsubscribe") $calendar->calendarPageName = $params["fullsubscribe"];
-
-	//calendar name itself (this is only for (backwards compatibility)
-	$calendar->legacyName1 = "CalendarEvents:" .$name;
-	$calendar->legacyName2 = $name;
+		if($params["fullsubscribe"] != "fullsubscribe") $calendar->calendarPageName = htmlspecialchars($params["fullsubscribe"]);
 	
 	// finished special conditions; set the $title and $name in the class
 	$calendar->setTitle($title);

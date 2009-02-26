@@ -1,48 +1,49 @@
 <?php
-/*
-Class: 		CalendarArticle
-Purpose: 	Stucture to hold article/event data and 
-			then store into an array for future retrieval
+ /*
+ Class:          CalendarArticle
+ Purpose:        Stucture to hold article/event data and 
+                         then store into an array for future retrieval
+ 
+ */
+ require_once ("common.php");
+ 
+ class CalendarArticle
+ {
+         var $day = "";
+         var $month = "";
+         var $year = "";
+         var $page = ""; //full wiki page name
+         var $eventname = ""; //1st line of body; unformated plain text
+         var $body = ""; // everything except line 1 in the event page
+         var $html = ""; // html link displayed in calendar
+         
+         function CalendarArticle($month, $day, $year){
+                 $this->month = $month;
+                 $this->day = $day;
+                 $this->year = $year;    
+         }
+ }
+ 
+ /*
+ Class:          CalendarArticles
+ Purpose:        Contains most of the functions to retrieve article 
+                         information. It also is the primary container for
+                         the main array of class::CalendarArticle articles
+ 
+ */
+ class CalendarArticles
+ {       
+         private $arrArticles = array();
+         public $wikiRoot = "";
+         private $arrTimeTrack = array();
+         private $arrStyle = array();
 
-*/
-require_once ("common.php");
+		 
+	public function addArticle($month, $day, $year, $page, $charlimit){
+		$lines = array();
+		$temp = "";		
+		$head = array();
 
-class CalendarArticle
-{
-	var $day = "";
-	var $month = "";
-	var $year = "";
-	var $page = ""; //full wiki page name
-	var $eventname = ""; //1st line of body; unformated plain text
-	var $body = ""; // everything except line 1 in the event page
-	var $html = ""; // html link displayed in calendar
-	
-	function CalendarArticle($month, $day, $year){
-		$this->month = $month;
-		$this->day = $day;
-		$this->year = $year;	
-	}
-}
-
-/*
-Class: 		CalendarArticles
-Purpose: 	Contains most of the functions to retrieve article 
-			information. It also is the primary container for
-			the main array of class::CalendarArticle articles
-
-*/
-class CalendarArticles
-{	
-	private $arrArticles = array();
-	public $wikiRoot = "";
-	private $arrTimeTrack = array();
-	private $arrStyle = array();
-	
-	public function addArticle($month, $day, $year, $page){
-		$lines = array();	
-		$head = "";
-		$i=0;
-		
 		$article = new Article(Title::newFromText($page));
 		if(!$article->exists()) return "";
 
@@ -53,33 +54,37 @@ class CalendarArticles
 			 $redirectCount += 1;
 		 }
 
-		$body = $article->fetchContent();
-		
-		//clean calendar display data; doesn't effect the wiki page itself
-		//$body = $this->cleanEventData($body); 
+		$body = $article->fetchContent(0,false,false);
 	
-		if(strlen(trim($body)) == 0) 
-			return "";
+		if(strlen(trim($body)) == 0) return "";
 		
-		// section 0 is the text before any sections
-		$section = $article->getSection($body, $i);
-		if($section == ''){
-			$section = $article->getSection($body, ++$i);
+		$lines = split("\n",$body);
+		$cntLines = count($lines);
+	
+		for($i=0; $i<$cntLines; $i++){
+			$line = $lines[$i];
+			if(substr($line,0,2) == '=='){
+				$arr = split("==",$line);
+				$key = $arr[1];
+				$head[$key] = ""; $temp = "";
+			}
+			else{
+				if($i == 0){ // $i=0  means this is a one event page no (==event==) data
+					$key = $line; //initalize the key
+					$head[$key] = ""; 
+				}
+				else{
+					$temp .= "$line\n";
+					$head[$key] = cleanWiki($temp);
+				}
+			}
 		}
-		
-		while ($section != '') {
-			$lines = split("\n", $section);
 
-			$head = trim($lines[0]);
-			$event = str_replace('=', '', $head);
-			$section = trim(str_replace($lines[0], '', $section));
-			
-			$this->buildEvent($month, $day, $year, $event, $page, $section);
-
-			$section = $article->getSection($body, ++$i);
+		while (list($event,$body) = each($head)){
+			$this->buildEvent($month, $day, $year, $event, $page, limitText($body, $charlimit));
 		}
 	}
-	
+ 
 	private function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
@@ -276,12 +281,7 @@ class CalendarArticles
 		$date = "$month-$day-$year";
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
-		// lets use the section=new wiki page (the discussion "+" page...
-		if($this->setting('usemultievent')) {
-			$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit&section=new'>$text</a>";
-		}else{
-			$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit'>$text</a>";
-		}
+		$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit&section=new'>$text</a>";
 		return $newURL;
 	}
 
