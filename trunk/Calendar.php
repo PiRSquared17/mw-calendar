@@ -44,10 +44,11 @@ if (isset($_POST["calendar_info"]) ){
 		$month = ($month == 12 ? 1 : ++$month);
 	}
 
-	$mode = "";
-	if(isset($_POST["year"])) $mode = 'year';
-	if(isset($_POST["month"])) $mode = 'month';
-	if(isset($_POST["week"])) $mode = 'week';
+	$mode = $_POST["viewSelect"];
+//	$mode = "";
+//	if(isset($_POST["year"])) $mode = 'year';
+//	if(isset($_POST["month"])) $mode = 'month';
+//	if(isset($_POST["week"])) $mode = 'week';
 	
 	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
 	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
@@ -150,6 +151,8 @@ class Calendar extends CalendarArticles
 	 function renderCalendar($userMode){
 
 		$ret = "";
+		$this->mode = $userMode;
+		
 		
 		$this->initalizeHTML();		
 		$this->readStylepage();
@@ -249,8 +252,21 @@ class Calendar extends CalendarArticles
 		$week = translate('week');
 
 		if(!$this->setting('disablemodes')){
-			$this->tag_views = "<input class='btn' name='year' type='submit' value=\"$year\"/> "
-				. "<input class='btn' name='month' type='submit' value=\"$month\"/>";
+			$selected = "selected='true'";
+			$this->tag_views = "<select name='viewSelect' method='post' onChange='javascript:this.form.submit()'>";
+			
+			($this->mode == 'year') ?
+				$this->tag_views .= "<option class='lst' value='year' $selected>&nbsp;year</option>" :
+				$this->tag_views .= "<option class='lst' value='year'>&nbsp;year</option>";
+
+			($this->mode == 'month') ?
+				$this->tag_views .= "<option class='lst' value='month' $selected>&nbsp;month</option>" :
+				$this->tag_views .= "<option class='lst' value='month'>&nbsp;month</option>";
+			($this->mode == 'week') ?
+				$this->tag_views .= "<option class='lst' value='week' $selected>&nbsp;week</option>" :
+				$this->tag_views .= "<option class='lst' value='week'>&nbsp;week</option>";
+	
+			$this->tag_views .= "</select>&nbsp;&nbsp;";	
 		}
 					
 		// build the hidden calendar date info (used to offset the calendar via sessions)
@@ -816,6 +832,7 @@ class Calendar extends CalendarArticles
 
     // builds the day events into memory
     function buildArticlesForDay($month, $day, $year) {
+		//$this->debug->set( 'BEGIN - buildArticlesForDay' );
 		
 		$date = "$month-$day-$year";
 
@@ -833,8 +850,9 @@ class Calendar extends CalendarArticles
 			foreach($pages as $page)
 				$this->addArticle($month, $day, $year, $page);			
 		}
-		
-		// depreciated
+	
+		// depreciated (around 1/1/2009)
+		// old format: < name (12-15-2008) - Event 1 >
 		if($this->setting('enablelegacy')){
 			$name = $this->setting('name');
 		
@@ -852,6 +870,7 @@ class Calendar extends CalendarArticles
 			}
 			unset ($pages);
 		}
+		//$this->debug->set( 'END - buildArticlesForDay' );
 	}
 
 	function buildTagEvents($paramstring){
