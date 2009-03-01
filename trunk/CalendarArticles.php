@@ -85,7 +85,7 @@
 		}
 	}
  
-	// this is the main logic handler; the '$event' is checked for triggers here...
+	// this is the main logic/format handler; the '$event' is checked for triggers here...
 	public function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
@@ -106,6 +106,8 @@
 		}
 	}
 
+	// this is the MAIN function that returns the events to the calendar...
+	// there shouldn't be ANY formatting or logic done here....
 	public function getArticleLinks($month, $day, $year){
 		$ret = $list = "";
 		$bFound = false;
@@ -203,6 +205,8 @@
 		}	
 	}
 
+	// this is the FINAL stop; the events are stored here then pulled out
+	// and displayed later via "getArticleLinks()"... 
 	private function add($month, $day, $year, $eventname, $page, $body, $eventType='addevent', $bRepeats=false){
 		// $eventType='default' -- addevent
 		// $eventType='recurrence'
@@ -215,13 +219,7 @@
 		
 		// lets get the body char limit
 		$summaryLength = $this->setting('enablesummary',false);
-		if( isset($summaryLength) ) {
-			if ($summaryLength == "") {
-				$summaryLength = 100; 
-			}
-		}
-		
-		$this->debug->set($summaryLength);
+
 		$html_link = $this->articleLink($page, $temp);
 		
 		// format for different event types

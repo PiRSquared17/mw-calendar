@@ -45,10 +45,6 @@ if (isset($_POST["calendar_info"]) ){
 	}
 
 	$mode = $_POST["viewSelect"];
-//	$mode = "";
-//	if(isset($_POST["year"])) $mode = 'year';
-//	if(isset($_POST["month"])) $mode = 'month';
-//	if(isset($_POST["week"])) $mode = 'week';
 	
 	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
 	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
@@ -263,15 +259,15 @@ class Calendar extends CalendarArticles
 			$this->tag_views = "<select name='viewSelect' method='post' onChange='javascript:this.form.submit()'>";
 			
 			($this->mode == 'year') ?
-				$this->tag_views .= "<option class='lst' value='year' $selected>&nbsp;year</option>" :
-				$this->tag_views .= "<option class='lst' value='year'>&nbsp;year</option>";
+				$this->tag_views .= "<option class='lst' value='year' $selected>year</option>" :
+				$this->tag_views .= "<option class='lst' value='year'>year</option>";
 
 			($this->mode == 'month') ?
-				$this->tag_views .= "<option class='lst' value='month' $selected>&nbsp;month</option>" :
-				$this->tag_views .= "<option class='lst' value='month'>&nbsp;month</option>";
+				$this->tag_views .= "<option class='lst' value='month' $selected>month</option>" :
+				$this->tag_views .= "<option class='lst' value='month'>month</option>";
 			($this->mode == 'week') ?
-				$this->tag_views .= "<option class='lst' value='week' $selected>&nbsp;week</option>" :
-				$this->tag_views .= "<option class='lst' value='week'>&nbsp;week</option>";
+				$this->tag_views .= "<option class='lst' value='week' $selected>week</option>" :
+				$this->tag_views .= "<option class='lst' value='week'>week</option>";
 	
 			$this->tag_views .= "</select>&nbsp;&nbsp;";	
 		}
@@ -883,7 +879,7 @@ class Calendar extends CalendarArticles
 	function buildTagEvents($paramstring){
 	
 		$events = split( "\n", trim($paramstring) );
-		
+	
 		foreach($events as $event) {
 			$arr = split(':', $event);
 			$date = array_shift($arr);
@@ -892,11 +888,16 @@ class Calendar extends CalendarArticles
 			$body = implode(':',$arr);
 			
 			$arrDate = split('-',$date);
+			
+			// we must have a valid date to continue
+			if(count($arrDate) < 3 ) 
+				break;
+
 			$month = $arrDate[0];
 			$day = $arrDate[1];
 			$year = $arrDate[2];
 
-			$this->buildEvent($month, $day, $year, $event, $this->title);
+			$this->buildEvent($month, $day, $year, $event, $this->title);	
 		}
 	}
 	
