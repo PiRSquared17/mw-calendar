@@ -301,7 +301,9 @@
 	
 	//find the number of current events and "build" the <add event> link
     public function buildAddEventLink($month, $day, $year, $text="") {
-	
+		
+		$section_new = '';
+		
 		if($this->setting('disableaddevent') && strlen($text) == 0) return "";
 		if($this->setting('disableaddevent') && strlen($text) > 0) return $day;
 		
@@ -316,7 +318,11 @@
 		$date = "$month-$day-$year";
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
-		$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit&section=new'>$text</a>";
+		// if we're using multi-event mode, then default to section=new
+		if( $this->setting('usesectionevents') )
+			$section_new = "&section=new";
+		
+		$newURL = "<a title='$tip' href='" . $this->wikiRoot . wfUrlencode($articleName) . "&action=edit$section_new'>$text</a>";
 		return $newURL;
 	}
 
@@ -332,13 +338,13 @@
 		$max_articles = $this->setting('maxdailyevents',false);
 		
 		// bump up the max for iCal imports...but not to much in case of a runaway
-		// we also want to ignore the inforced 'usemultievent'..however, the 
+		// we also want to ignore the inforced 'usesectionevents'..however, the 
 		// calendar will still only display the 'maxdailyevents' value
 		if($this->setting('ical')){
 			$max_articles += 5; 
 		}
 		else{
-			if($this->setting('usemultievent') && !$this->setting('ical'))
+			if($this->setting('usesectionevents') && !$this->setting('ical'))
 				return $page . $articleCount;
 		}
 		

@@ -1162,8 +1162,6 @@ class Calendar extends CalendarArticles
 	function setName($name) { $this->name = $name; }
 	function setMode($mode) { $this->mode = $mode; }
 	function createAlert($day, $month, $text){$this->arrAlerts[] = $day . "-" . $month . "-" . $text . "\\n"; }
-
-
 }
 
 // called to process <Calendar> tag.
@@ -1171,7 +1169,8 @@ class Calendar extends CalendarArticles
 function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript;
-	global $wgTitle, $calendar;
+	global $wgTitle, $wgUser;
+	global $wgRestrictCalendarTo;
 
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
@@ -1218,13 +1217,23 @@ function displayCalendar($paramstring, $params = array()) {
 	if(!isset($params["charlimit"])) 		$params["charlimit"] = 25;
 	if(!isset($params["css"])) 				$params["css"] = "default.css";
 
+	//set secure mode via $wgRestrictCalendarTo global
+	// this global is set via LocalSetting.php (ex: $wgRestrictCalendarTo = 'sysop';
+	if( isset($wgRestrictCalendarTo) ){
+		$arrGroups = $wgUser->getGroups();
+		if( !in_array($wgRestrictCalendarTo, $arrGroups) ){
+			$calendar->debug->set($arrGroups[2]);
+			$params["lockdown"] = true;
+		}	
+	}
+	
 	// no need to pass a parameter here... isset check for the params name, thats it
 	if(isset($params["lockdown"])){
 		$params['disableaddevent'] = true;
 		$params['disablelinks'] = true;
 		$params['locktemplates'] = true;
 	}
-	
+
 	// this needs to be last after all required $params are updated, changed, defaulted or whatever
 	$calendar->arrSettings = $params;
 	
@@ -1256,11 +1265,12 @@ function displayCalendar($paramstring, $params = array()) {
 	else{
 		// defaults from the <calendar /> parameters; must restart browser to enable
 		if(isset($params['week'])) $userMode = 'week';
-		if(isset($params['year'])) $userMode = 'year';
-		if(isset($params['useeventlist'])) $userMode = 'events';
-		if(isset($params['date'])) $userMode = 'day';		
-		if(isset($params['simplemonth'])) $userMode = 'simplemonth';
+		if(isset($params['year'])) $userMode = 'year';	
 	}
+	
+	if(isset($params['useeventlist'])) $userMode = 'events';
+	if(isset($params['date'])) $userMode = 'day';
+	if(isset($params['simplemonth'])) $userMode = 'simplemonth';
 	
 	if(isset($_COOKIE['calendar_ical'])){
 		$calendar->debug->set('ical cookie loaded');		
@@ -1276,34 +1286,15 @@ function displayCalendar($paramstring, $params = array()) {
 		// refresh the calendar's newly added events
 		$calendar->purgeCalendar(true);
 	}
-
+	
 	return $calendar->renderCalendar($userMode);
 }
 
-// setup the config page with a listing of current parameters
-function buildConfigString(){
-	$string = "The following are the standard parameter options available. If you clear " .
-		"the page, the defaults will return. Just remove the 'x' as needed.\n\n" .
-		"x usetemplates\n" .
-		"x locktemplates\n" .
-		"x defaultedit\n" .
-		"x disableaddevent\n" .
-		"x yearoffset=5\n" .
-		"x date=today\n" .
-		"x useeventlist=90\n" .
-		"x subscribe='page/calendar name1, page/calendar name2, ...'\n" .
-		"x fullsubscribe='page/calendar name'\n" .
-		"x disablelinks\n" .
-		"x usemultievent\n" .
-		"x maxdailyevents=3\n" .
-		"x disablestyles\n" .
-		"x css='olive.css'\n" .
-		"x disabletimetrack\n" .
-		"x enablerepeatevents\n" .
-		"x enablelegacy\n" .
-		"x lockdown\n";
-		
-	return $string;
+// alias ugly/bad preferences to newer, hopefully better names
+function legacyAliasChecks(&$params) {
+	
+	if( $params['usemultievent'] ) $params['usesectionevents'] = 'usesectionevents';
+
 }
 
 function wfCalendarFunctions_Magic( &$magicWords, $langCode ) {
