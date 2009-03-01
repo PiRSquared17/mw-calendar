@@ -85,13 +85,19 @@ $path = dirname( __FILE__ );
 
 $wgExtensionFunctions[] = "wfCalendarExtension";
 $wgExtensionMessagesFiles['wfCalendarExtension'] = "$path/calendar.i18n.php";
+$wgHooks['LanguageGetMagic'][]       = 'wfCalendarFunctions_Magic';
+
 
 // function adds the wiki extension
 function wfCalendarExtension() {
     global $wgParser;
     $wgParser->setHook( "calendar", "displayCalendar" );
 	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
+	$wgParser->setFunctionHook( 'calendar', 'calendar' );
 }
+
+// calendar conditionals, used to remove the commands from the page view
+function calendar(){return "";}
 
 require_once ("$path/common.php");
 require_once ("$path/CalendarArticles.php");
@@ -114,7 +120,8 @@ class Calendar extends CalendarArticles
 	var $subscribedPages = array();
 	
 	var $tag_views = "";
-												
+			
+										
     function Calendar($wikiRoot, $debug) {
 		$this->wikiRoot = $wikiRoot;
 
@@ -875,7 +882,7 @@ class Calendar extends CalendarArticles
 
 	function buildTagEvents($paramstring){
 	
-		$events = split("\n", $paramstring);
+		$events = split( "\n", trim($paramstring) );
 		
 		foreach($events as $event) {
 			$arr = split(':', $event);
@@ -889,7 +896,7 @@ class Calendar extends CalendarArticles
 			$day = $arrDate[1];
 			$year = $arrDate[2];
 
-			$this->buildEvent($month, $day, $year, $event, $this->title, 20);
+			$this->buildEvent($month, $day, $year, $event, $this->title);
 		}
 	}
 	
@@ -1162,6 +1169,8 @@ class Calendar extends CalendarArticles
 	function setName($name) { $this->name = $name; }
 	function setMode($mode) { $this->mode = $mode; }
 	function createAlert($day, $month, $text){$this->arrAlerts[] = $day . "-" . $month . "-" . $text . "\\n"; }
+
+
 }
 
 // called to process <Calendar> tag.
@@ -1169,7 +1178,7 @@ class Calendar extends CalendarArticles
 function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript;
-	global $wgTitle;
+	global $wgTitle, $calendar;
 
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
@@ -1302,5 +1311,13 @@ function buildConfigString(){
 	return $string;
 }
 
+function wfCalendarFunctions_Magic( &$magicWords, $langCode ) {
+    switch ( $langCode ) {
+         default:
+              $magicWords['calendar']         = array( 0, 'calendar' );
+    }
+    return true;
+}
 } //end define MEDIAWIKI
-?>
+
+

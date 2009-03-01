@@ -38,8 +38,8 @@
          private $arrTimeTrack = array();
          private $arrStyle = array();
 
-		 
-	public function addArticle($month, $day, $year, $page, $charlimit){
+	// build an event based on the 1st line or ==event== type
+	public function addArticle($month, $day, $year, $page){
 		$lines = array();
 		$temp = "";		
 		$head = array();
@@ -81,10 +81,11 @@
 		}
 
 		while (list($event,$body) = each($head)){
-			$this->buildEvent($month, $day, $year, $event, $page, limitText($body, $charlimit));
+			$this->buildEvent($month, $day, $year, trim($event), $page, $body);
 		}
 	}
  
+	// this is the main logic handler; the '$event' is checked for triggers here...
 	public function buildEvent($month, $day, $year, $event, $page, $body, $eventType='addevent', $bRepeats=false){	
 	
 		// user triggered yearly repeat event...
@@ -93,21 +94,16 @@
 			$this->buildRecurrenceEvent($month, $day, $year, $event, $page);
 		}
 
-		// check for 'add event' type repeat events...templates can always repeat.
-		if(!$this->setting('enablerepeatevents')){
-			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
-			return;
-		}
-		
 		//check for repeating events
 		$arrEvent = split("#",$event);
-		if(isset($arrEvent[1]) && ($arrEvent[0] != 0)){
+		if( isset($arrEvent[1]) && ($arrEvent[0] != 0) && $this->setting('enablerepeatevents') ){
 			for($i=0; $i<$arrEvent[0]; $i++) {
 				$this->add($month, $day, $year, $arrEvent[1], $page, $body, false, true);
 				getNextValidDate($month, $day, $year);
 			}
-		}else
+		}else{
 			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
+		}
 	}
 
 	public function getArticleLinks($month, $day, $year){
@@ -207,16 +203,25 @@
 		}	
 	}
 
-	private function add($month, $day, $year, $eventname, $page, $body, $eventType='default', $bRepeats=false){
+	private function add($month, $day, $year, $eventname, $page, $body, $eventType='addevent', $bRepeats=false){
 		// $eventType='default' -- addevent
 		// $eventType='recurrence'
 		// $eventType='template'
-
+		global $wgParser;
+		
 		$cArticle = new CalendarArticle($month, $day, $year);
 		$temp = $this->checkTimeTrack($month, $day, $year, $eventname, $eventType);
 		$temp = trim($temp);
-		$summaryLength = $this->setting('enablesummary',false);
 		
+		// lets get the body char limit
+		$summaryLength = $this->setting('enablesummary',false);
+		if( isset($summaryLength) ) {
+			if ($summaryLength == "") {
+				$summaryLength = 100; 
+			}
+		}
+		
+		$this->debug->set($summaryLength);
 		$html_link = $this->articleLink($page, $temp);
 		
 		// format for different event types
@@ -232,8 +237,12 @@
 		$cArticle->eventname = $temp;
 		$cArticle->body = $body;		
 		
+		// wik-a-fi the $body; however, cut off text could cause html issues... so try to 
+		// keep all required body wiki/html to the top
+		$parsedBody = $wgParser->recursiveTagParse( limitText($cArticle->body, $summaryLength) );
+
 		// this will be the main link displayed in the calendar....
-		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . limitText($cArticle->body, $summaryLength);
+		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . $parsedBody;
 
 		$this->arrArticles['events'][] = $cArticle;
 	}

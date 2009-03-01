@@ -57,6 +57,8 @@ function swapWikiToHTML($text, $tagWiki, $tagHTML){
 }	
 
 function limitText($text,$max) { 
+	global $wgParser;
+
 	if($max == "") return;
 	
 	$text = trim($text);
@@ -65,6 +67,7 @@ function limitText($text,$max) {
 		$ret = substr($text, 0, $max) . "...";
 	else
 		$ret = $text;
+
 
 	return $ret;
 } 
