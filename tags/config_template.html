@@ -1,0 +1,46 @@
+<form name='frmConfig' method='POST'>
+<h2>Calendar Name: <i>[[name]]</i></h2>
+<table width=100% border=1>
+<tr>
+  <td nowrap width=1% colspan=2>Subscribed Calendar(s):</td><td><input name='subscribe' type='text' value='[[subscribe]]' size=100></td>
+</tr>  
+<tr> 
+  <td nowrap colspan=2>Fullsubscribed:</td><td><input name='name' type='text' value='[[fullsubscribe]]' size=100></td>
+<tr>
+
+<tr>
+<td style="vertical-align:top; text-align:right" nowrap>
+Enable Templates: <input name='usetemplates' type='checkbox' [[usetemplates]]></br>
+Disable Add Event Link: <input name='disableaddevent' type='checkbox' [[disableaddevent]]> </br>
+Default to Edit: <input name='defaultedit' type='checkbox' [[defaultedit]]> </br>
+Lock Templates: <input name='locktemplates' type='checkbox' [[locktemplates]]> </br>
+Force Event Reuse: <input name='usemultievent' type='checkbox' [[usemultievent]]> </br>
+Disable Styles: <input name='disablestyles' type='checkbox' [[disablestyles]]> </br>
+lockdown: <input name='lockdown' type='checkbox' [[lockdown]]> </br>
+Disable Time Tracker: <input name='disabletimetrack' type='checkbox' [[disabletimetrack]]> </br>
+Enable Repeating Events: <input name='enablerepeatevents' type='checkbox' [[enablerepeatevents]]> </br>
+Disable Calendar Modes: <input name='disablemodes' type='checkbox' [[disablemodes]]> </br>
+Year Mode: <input name='year' type='checkbox' [[year]]> </br>
+Week Mode: <input name='week' type='checkbox' [[week]]> </br>
+5 Day Week: <input name='5dayweek' type='checkbox' [[5dayweek]]> </br>
+Disable Recurrence Events: <input name='disablerecurrences' type='checkbox' [[disablerecurrences]]> </br>
+</td>
+<td style="vertical-align:top;" nowrap>
+Year Offset:</br>
+Year Offset:</br>
+Year Offset:</br>
+Year Offset:</br>
+</td>
+<td style="vertical-align:top;" nowrap>
+<input name='disablemodes' type='text' size=1> </br>
+<input name='disablemodes' type='text' size=1> </br>
+<input name='disablemodes' type='text' size=1> </br>
+<input name='disablemodes' type='text' size=1> </br>
+</td>
+</tr> 
+<tr>
+ <td><input name='config' type='submit'></td>
+</tr>
+<table>
+<input name='configpage' value='[[configpage]]' hiddenx >
+</form>
