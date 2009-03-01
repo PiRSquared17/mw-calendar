@@ -81,19 +81,22 @@ $path = dirname( __FILE__ );
 
 $wgExtensionFunctions[] = "wfCalendarExtension";
 $wgExtensionMessagesFiles['wfCalendarExtension'] = "$path/calendar.i18n.php";
-$wgHooks['LanguageGetMagic'][]       = 'wfCalendarFunctions_Magic';
 
+
+//$wgHooks['LanguageGetMagic'][]       = 'wfCalendarFunctions_Magic';
 
 // function adds the wiki extension
 function wfCalendarExtension() {
     global $wgParser;
     $wgParser->setHook( "calendar", "displayCalendar" );
 	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
-	$wgParser->setFunctionHook( 'calendar', 'calendar' );
+//	$wgParser->setFunctionHook( 'calendar', 'calendar' );
 }
 
+/*
 // calendar conditionals, used to remove the commands from the page view
 function calendar(){return "";}
+*/
 
 require_once ("$path/common.php");
 require_once ("$path/CalendarArticles.php");
@@ -1292,9 +1295,7 @@ function displayCalendar($paramstring, $params = array()) {
 
 // alias ugly/bad preferences to newer, hopefully better names
 function legacyAliasChecks(&$params) {
-	
 	if( $params['usemultievent'] ) $params['usesectionevents'] = 'usesectionevents';
-
 }
 
 function wfCalendarFunctions_Magic( &$magicWords, $langCode ) {
