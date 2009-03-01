@@ -834,9 +834,9 @@ class Calendar extends CalendarArticles
 	}
 
     // builds the day events into memory
+	// uses prefix seaching (NS:page/name/date)... anything after doesn't matter
     function buildArticlesForDay($month, $day, $year) {
-		//$this->debug->set( 'BEGIN - buildArticlesForDay' );
-		
+	
 		$date = "$month-$day-$year";
 
 		$search = "$this->calendarPageName/$date";
@@ -855,25 +855,17 @@ class Calendar extends CalendarArticles
 		}
 	
 		// depreciated (around 1/1/2009)
-		// old format: < name (12-15-2008) - Event 1 >
+		// old format: ** name (12-15-2008) - Event 1 **
 		if($this->setting('enablelegacy')){
 			$name = $this->setting('name');
-		
-			$search = "$name ($date)";
-			$pages = PrefixSearch::titleSearch( $search, '100' );
+			$search = "$this->namespace:$name ($date)";
+			$pages = PrefixSearch::titleSearch( $search, '100');
+			
 			foreach($pages as $page) {
 				$this->addArticle($month, $day, $year, $page);
 			}
 			unset ($pages);
-
-			$search = "CalendarEvents:$name ($date)";
-			$pages = PrefixSearch::titleSearch( $search, '100' );
-			foreach($pages as $page) {
-				$this->addArticle($month, $day, $year, $page);	
-			}
-			unset ($pages);
 		}
-		//$this->debug->set( 'END - buildArticlesForDay' );
 	}
 
 	function buildTagEvents($paramstring){
@@ -1193,6 +1185,8 @@ function displayCalendar($paramstring, $params = array()) {
 	$calendar = null;	
 	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
 
+	$calendar->namespace = $wgTitle->getNsText();
+	
 	if(!isset($params["name"])) $params["name"] = "Public";
 	
 	$calendar->paramstring = $paramstring;
