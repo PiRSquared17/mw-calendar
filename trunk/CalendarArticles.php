@@ -75,7 +75,7 @@
 				}
 				else{
 					$temp .= "$line\n";
-					$head[$key] = cleanWiki($temp);
+					$head[$key] = Common::cleanWiki($temp);
 				}
 			}
 		}
@@ -99,7 +99,7 @@
 		if( isset($arrEvent[1]) && ($arrEvent[0] != 0) && $this->setting('enablerepeatevents') ){
 			for($i=0; $i<$arrEvent[0]; $i++) {
 				$this->add($month, $day, $year, $arrEvent[1], $page, $body, false, true);
-				getNextValidDate($month, $day, $year);
+				Common::getNextValidDate($month, $day, $year);
 			}
 		}else{
 			$this->add($month, $day, $year, $event, $page, $body, $eventType, $bRepeats);	
@@ -165,7 +165,7 @@
 		$cArticle->body = $body;		
 		
 		// this will be the main link displayed in the calendar....
-		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . limitText($cArticle->body, $summaryLength);
+		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . Common::limitText($cArticle->body, $summaryLength);
 
 		$this->arrArticles['events'][] = $cArticle;	
 	}
@@ -234,10 +234,10 @@
 		$cArticle->page = $page;	
 		$cArticle->eventname = $temp;
 		$cArticle->body = $body;		
-		
+
 		// wik-a-fi the $body; however, cut off text could cause html issues... so try to 
 		// keep all required body wiki/html to the top
-		$parsedBody = $wgParser->recursiveTagParse( limitText($cArticle->body, $summaryLength) );
+		$parsedBody = $wgParser->recursiveTagParse( Common::limitText($cArticle->body, $summaryLength) );
 
 		// this will be the main link displayed in the calendar....
 		$cArticle->html = "<span class='$class'>$html_link</span><br/>" . $parsedBody;
@@ -311,9 +311,9 @@
     	$articleCount = 1;    	// the article count
 		
 		if($text == "")
-			$text = "<u>" . translate("add_event") . "</u>";
+			$text = "<u>" . Common::translate("add_event") . "</u>";
 			
-		$tip = translate('add_event_tip');
+		$tip = Common::translate('add_event_tip');
 		
 		$date = "$month-$day-$year";
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
@@ -426,7 +426,7 @@
 	
 	private function buildTextAndHTMLString($string){
 
-		$string = cleanWiki($string);	
+		$string = Common::cleanWiki($string);	
 		$htmltext = $string;
 		$plaintext = strip_tags($string);
 		$charlimit = $this->setting('charlimit',false);
@@ -597,7 +597,7 @@
 				$ical_weekday = str_replace($num, "", $rules['BYDAY']); //get the weekday text value of BYDAY
 				$day = $ical_short_day[$ical_weekday]; // take the text and get the 0-6 numeric value (SU=0, MO=1, etc)
 
-				$wday_info = wdayOffset($month,$year,$day);
+				$wday_info = Common::wdayOffset($month,$year,$day);
 				$offset = $wday_info['offset'];
 				
 				// if we have something like -1SU; then handle it here...

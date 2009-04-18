@@ -66,7 +66,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "v3.7.1 (3/1/2009)";
+$gVersion = "v3.7.2 (4/18/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -139,7 +139,7 @@ class Calendar extends CalendarArticles
 
     function html_week_array($format){
 		
-		//search values for html template only, no need to translate...
+		//search values for html template only, no need to Common::translate...
 		$days = array("weekend","weekday","weekday",
 			"weekday","weekday","weekday","weekend");	
 		
@@ -159,7 +159,11 @@ class Calendar extends CalendarArticles
 		$ret = "";
 		$this->mode = $userMode;
 		
-		
+		// need to change the running calendar date 
+		// or the other functions wont set correctly
+		if($userMode == 'day')
+			$this->updateDate();
+
 		$this->initalizeHTML();		
 		$this->readStylepage();
 		
@@ -215,7 +219,7 @@ class Calendar extends CalendarArticles
 		
 		$cnt = abs($back) + $forward;
 		
-		$arr_start = datemath($back, $this->month, $this->day, $this->year);
+		$arr_start = Common::datemath($back, $this->month, $this->day, $this->year);
 		
 		$month = $arr_start['mon'];
 		$day = $arr_start['mday'];
@@ -224,7 +228,7 @@ class Calendar extends CalendarArticles
 		
 	    for ($i = 1; $i <= $cnt; $i++) {
 			$this->buildArticlesForDay($month, $day, $year);
-			getNextValidDate($month, $day, $year);
+			Common::getNextValidDate($month, $day, $year);
 		}	
 	}
 	
@@ -253,24 +257,24 @@ class Calendar extends CalendarArticles
 		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
 		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
 		
-		$year = translate('year');
-		$month = translate('month');
-		$week = translate('week');
+		$year = Common::translate('year');
+		$month = Common::translate('month');
+		$week = Common::translate('week');
 
 		if(!$this->setting('disablemodes')){
 			$selected = "selected='true'";
 			$this->tag_views = "<select name='viewSelect' method='post' onChange='javascript:this.form.submit()'>";
 			
 			($this->mode == 'year') ?
-				$this->tag_views .= "<option class='lst' value='year' $selected>year</option>" :
-				$this->tag_views .= "<option class='lst' value='year'>year</option>";
+				$this->tag_views .= "<option class='lst' value='year' $selected>$year</option>" :
+				$this->tag_views .= "<option class='lst' value='year'>$year</option>";
 
 			($this->mode == 'month') ?
-				$this->tag_views .= "<option class='lst' value='month' $selected>month</option>" :
-				$this->tag_views .= "<option class='lst' value='month'>month</option>";
+				$this->tag_views .= "<option class='lst' value='month' $selected>$month</option>" :
+				$this->tag_views .= "<option class='lst' value='month'>$month</option>";
 			($this->mode == 'week') ?
-				$this->tag_views .= "<option class='lst' value='week' $selected>week</option>" :
-				$this->tag_views .= "<option class='lst' value='week'>week</option>";
+				$this->tag_views .= "<option class='lst' value='week' $selected>$week</option>" :
+				$this->tag_views .= "<option class='lst' value='week'>$week</option>";
 	
 			$this->tag_views .= "</select>&nbsp;&nbsp;";	
 		}
@@ -289,7 +293,7 @@ class Calendar extends CalendarArticles
     function getHTMLForDay($month, $day, $year, $dateFormat='default', $mode='month'){
 		$tag_eventList = $tag_dayCustom = "";
 
-		$max = getDaysInMonth($month, $year);
+		$max = Common::getDaysInMonth($month, $year);
 		
 		if ($day <=0 || $day > $max)		
 			return $this->daysMissingHTML[0];
@@ -297,11 +301,11 @@ class Calendar extends CalendarArticles
 		$thedate = getdate(mktime(12, 0, 0, $month, $day, $year));
 		$today = getdate();
 		$wday  = $thedate['wday'];
-		$weekday = translate($wday+1, 'weekday');
+		$weekday = Common::translate($wday+1, 'weekday');
 
 		$display_day = $day;
 		if($dateFormat == 'long'){
-			$display_day = $weekday . ", " . translate($month, 'month_short') . " $day";
+			$display_day = $weekday . ", " . Common::translate($month, 'month_short') . " $day";
 		}
 		
 		if($dateFormat == 'none')
@@ -377,9 +381,9 @@ class Calendar extends CalendarArticles
 
 		$articleName = $this->wikiRoot . wfUrlencode($this->calendarPageName) . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
 		
-//		$value = strtolower(translate($this->month,'month')) . " " . translate('template_btn');
-		$value = translate('template_btn');
-		$title = translate('template_btn_tip');
+//		$value = strtolower(Common::translate($this->month,'month')) . " " . Common::translate('template_btn');
+		$value = Common::translate('template_btn');
+		$title = Common::translate('template_btn_tip');
 
 		if($this->setting('locktemplates'))
 			$ret = "<input class='btn' type='button' title='$title' disabled value=\"$value\" onClick=\"javascript:document.location='" . $articleName;
@@ -390,9 +394,9 @@ class Calendar extends CalendarArticles
 	}
 
 	function loadiCalLink(){
-		$ical_value  = translate('ical_btn');
-		$ical_title = translate('ical_btn_tip');
-		$bws_title = translate('ical_browse_tip');
+		$ical_value  = Common::translate('ical_btn');
+		$ical_title = Common::translate('ical_btn_tip');
+		$bws_title = Common::translate('ical_browse_tip');
 		
 		$note = "";
 		$cookieName = str_replace(' ', '_', ($this->calendarPageName . "_ical_count"));
@@ -402,7 +406,7 @@ class Calendar extends CalendarArticles
 			setcookie($cookieName, "", time() -3600);
 		}
 
-		$ret = translate('ical_inst') . "<br>"
+		$ret = Common::translate('ical_inst') . "<br>"
 			. "<input name='uploadedfile' type='file' title=\"$bws_title\" size='50'><br>"	
 			. "<input name='ical' class='btn' type='submit' title=\"$ical_title\" value=\"$ical_value\">&nbsp;&nbsp;"
 			. $note;
@@ -417,8 +421,8 @@ class Calendar extends CalendarArticles
 		
 		if($this->setting('useconfigpage',false) == 'disablelinks') return "";
 		
-		$value = translate('config_btn');
-		$title = translate('config_btn_tip');
+		$value = Common::translate('config_btn');
+		$title = Common::translate('config_btn_tip');
 		
 		if(!$bTextLink){
 			$articleConfig = $this->wikiRoot . wfUrlencode($this->configPageName) . "&action=edit" . "';\">";
@@ -457,7 +461,7 @@ class Calendar extends CalendarArticles
 				if(strlen(trim($temp)) > 0 ){
 					$events .= "<tr>" . $temp . "</tr>";
 				}				
-				getNextValidDate($month,$day,$year);//bump the date up by 1
+				Common::getNextValidDate($month,$day,$year);//bump the date up by 1
 			}
 		
 			$this->debug->set("renderEventList Ended");
@@ -510,6 +514,7 @@ class Calendar extends CalendarArticles
 	
 	// used for 'date' mode only...technically, this can be any date
 	function updateDate(){
+		
 		$this->calendarMode = "date";
 		
 		$setting = $this->setting("date",false);
@@ -518,9 +523,16 @@ class Calendar extends CalendarArticles
 		
 		$this->arrSettings['charlimit'] = 100;
 		
-		if (($setting == "today") || ($setting == "tomorrow")){
+		if (($setting == "today") || ($setting == "tomorrow") || ($setting == "yesterday") ){
 			if ($setting == "tomorrow" ){	
-				getNextValidDate($this->month, $this->day, $this->year);		
+				Common::getNextValidDate($this->month, $this->day, $this->year);		
+			}
+
+			if ($setting == "yesterday" ){	
+				$yesterday= Common::datemath(-1, $this->month, $this->day, $this->year);
+				$this->month = $yesterday[mon];
+				$this->day = $yesterday[mday];
+				$this->year = $yesterday[year];
 			}
 		}
 		else {
@@ -533,12 +545,11 @@ class Calendar extends CalendarArticles
 				$this->year = $parseDate[2] + 0;
 			}
 		}
+		$this->debug->set("** updateDate Ended");	
 	}
 	
 	// specific date mode
 	function renderDate(){
-		
-		$this->updateDate(); // update calendar date data
 		
 		$this->initalizeMonth(0,1);
 
@@ -551,8 +562,7 @@ class Calendar extends CalendarArticles
 			. $this->getHTMLForDay($this->month, $this->day, $this->year, 'long', 'day');
 			
 		$this->debug->set("renderDate Ended");		
-		return $ret;
-		
+		return $ret;	
 	}
 
 	function renderSimpleMonth(){
@@ -624,14 +634,14 @@ class Calendar extends CalendarArticles
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
 		if($this->name == 'Public')
-			$tag_calendarName = translate('default_title');
+			$tag_calendarName = Common::translate('default_title');
 		else
 			$tag_calendarName = $this->name;
 			
 		$tag_about = "<a title='Click here is learn more and get help' href='http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>...";
 		
 	    // set the month's mont and year tags
-		$tag_calendarMonth = translate($this->month, 'month');
+		$tag_calendarMonth = Common::translate($this->month, 'month');
 	    $tag_calendarYear = $this->year;
     	
 	    // build the month select box
@@ -640,11 +650,11 @@ class Calendar extends CalendarArticles
 		for ($i = 1; $i <= 12; $i++) {
     		if ($i == $this->month) {
 				$tag_monthSelect .= "<option class='lst' value='" . ($i) . "' selected='true'>" . 
-				translate($i, 'month') . "</option>\n";
+				Common::translate($i, 'month') . "</option>\n";
     		}
     		else {
 				$tag_monthSelect .= "<option class='lst' value='" . ($i) . "'>" . 
-				translate($i, 'month') . "</option>\n";
+				Common::translate($i, 'month') . "</option>\n";
     		}
 	    }
 	    $tag_monthSelect .= "</select>";
@@ -666,8 +676,8 @@ class Calendar extends CalendarArticles
 		$tag_templateButton = $this->buildTemplateLink();
 		$tag_configButton = $this->buildConfigLink(false);
 
-		$style_value = translate('styles_btn');
-		$style_tip = translate('styles_btn_tip');;
+		$style_value = Common::translate('styles_btn');
+		$style_tip = Common::translate('styles_btn_tip');;
 		
 		if(!$this->setting("disablestyles")){
 			$articleStyle = $this->wikiRoot . wfUrlencode($this->calendarPageName) . "/style&action=edit" . "';\">";
@@ -675,7 +685,7 @@ class Calendar extends CalendarArticles
 		}
 	
 		// build the 'today' button	
-		$btnToday = translate('today');
+		$btnToday = Common::translate('today');
 	    $tag_todayButton = "<input class='btn' name='today' type='submit' value=\"$btnToday\">";
 		$tag_previousMonthButton = "<input class='btn' name='monthBack' type='submit' value='<<'>";
 		$tag_nextMonthButton = "<input class='btn' name='monthForward' type='submit' value='>>'>";
@@ -723,22 +733,22 @@ class Calendar extends CalendarArticles
 	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);
 		$ret = str_replace("[[Views]]", $this->tag_views, $ret);
 		
-		$ret = str_replace("[[Sunday]]", translate(1,'weekday'), $ret);
-		$ret = str_replace("[[Monday]]", translate(2,'weekday'), $ret);
-		$ret = str_replace("[[Tuesday]]", translate(3,'weekday'), $ret);
-		$ret = str_replace("[[Wednesday]]", translate(4,'weekday'), $ret);
-		$ret = str_replace("[[Thursday]]", translate(5,'weekday'), $ret);
-		$ret = str_replace("[[Friday]]", translate(6,'weekday'), $ret);
-		$ret = str_replace("[[Saturday]]", translate(7,'weekday'), $ret);
+		$ret = str_replace("[[Sunday]]", Common::translate(1,'weekday'), $ret);
+		$ret = str_replace("[[Monday]]", Common::translate(2,'weekday'), $ret);
+		$ret = str_replace("[[Tuesday]]", Common::translate(3,'weekday'), $ret);
+		$ret = str_replace("[[Wednesday]]", Common::translate(4,'weekday'), $ret);
+		$ret = str_replace("[[Thursday]]", Common::translate(5,'weekday'), $ret);
+		$ret = str_replace("[[Friday]]", Common::translate(6,'weekday'), $ret);
+		$ret = str_replace("[[Saturday]]", Common::translate(7,'weekday'), $ret);
 		
 		
 	    /***** Begin building the calendar days *****/
 	    // determine the starting day offset for the month
-		//$wday_info = wdayOffset($this->month,$this->year,$first);
+		//$wday_info = Common::wdayOffset($this->month,$this->year,$first);
 		//$dayOffset = $wday_info['offset'] +1;
 	    $dayOffset = -$first + 1;
 		
-	    $maxDays = getDaysInMonth($this->month,$this->year);
+	    $maxDays = Common::getDaysInMonth($this->month,$this->year);
 
 	    // determine the number of weeks in the month
 		//$numWeeks = $wday_info['weeks'] +1;
@@ -908,12 +918,12 @@ class Calendar extends CalendarArticles
 		$dayOffset = -$first + 1;
     
 	    // determine the number of weeks in the month
-		$maxDays = getDaysInMonth($month,$year);
+		$maxDays = Common::getDaysInMonth($month,$year);
 	    $numWeeks = floor(($maxDays - $dayOffset + 7) / 7);  	
 
 		if($sixRow) $numWeeks = 6;
 
-		$monthname = translate($month,'month');
+		$monthname = Common::translate($month,'month');
 		//$monthname = "<a href=''>$monthname";
 
 		$ret = "<tr><td class='yearTitle' colspan=7>" . $monthname . "</td></tr>";				
@@ -1004,14 +1014,14 @@ class Calendar extends CalendarArticles
 		$html_foot = "</table></form>";
 		
 		$weekday = date('N', mktime(12, 0, 0, $this->month, $this->day, $this->year));
-		$date = datemath(-($weekday), $this->month, $this->day, $this->year);
+		$date = Common::datemath(-($weekday), $this->month, $this->day, $this->year);
 
 		$month = $date['mon'];
 		$day = $date['mday'];
 		$year = $date['year'];
 		
 		//$title = $date['month'];
-		$title = translate($month, 'month');
+		$title = Common::translate($month, 'month');
 		
 		$css = $this->searchHTML($this->html_template, 
 				 "<!-- CSS Start -->", "<!-- CSS End -->");
@@ -1019,8 +1029,8 @@ class Calendar extends CalendarArticles
 		$css = $this->stripLeadingSpace($css);
 		
 		if(!$fiveDay){
-			$sunday = "<td class='calendarHeading'>" . translate(1, 'weekday'). "</td>";
-			$saturday = "<td class='calendarHeading'>" . translate(7, 'weekday'). "</td>";
+			$sunday = "<td class='calendarHeading'>" . Common::translate(1, 'weekday'). "</td>";
+			$saturday = "<td class='calendarHeading'>" . Common::translate(7, 'weekday'). "</td>";
 			$colspan = 5; //adjuct for mode buttons
 		}
 		
@@ -1030,20 +1040,20 @@ class Calendar extends CalendarArticles
 			
 		$ret .= "<tr>";
 		$ret .= $sunday;
-		$ret .= "<td class='calendarHeading'>" . translate(2, 'weekday'). "</td>";
-		$ret .= "<td class='calendarHeading'>" . translate(3, 'weekday'). "</td>";
-		$ret .= "<td class='calendarHeading'>" . translate(4, 'weekday'). "</td>";
-		$ret .= "<td class='calendarHeading'>" . translate(5, 'weekday'). "</td>";
-		$ret .= "<td class='calendarHeading'>" . translate(6, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . Common::translate(2, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . Common::translate(3, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . Common::translate(4, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . Common::translate(5, 'weekday'). "</td>";
+		$ret .= "<td class='calendarHeading'>" . Common::translate(6, 'weekday'). "</td>";
 		$ret .= $saturday;
 		$ret .= "</tr>";
 		
-		if($fiveDay) getNextValidDate($month, $day, $year);
+		if($fiveDay) Common::getNextValidDate($month, $day, $year);
 		
 		for($i=0; $i<7; $i++){
 			if($fiveDay && $i==0) $i=2;
 			$week .= $this->getHTMLForDay($month, $day, $year, 'short', 'week');
-			getNextValidDate($month, $day, $year);
+			Common::getNextValidDate($month, $day, $year);
 		}
 
 		$ret .= "<tr>" . $week . "</tr>";
@@ -1111,7 +1121,7 @@ class Calendar extends CalendarArticles
 				$date_string = $start['mon']."-".$start['mday']."-".$start['year'];	
 				$page = $this->getNextAvailableArticle($this->calendarPageName, $date_string, true);
 
-				$date_diff = ceil(day_diff($event['DTSTART'], $event['DTEND']));
+				$date_diff = ceil(Common::day_diff($event['DTSTART'], $event['DTEND']));
 				if($date_diff > 1)
 					$summary = $date_diff . "#" . $summary; //multiple day events
 				
@@ -1196,7 +1206,7 @@ function displayCalendar($paramstring, $params = array()) {
 	// set path		
 	$params['path'] = str_replace("\\", "/", dirname(__FILE__));
 		
-	$name = checkForMagicWord($params["name"]);
+	$name = Common::checkForMagicWord($params["name"]);
 		
 	// normal calendar...
 	$calendar->calendarPageName = "$title/$name";
