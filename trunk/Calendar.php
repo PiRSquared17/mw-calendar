@@ -66,7 +66,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "v3.7.3 (beta)";
+$gCalendarVersion = "v3.7.3 (5/1/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -74,7 +74,7 @@ $wgExtensionCredits['parserhook'][] = array(
     'author'=>'Eric Fortin',
     'url'=>'http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)',
     'description'=>'MediaWiki Calendar',
-    'version'=>$gVersion
+    'version'=>$gCalendarVersion
 );
 
 $path = dirname( __FILE__ );
@@ -596,7 +596,7 @@ class Calendar extends CalendarArticles
 	}
 	
     function renderMonth() {   
-		global $gVersion;
+		global $gCalendarVersion;
 			
 		$tag_templateButton = "";
 		
@@ -794,7 +794,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[TodayData]]", $this->tag_HiddenData, $tempString);
 		$tempString = str_replace("[[TemplateButton]]", $tag_templateButton, $tempString);
 		$tempString = str_replace("[[EventStyleBtn]]", $tag_eventStyleButton, $tempString);
-		$tempString = str_replace("[[Version]]", $gVersion, $tempString);
+		$tempString = str_replace("[[Version]]", $gCalendarVersion, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
 		//$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
