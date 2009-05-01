@@ -157,6 +157,29 @@ class Common{
 		}
 		return "";
 	}
+	
+	//kludge to display an image event link... this MUST be cleaned up!
+	static function getImageURL( $image ){
+		
+		if( !strpos($image, '.') ) return null;
+		
+		$name = $image;
+		
+		$name = preg_replace( '/\[\[.*:/i', '', $name ); //remove image tag prefixes like [[image:
+		$name = str_replace( ']]', '', $name );
+		
+		$img = Image::newFromName( $name );
+		$path = str_replace("\\", "/", $_SERVER['DOCUMENT_ROOT']) . $img->getURL();
+		
+		if( !file_exists($path) ) return null;
+
+		return $img->getURL();	
+	} 
 }
+
+
+
+
+
 
 

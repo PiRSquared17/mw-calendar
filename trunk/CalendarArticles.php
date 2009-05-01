@@ -16,6 +16,7 @@
          var $eventname = ""; //1st line of body; unformated plain text
          var $body = ""; // everything except line 1 in the event page
          var $html = ""; // html link displayed in calendar
+		 var $isImage = false;
          
          function CalendarArticle($month, $day, $year){
                  $this->month = $month;
@@ -109,6 +110,8 @@
 	// this is the MAIN function that returns the events to the calendar...
 	// there shouldn't be ANY formatting or logic done here....
 	public function getArticleLinks($month, $day, $year){
+		global $wgParser;
+		
 		$ret = $list = "";
 		$bFound = false;
 
@@ -130,7 +133,15 @@
 		if(isset($this->arrArticles['events'])){		
 			foreach($this->arrArticles['events'] as $cArticle){
 				if($cArticle->month == $month && $cArticle->day == $day && $cArticle->year == $year){
-					$list .= "<li>" . $cArticle->html . "</li>";
+					$image = Common::getImageURL($cArticle->eventname);
+					
+					if( $image ) {
+						$list .= '<a href="'. $this->wikiRoot . $cArticle->page . '"><img src="' . $image . '"></a>';
+					}
+					else {
+						$list .= "<li>" . $cArticle->html . "</li>";	
+					}
+					
 					$bFound = true;
 				}	
 			}
@@ -233,7 +244,9 @@
 		$cArticle->year = $year;	
 		$cArticle->page = $page;	
 		$cArticle->eventname = $temp;
-		$cArticle->body = $body;		
+		$cArticle->body = $body;	
+
+		$cArticle->isImage = $eventType;		
 
 		// wik-a-fi the $body; however, cut off text could cause html issues... so try to 
 		// keep all required body wiki/html to the top
@@ -287,10 +300,10 @@
 		$cntHead = split(",", $this->setting('timetrackhead',false));
 		$linktitle = "Time summaries of time specific enties. Prefix events with :: to track time values.";
 		
-		$html_head = "<table title='$linktitle' width=15% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
+		$html_head = "<hr><table title='$linktitle' width=15% border=1 cellpadding=0 cellspacing=0><th>$cntHead[0]</th><th>$cntHead[1]</th>";
 		$html_foot = "</table><small>"
 			. "(m) - total month only; doesn't add to year total <br/>"
-			. "(y) - total year; must use monthly templates<br/></small>";
+			. "(y) - total year; must use monthly templates<br/></small><br>";
 
 		while (list($key,$val) = each($this->arrTimeTrack)) {
 			$ret .= "<tr><td align='center'>$key</td><td align='center'>" . array_sum($this->arrTimeTrack[$key]) . "</td></tr>";
@@ -407,9 +420,10 @@
 	
     // returns the link for an article, along with summary in the title tag, given a name
     private function articleLink($title, $text, $noLink=false){
-			
+		global $wgParser;
+		
 		if(strlen($text)==0) return "";
-
+		//$text = $wgParser->recursiveTagParse( $text );
 		$arrText = $this->buildTextAndHTMLString($text);
 		$style = $arrText[2];
 
@@ -421,6 +435,9 @@
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title) . "&action=edit'>$arrText[1]</a>";
 			else
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title)  . "'>$arrText[1]</a>";
+		
+		
+		
 		return $ret;
     }
 	

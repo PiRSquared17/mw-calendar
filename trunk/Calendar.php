@@ -66,7 +66,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gVersion = "v3.7.2 (4/18/2009)";
+$gVersion = "v3.7.3 (beta)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -85,12 +85,25 @@ $wgExtensionMessagesFiles['wfCalendarExtension'] = "$path/calendar.i18n.php";
 
 //$wgHooks['LanguageGetMagic'][]       = 'wfCalendarFunctions_Magic';
 
-// function adds the wiki extension
+ // function adds the wiki extension
 function wfCalendarExtension() {
-    global $wgParser;
-    $wgParser->setHook( "calendar", "displayCalendar" );
+	global $wgParser;
+	global $wgParser, $wgHooks;
+	global $wgCalendarSidebarRef;
+	$wgParser->setHook( "calendar", "displayCalendar" );
 	wfLoadExtensionMessages( 'wfCalendarExtension' ); 
-//	$wgParser->setFunctionHook( 'calendar', 'calendar' );
+ //   if ( isset($wgCalendarSidebarRef) ) $wgHooks['SkinTemplateOutputPageBeforeExec'][] = 
+//		'wfCalendarSkinTemplateOutputPageBeforeExec';
+}
+
+// Hook to inject Calendar into sidebar
+function wfCalendarSkinTemplateOutputPageBeforeExec( &$skin, &$tpl ) {
+    global $wgCalendarSidebarRef;
+    $html = displayCalendar('', array('simplemonth' => true, 'fullsubscribe' => $wgCalendarSidebarRef));
+    $html .= displayCalendar('', array('date' => 'today', 'fullsubscribe' => $wgCalendarSidebarRef));
+    $html .= displayCalendar('', array('date' => 'tomorrow', 'fullsubscribe' => $wgCalendarSidebarRef));
+    if ( $html ) $tpl->data['sidebar']['calendar'] = $html;
+    return true;
 }
 
 /*
@@ -205,6 +218,9 @@ class Calendar extends CalendarArticles
 		$ret .= $this->buildTrackTimeSummary();
 		$ret .= $this->debug->get();
 	
+		if($this->setting('ical'))
+			$ret .= $this->loadiCalLink();
+	
 		return $ret;
 	 }
 	
@@ -233,9 +249,12 @@ class Calendar extends CalendarArticles
 	}
 	
 	function initalizeHTML(){
+		global $wgOut,$wgScriptPath;
+		
+		$cssPath = $this->setting('urlRootPath');
 		
 		// set paths			
-		$extensionPath = $this->setting('path'); //dirname(__FILE__);
+		$extensionPath = $this->setting('path');
 		$extensionPath = str_replace("\\", "/", $extensionPath);
 		
 		// build template
@@ -246,12 +265,11 @@ class Calendar extends CalendarArticles
 		
 		//check for valid css file
 		if(file_exists($extensionPath . "/templates/$css"))
-			$css_data = file_get_contents($extensionPath . "/templates/$css");	
+			$wgOut->addStyle( $cssPath . "/templates/$css", 'screen');
 		else
-			$css_data = file_get_contents($extensionPath . "/templates/default.css");
-			
+			$wgOut->addStyle( $cssPath . "/templates/default.css", 'screen');
 
-		$this->html_template = $data_start . $css_data . $html_data . $data_end;
+		$this->html_template = $data_start . $html_data . $data_end;
 	
 		$this->daysNormalHTML   = $this->html_week_array("<!-- %s %s -->");
 		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
@@ -467,8 +485,8 @@ class Calendar extends CalendarArticles
 			$this->debug->set("renderEventList Ended");
 			
 			$css = $this->stripLeadingSpace($css);
-			$ret = "<html><i> " . $this->buildConfigLink(true) . "</i>" 
-				. $css . $events . "</html>";
+			$ret = "<i> " . $this->buildConfigLink(true) . "</i>" 
+				. $css . $events;
 
 			return "<table width=100%>" . $ret . "</table>";	
 		}
@@ -530,9 +548,9 @@ class Calendar extends CalendarArticles
 
 			if ($setting == "yesterday" ){	
 				$yesterday= Common::datemath(-1, $this->month, $this->day, $this->year);
-				$this->month = $yesterday[mon];
-				$this->day = $yesterday[mday];
-				$this->year = $yesterday[year];
+				$this->month = $yesterday['mon'];
+				$this->day = $yesterday['mday'];
+				$this->year = $yesterday['year'];
 			}
 		}
 		else {
@@ -562,7 +580,7 @@ class Calendar extends CalendarArticles
 			. $this->getHTMLForDay($this->month, $this->day, $this->year, 'long', 'day');
 			
 		$this->debug->set("renderDate Ended");		
-		return $ret;	
+		return "<table>$ret</table>";
 	}
 
 	function renderSimpleMonth(){
@@ -769,8 +787,8 @@ class Calendar extends CalendarArticles
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
 		
-		if($this->setting('ical'))
-			$tag_loadiCalButton = $this->loadiCalLink();
+		//if($this->setting('ical'))
+			//$tag_loadiCalButton = $this->loadiCalLink();
 			
 		// replace potential variables in footer
 		$tempString = str_replace("[[TodayData]]", $this->tag_HiddenData, $tempString);
@@ -779,7 +797,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[Version]]", $gVersion, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
-		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
+		//$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
 	    $ret .= $tempString;
@@ -1168,6 +1186,22 @@ class Calendar extends CalendarArticles
 		$this->debug->set('load_iCal Ended');
 	}
 	
+	// get the extension short 'URL' path ex:( /mediawiki/extensions/calendar/ )
+	// ... there has to be a better way then this!
+	function getURLRelativePath(){
+		global $wgScriptPath, $wgScript;
+		
+		$url = str_ireplace( $_SERVER['DOCUMENT_ROOT'], '', __FILE__ );	
+		
+		$url = str_replace('\\', '/', $url);		
+		$arr = explode('/', $url);
+		
+		array_pop($arr);
+		$url = implode('/', $arr);
+		
+		return $url;
+	}
+	
 	// Set/Get accessors		
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
@@ -1181,7 +1215,7 @@ class Calendar extends CalendarArticles
 // most $params[] values are passed right into the calendar as is...
 function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
-	global $wgScript;
+	global $wgScript, $wgScriptPath;
 	global $wgTitle, $wgUser;
 	global $wgRestrictCalendarTo;
 
@@ -1196,7 +1230,10 @@ function displayCalendar($paramstring, $params = array()) {
 
 	$calendar = null;	
 	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
-
+	
+	// url for inline css file
+	$params['urlRootPath'] = $calendar->getURLRelativePath();
+	//return $params['urlRootPath'];
 	$calendar->namespace = $wgTitle->getNsText();
 	
 	if(!isset($params["name"])) $params["name"] = "Public";
@@ -1222,6 +1259,9 @@ function displayCalendar($paramstring, $params = array()) {
 		//merge the config page and the calendar tag params; tag params overwrite config file
 		$params = array_merge($configs, $params);	
 	}
+	
+	// just in case i rename some preferences... we can make them backwards compatible here...
+	legacyAliasChecks($params);
 	
 	//set defaults that are required later in the code...
 	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
@@ -1305,7 +1345,7 @@ function displayCalendar($paramstring, $params = array()) {
 
 // alias ugly/bad preferences to newer, hopefully better names
 function legacyAliasChecks(&$params) {
-	if( $params['usemultievent'] ) $params['usesectionevents'] = 'usesectionevents';
+	if( isset($params['usemultievent']) ) $params['usesectionevents'] = 'usesectionevents';
 }
 
 function wfCalendarFunctions_Magic( &$magicWords, $langCode ) {
