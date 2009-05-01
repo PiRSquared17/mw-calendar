@@ -6,9 +6,9 @@
 * MediaWiki: http://www.mediawiki.org/wiki/User:Kenyu73/Calendar
 -->
 __TOC__
-==Setup (v3.7 Release) 1/27/2009==
+==Setup==
 
-* It's recommended to create a custom calendar type Namespace, like '''Calendars''', but can be whatever Namespaces defined in LocalSettings.php or standard MediaWiki namespaces (like user namespaces) however, it's not required. It is recommended though so seaches in the main wiki do not included calendar events.
+* It's recommended to create a custom calendar type Namespace, like '''Calendars''', but can be whatever Namespaces defined in LocalSettings.php or standard MediaWiki namespaces (like user namespaces) however, it's not required. It is recommended though so searches in the main wiki do not included calendar events.
 ** The easist way is to enter "Calendars:PageName" in the search box to create the main base calendar page.
 * Add a <nowiki><calendar /></nowiki> extension tag to the newly create page (or existing page)
 * Add parameters as required (see below listing)
@@ -71,10 +71,10 @@ Please use quotes for any parameter that may contain a space
 |2.0.4
 |-
 |'''date=<value>'''
-|Display a single day listing. <br />Values can be: '''today''', '''tomorrow''' or a '''datevalue'''
+|Display a single day listing. <br />Values can be: '''yesterday''', '''today''', '''tomorrow''' or a '''datevalue'''
 |date=tomorrow or date=1-1-2010
 |off - normal month view
-|2.0.4
+|nowrap|2.0.4<br>mod: 3.7.2
 |-
 |'''defaultedit'''
 |Whenever a user clicks an event, the event defaults to edit mode.
@@ -118,9 +118,9 @@ Please use quotes for any parameter that may contain a space
 |off - allow links/edits
 |3.2
 |-
-|'''usemultievent'''
+|<s>usemultievent</s><br>'''usesectionevents'''
 |Users clicking 'add event' opens the last entered event; you must place each event title in ==event1==, ==event2== multiple event formatting as describle later in this help.
-|usemultievent
+|usesectionevents
 |disabled - 'add event' will create a new event pages
 |3.2
 |-
@@ -178,15 +178,15 @@ Please use quotes for any parameter that may contain a space
 |disabled
 |3.5
 |-
-|'''enablelegacy=<"value">'''
-|Load events from the older "Title (12-1-2008) - Event 1" format. These older events were used in some version of 3.2 and older. This may increase calendar load times as it much search for older style events and newer events. The optional parameter sets an effective (last) date on which to lookup the older events. 
-|enablelegacy=12/15/2008
+|'''enablelegacy'''
+|Load events from the older "Title (12-1-2008) - Event 1" format. These older events were used in some version of 3.2 and older. This may increase calendar load times as it much search for older style events and newer events. 
+|enablelegacy
 |disabled
 |3.5.0.1<br>mod: 3.6
 |-
-|'''diablemodes'''
+|'''disablemodes'''
 |This removes the 'year', 'month', 'week' buttons from the top of the respective pages.
-|diablemodes
+|disablemodes
 |enabled
 |3.6
 |-
@@ -215,7 +215,7 @@ Please use quotes for any parameter that may contain a space
 |3.6.0.2
 |-
 |'''simplemonth'''
-|Creates a simple month that displays only clickable numberic days. This would best be used wraped in a <table> tag to create "mini-calendar" views.
+|Creates a simple month that displays only clickable numberic days. This would best be used wrapped in a <nowiki><table></nowiki> tag to create "mini-calendar" views.
 |simplemonth
 |normal mode
 |3.7
@@ -230,8 +230,11 @@ In this example, '''Summer Picnic''' will appear on the calendar.
  Summer Picnic<br>
  Our department will be holding a summer picnic at the park.  Bring your families and your appetites!
 
-=== Multiple Events ===
-In this example, ''two'' calendar events are created using the same page. The '''== event ==''' can be used to create these mulitple events per page. However, you can still create new page events by clicking ''Add Event''.<br/>
+
+* Note: Events can also be wiki images. Ether '''<nowiki>[[Image:Picture.jpg]]</nowiki>''' or '''<nowiki>Picture.jpg</nowiki>''' formats can be used.
+
+=== Section Based Events ===
+In this example, ''two'' calendar events are created using the same page. The '''== event ==''' can be used to create these mulitple events per page. However, you can still create new page events by clicking ''Add Event''. You can force all new events into one page by using the ''usesectionevent'' parameter.
 
 In this example, '''Picnic''' and '''Party''' will show up on the same day.
  <nowiki>
@@ -241,8 +244,12 @@ Bring food!
 Bring drinks
 </nowiki>
 
+* If you're forcing users to reuse pages '''(usesectionevents)''', the addevent defaults to a page simular to the discussion (+) page. Ensure users use the Subject textbox and enter something in the body for the event to save. Using this method eliminates the ==event== manual entry. However, you can omit the subject and still manually add section events in the body.
+
+:'''The body requires some entry or the event will NOT save...'''
+
 === Repeating Events ===
-Repeating events is not an easy task to handle via "wiki" page structure. However, I did come up with a way... The below example will create 5 repeating Vacation events in the caledar. You MUST enable the functionality by adding '''enablerepeatevents''' to your parameter tag or config page.
+Repeating events (''if enabled'') allow an easy way to add the same event over multiple days. The below example will create 5 repeating Vacation events in the calendar. You MUST enable the functionality by adding '''enablerepeatevents''' to your parameter tag or config page. Enabling repeating events causes the calendar to look back 15 days into the previous month for any carry over events. If by chance you have a repeating event prior to the 15th, it will not carry over to the next month. 
  5# Vacation
 
 === Recurrence Event ===
@@ -280,19 +287,17 @@ The day and the event '''must''' be seperated by an '#' as shown in the example.
 
 I'm not sure how far and how many variation of the css and/or Wiki formatting will go, but I've tested a good portion of the standard text properties. (<nowiki><div></nowiki> is giving me an issue at this time though... but <nowiki><span></nowiki> works just fine!)
 === Time Tracker ===
-You can keep simple time tracking of events by formatting the event as below. This will track any dynamically created event in a simple table below the calendar in full mode only.
+You can keep simple time tracking of events by formatting the event as below. This will track any dynamically created event in a simple table below the calendar in full mode only. The event is triggered by prefixing (2) colons followed by the event then (1) colon or (1) dash followed by a numeric value to add. 
  ::Vacation: 8 or ::Vacation -8
  ::Team Project 1 - 3
  ::Sick : 4
 
 Note that events created using the 'add event' link only track time for that month. If you want to track a years total, you need to enable and use month templates ('''usetemplates''')
 
-
-
 == vCalendar (iCal) Support ==
 The calendar supports the basic importing of vCalendar formatted files. The import utility is enabled by adding '''ical''' or '''ical=overwrite''' to your parameter string or ''config'' file settings.<br>
 <br>
-The calendar excepts the following vCalendar formats
+The calendar accepts the following vCalendar formats
 :DTSTART
 :DTEND
 :SUMMARY
@@ -302,10 +307,53 @@ The calendar excepts the following vCalendar formats
 The RRULE evaluates basic calendar event logic only... nothing complex like "every 3rd Monday of every-other month". It does handle typical repeats like Thanksgiving, Mothers Day, etc that required logic like "the 4th Thursday of November" or "the last Monday of March" kinda logic. Basically, it should capture most repeating events like birthdays and holidays.
 
 
-The RRULE (repeating) events are stored in a subpage called '''recurrence'''. Basically, in the following format ''page/calendarname/recurrence'''. You can manually edit or delete these as needed. If you use the ''ical=overwrite'' option, it deleted the data before writing in the new ical data. 
+The RRULE (repeating) events are stored in a subpage called '''recurrence'''. Basically, in the following format ''page/calendarname/recurrence''. You can manually edit or delete these as needed. If you use the ''ical=overwrite'' option, it deleted the data before writing in the new ical data. 
 
 
 Imported events without the RRULE are created in the calendar as normal pages in the -Event 0 page for the respective day.
+
+== Internationalization (i18n)==
+The calendar months and weekday names will display in any MediaWiki language selected in the user preferences. However, the custom buttons and other calendar specific information has only been converted to French (fr), Spanish (es), German (de), Hungarian (hu) and Finnish(fi). 
+
+
+If any other languages are required, new messages structures will have to be created in the ''calendar.i18n.php'' file as needed by the user. It's not hard really, just copy an existing message structure in that file and update the required translations. It would take all of 15 minutes to add additional languages. The calendar logic is coded as such that any new message structures added will auto-load and be available right away! If you '''post''' the newly created language to the '''google issue tracker''', I'll add it into the language file below.
+
+
+I update the trunk code everytime someone posts a language translation. Please check here for the latest [http://code.google.com/p/mw-calendar/source/browse/trunk/calendar.i18n.php calendar.i18n.php] file.
+
+<br>
+
+== Quick Sheet ==
+<table border=1 cellpadding=5>
+<th>method</th>
+<th>example</th>
+<th>results</th>
+<tr>
+  <td>repeating event (add event method)</td>
+  <td>5#Vacation</td>
+  <td>Creates 5 repeating event days</td>
+</tr>
+<tr>
+  <td>repeating event (template method)</td>
+  <td>5-10#Vacation</td>
+  <td>Creates 5 repeating event days starting on the 5th continuing until the 10th</td>
+</tr>
+<tr>
+  <td>create a reoccurring yearly event (add event)</td>
+  <td>##My Birthday</td>
+  <td>Creates this event on this day every year</td>
+</tr>
+<tr>
+  <td>create multiple events for one day using one page</td>
+  <td>== event 1 ==<br>== event 2 ==</td>
+  <td>Creates two events on one page</td>
+</tr>
+</table>
+
+== Tips/Tricks! ==
+* Create a new calendar event and use '''<nowiki>#REDIRECT[[page]]</nowiki>''' to forward the new event to a new non-calendar page!
+* Click "add event", create the event title on line one and use '''<nowiki>{{:page}}</nowiki>''' to copy a remote page into a calendar event body!
+* have alot of calendar preferences...? Use the ''<nowiki><calendar name=SomeName useconfigpage /></nowiki>'' option and move all your preference to the config page instead!
 
 == Installation ==
 The following are details of the administrator installation of this calendar extension. If you dont have any custom Namespaces, then 100 and 101 are fine, if you do have existing custom Namespaces, just bump the numbers up accordingly. See [http://www.mediawiki.org/wiki/Help:Namespaces Help:Namespaces] for more information. The $wgNamespacesWithSubpages values must match the values assigned to the $wgExtraNamespaces.
@@ -327,6 +375,13 @@ The following are details of the administrator installation of this calendar ext
  $wgNamespacesWithSubpages[100] = true;
  $wgNamespacesWithSubpages[101] = true;
 The additional namespaces move all the events outside the "main" group... should clean the mess up some. If you have custom namespaces installed already, make sure you bump up the [100][101] values up accordingly.
+
+==== Optional LocalSetting.php Settings ====
+You can put the whole wiki site into ''Calendar Lockdown'' with the following entry. The value can be any defined group in your wiki site. The following will only allow members of the 'sysop' group to create/edit entries from the calendar itself. However, this is only calendar GUI security as any event can be manually found and edited normally.
+ $wgRestrictCalendarTo = 'sysop';
+
+== Troublehooting ==
+* If you have an issue with the calendar display, try setting '''<code>$wgUseTidy = false;</code>''' in LocalSettings.php.
 
 
 
