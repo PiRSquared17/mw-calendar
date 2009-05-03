@@ -219,6 +219,12 @@ Please use quotes for any parameter that may contain a space
 |simplemonth
 |normal mode
 |3.7
+|-
+|'''monday'''
+|Sets the calendar to begin on '''Monday''' (Mon-Sun)
+|monday
+|Sat-Sun
+|3.7.4
 |}
 
 == Events ==
