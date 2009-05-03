@@ -38,13 +38,13 @@ class debugger{
 	}	
 	
 	private function setHTML($e, $steptime, $totaltime){
-		$e = htmlspecialchars($e);
-		return $this->debugData .= "<tr><td>$e</td><td align=center>$steptime</td><td align=center>$totaltime</td></tr>";
+		$e = trim(htmlspecialchars($e));
+		return $this->debugData .= "<tr><td><pre>$e</pre></td><td align=center>$steptime</td><td align=center>$totaltime</td></tr>";
 	}
 	private function getHTML(){
 	
 		return "<table border=1 cellpadding=5 cellspacing=0 >"
-		. " <tr><th>DebugName</th><th>StepTime<br>(sec)</th><th>TotalTime<br>(sec)</th></tr>"
+		. "<tr><th>DebugName</th><th>StepTime<br>(sec)</th><th>TotalTime<br>(sec)</th></tr>"
 		. "$this->debugData</table>";
 	
 	}

@@ -512,23 +512,6 @@
 		}
 	}
 	
-	// call this after adding/editing pages programmically
-	function purgeCalendar($bReload = false){
-		$this->debug->set('purgeCalendar begins');
-
-		$article = new Article(Title::newFromText($this->title));
-
-		if($bReload){		
-			// we only need to relaunch the page if we're currently sitting on it...	
-			header("Location:" . "$this->wikiRoot" .  "$this->title" . "&action=purge");
-		}
-		else{
-			//resets the the main page so we can navigate once we go back to it...
-			$article->doPurge(); 
-			header("Location:" . "$this->wikiRoot" .  "$this->title");
-		}
-	}	
-	
 	private function buildRecurrenceEvent($month, $day, $year, $event, $page){
 		$this->debug->set('buildRecurrenceEvent started');
 		
@@ -548,7 +531,7 @@
 			. ";SUMMARY=$event";
 		
 		$this->updateRecurrence($recurrence_page, $rrule, $event, 'recurrence update');	
-		$this->purgeCalendar();
+		$this->invalidateCache = true;
 	}
 	
 	function updateRecurrence($page, $rrule, $event, $summary, $overwrite=false){
