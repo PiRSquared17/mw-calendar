@@ -479,9 +479,6 @@ class Calendar extends CalendarArticles
 			//build the days out....
 			$this->initalizeMonth(0, $daysOut);
 			
-			 $css = $this->searchHTML($this->html_template, 
-						     "<!-- CSS Start -->", "<!-- CSS End -->");
-			
 			for($i=0; $i < $daysOut; $i++){	
 				$temp = $this->getHTMLForDay($month, $day, $year, 'long', 'events');
 				if(strlen(trim($temp)) > 0 ){
@@ -492,9 +489,8 @@ class Calendar extends CalendarArticles
 		
 			$this->debug->set("renderEventList Ended");
 			
-			$css = $this->stripLeadingSpace($css);
 			$ret = "<i> " . $this->buildConfigLink(true) . "</i>" 
-				. $css . $events;
+				. $events;
 
 			return "<table width=100%>" . $ret . "</table>";	
 		}
@@ -578,13 +574,8 @@ class Calendar extends CalendarArticles
 	function renderDate(){
 		
 		$this->initalizeMonth(0,1);
-
-		$css = $this->searchHTML($this->html_template, 
-				 "<!-- CSS Start -->", "<!-- CSS End -->");
-				 
-		$css = $this->stripLeadingSpace($css);
 		
-		$ret = $this->buildConfigLink(true). $css
+		$ret = $this->buildConfigLink(true)
 			. $this->getHTMLForDay($this->month, $this->day, $this->year, 'long', 'day');
 			
 		$this->debug->set("renderDate Ended");		
@@ -593,14 +584,9 @@ class Calendar extends CalendarArticles
 
 	function renderSimpleMonth(){
 		 
-		 $css = $this->searchHTML($this->html_template, 
-			 "<!-- CSS Start -->", "<!-- CSS End -->");
-				 
-		$css = $this->stripLeadingSpace($css);
-		 
 		$ret = $this->buildSimpleCalendar($this->month, $this->year);
 		 
-		 return $css . $ret;
+		 return $ret;
 	}
 	
     function renderMonth() {   
@@ -975,25 +961,25 @@ class Calendar extends CalendarArticles
 		if($this->setting('monday')){
 			$ret .= "
 				<tr>
-					<td class='yearHeading'>M</td>
-					<td class='yearHeading'>T</td>
-					<td class='yearHeading'>W</td>
-					<td class='yearHeading'>T</td>
-					<td class='yearHeading'>F</td>
-					<td class='yearHeading'>S</td>
-					<td class='yearHeading'>S</td>
+					<td class='yearHeading'>" . substr(Common::translate(2,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(3,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(4,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(5,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(6,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(7,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(1,'weekday'),0,1) . "</td>
 				</tr>";
 		}
 		else{
 			$ret .= "
 				<tr>
-					<td class='yearHeading'>S</td>							
-					<td class='yearHeading'>M</td>
-					<td class='yearHeading'>T</td>
-					<td class='yearHeading'>W</td>
-					<td class='yearHeading'>T</td>
-					<td class='yearHeading'>F</td>
-					<td class='yearHeading'>S</td>
+					<td class='yearHeading'>" . substr(Common::translate(1,'weekday'),0,1) . "</td>						
+					<td class='yearHeading'>" . substr(Common::translate(2,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(3,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(4,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(5,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(6,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(7,'weekday'),0,1) . "</td>
 			
 				</tr>";		
 		}
@@ -1041,11 +1027,6 @@ class Calendar extends CalendarArticles
 		$nextYear = $this->year;
 		
 		$title = "$this->year";
-	
-		//$css = $this->searchHTML($this->html_template, 
-		//	 "<!-- CSS Start -->", "<!-- CSS End -->");
-				 
-		//$css = $this->stripLeadingSpace($css);
 		
 		$ret = "<tr><td>" . $this->buildConfigLink(true) . "</td><td $styleTitle colspan=2>$title</td><td align=right>$this->tag_views</td></tr>";
 
