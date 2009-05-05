@@ -66,7 +66,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gCalendarVersion = "v3.7.4 (beta)";
+$gCalendarVersion = "v3.7.5 (5/5/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -255,7 +255,7 @@ class Calendar extends CalendarArticles
 	function initalizeHTML(){
 		global $wgOut,$wgScriptPath;
 		
-		$cssPath = $this->setting('urlRootPath');
+		$cssURL = $this->getURLRelativePath() . "/templates";
 		
 		// set paths			
 		$extensionPath = $this->setting('path');
@@ -268,10 +268,10 @@ class Calendar extends CalendarArticles
 		$data_end = "<!-- Calendar End -->";	
 		
 		//check for valid css file
-		if(file_exists($extensionPath . "/templates/$css"))
-			$wgOut->addStyle( $cssPath . "/templates/$css", 'screen');
+		if($css)
+			$wgOut->addStyle( $cssURL . "/$css", 'screen');
 		else
-			$wgOut->addStyle( $cssPath . "/templates/default.css", 'screen');
+			$wgOut->addStyle( $cssURL . "/default.css", 'screen');
 
 		$this->html_template = $data_start . $html_data . $data_end;
 	
@@ -1224,17 +1224,17 @@ class Calendar extends CalendarArticles
 	// get the extension short 'URL' path ex:( /mediawiki/extensions/calendar/ )
 	// ... there has to be a better way then this!
 	function getURLRelativePath(){
-		global $wgScriptPath, $wgScript;
+		global $wgScriptPath,$wgCalendarURLPath;
 		
-		$url = str_ireplace( $_SERVER['DOCUMENT_ROOT'], '', __FILE__ );	
+		//$path = str_ireplace('calendar.php', '', __FILE__);
+		//$path = str_replace('\\', '/', $path);
+		//$url = stristr($path, 'extensions');
 		
-		$url = str_replace('\\', '/', $url);		
-		$arr = explode('/', $url);
-		
-		array_pop($arr);
-		$url = implode('/', $arr);
-		
-		return $url;
+		if($wgCalendarURLPath){
+			return $wgCalendarURLPath;
+		}else{
+			return $wgScriptPath . "/extensions/Calendar";
+		}
 	}
 	
 	// Set/Get accessors		
@@ -1266,9 +1266,8 @@ function displayCalendar($paramstring, $params = array()) {
 	$calendar = null;	
 	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
 	
-	// url for inline css file
-	$params['urlRootPath'] = $calendar->getURLRelativePath();
-	//return $params['urlRootPath'];
+	//return $calendar->getURLRelativePath();
+	
 	$calendar->namespace = $wgTitle->getNsText();
 	
 	if(!isset($params["name"])) $params["name"] = "Public";
