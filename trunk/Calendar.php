@@ -366,9 +366,6 @@ class Calendar extends CalendarArticles
 		
 		$tempString = str_replace("[[Day]]", $display_day, $tempString);
 		
-		$this->debug->set($wday);
-		$this->debug->set($tempString);
-		
 		$tag_alerts = $this->buildAlertLink($day, $month);
 		
 		//kludge... for some reason, the "\n" is removed in full calendar mode
