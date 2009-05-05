@@ -219,6 +219,12 @@ Please use quotes for any parameter that may contain a space
 |simplemonth
 |normal mode
 |3.7
+|-
+|'''monday'''
+|Sets the calendar to begin on '''Monday''' (Mon-Sun)
+|monday
+|Sat-Sun
+|3.7.4
 |}
 
 == Events ==
@@ -230,8 +236,8 @@ In this example, '''Summer Picnic''' will appear on the calendar.
  Summer Picnic<br>
  Our department will be holding a summer picnic at the park.  Bring your families and your appetites!
 
+* Note: Events can also be wiki images. Either '''<nowiki>[[Image:Picture.jpg]]</nowiki>''' or '''<nowiki>Picture.jpg</nowiki>''' formats can be used.
 
-* Note: Events can also be wiki images. Ether '''<nowiki>[[Image:Picture.jpg]]</nowiki>''' or '''<nowiki>Picture.jpg</nowiki>''' formats can be used.
 
 === Section Based Events ===
 In this example, ''two'' calendar events are created using the same page. The '''== event ==''' can be used to create these mulitple events per page. However, you can still create new page events by clicking ''Add Event''. You can force all new events into one page by using the ''usesectionevent'' parameter.
@@ -377,8 +383,16 @@ The following are details of the administrator installation of this calendar ext
 The additional namespaces move all the events outside the "main" group... should clean the mess up some. If you have custom namespaces installed already, make sure you bump up the [100][101] values up accordingly.
 
 ==== Optional LocalSetting.php Settings ====
-You can put the whole wiki site into ''Calendar Lockdown'' with the following entry. The value can be any defined group in your wiki site. The following will only allow members of the 'sysop' group to create/edit entries from the calendar itself. However, this is only calendar GUI security as any event can be manually found and edited normally.
- $wgRestrictCalendarTo = 'sysop';
+{| border=1 width=75%
+!override
+!Description
+|-
+| nowrap | $wgRestrictCalendarTo = 'sysop';
+| You can put the whole wiki site into ''Calendar Lockdown'' with the following entry. The value can be any defined group in your wiki site. The
+|-
+| nowrap |$wgCalendarURLPath = "/w/extensions/Calendar/trunk";
+| if for any reason, the calendar CSS file path is invalid, please manually set it here.
+|}
 
 == Troublehooting ==
 * If you have an issue with the calendar display, try setting '''<code>$wgUseTidy = false;</code>''' in LocalSettings.php.
