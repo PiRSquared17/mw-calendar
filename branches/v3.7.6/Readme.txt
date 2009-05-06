@@ -225,6 +225,12 @@ Please use quotes for any parameter that may contain a space
 |monday
 |Sat-Sun
 |3.7.4
+|-
+|'''disableredirects'''
+|disables event redirects to other pages...ie, so you can use the page "move" without duplicating events
+|disableredirects
+|redirects enabled
+|3.7.6
 |}
 
 == Events ==
@@ -390,8 +396,11 @@ The additional namespaces move all the events outside the "main" group... should
 | nowrap | $wgRestrictCalendarTo = 'sysop';
 | You can put the whole wiki site into ''Calendar Lockdown'' with the following entry. The value can be any defined group in your wiki site. The
 |-
-| nowrap |$wgCalendarURLPath = "/w/extensions/Calendar/trunk";
-| if for any reason, the calendar CSS file path is invalid, please manually set it here.
+| nowrap | $wgCalendarURLPath = "/w/extensions/Calendar";
+| if for any reason, the calendar CSS file path is invalid, please set the calendar root URL manually
+|-
+| nowrap | $wgCalendarDisableRedirects=true
+| disables calendar event redirects globally
 |}
 
 == Troublehooting ==
