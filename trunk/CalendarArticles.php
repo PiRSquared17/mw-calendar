@@ -49,6 +49,9 @@
 		if(!$article->exists()) return "";
 
 		$redirectCount = 0;
+		
+		if( $article->isRedirect() && $this->setting('disableredirects') ) return '';
+		
 		 while($article->isRedirect() && $redirectCount < 10){
 			 $redirectedArticleTitle = Title::newFromRedirect($article->getContent());
 			 $article = new Article($redirectedArticleTitle);

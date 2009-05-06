@@ -66,7 +66,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gCalendarVersion = "v3.7.5 (5/5/2009)";
+$gCalendarVersion = "v3.7.6 (5/5/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -321,7 +321,6 @@ class Calendar extends CalendarArticles
 			return $this->daysMissingHTML[0];
 
 		$thedate = getdate(mktime(12, 0, 0, $month, $day, $year));
-		$today = getdate();
 		$wday  = $thedate['wday'];
 		$weekday = Common::translate($wday+1, 'weekday');
 
@@ -333,9 +332,9 @@ class Calendar extends CalendarArticles
 		if($dateFormat == 'none')
 			$display_day = "";
 
-		if ($thedate['mon'] == $today['mon']
-			&& $thedate['year'] == $today['year']
-			&& $thedate['mday'] == $today['mday']) {
+		if ($thedate['mon'] == $this->month
+			&& $thedate['year'] == $this->year
+			&& $thedate['mday'] == $this->day ) {
 			$tempString = $this->daysSelectedHTML[$wday];
 		}
 		else {
@@ -1249,7 +1248,7 @@ function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript, $wgScriptPath;
 	global $wgTitle, $wgUser;
-	global $wgRestrictCalendarTo;
+	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects;
 
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
@@ -1310,6 +1309,9 @@ function displayCalendar($paramstring, $params = array()) {
 			$params["lockdown"] = true;
 		}	
 	}
+
+	if (isset($wgCalendarDisableRedirects))
+		$params['disableredirects'] = true;
 	
 	// no need to pass a parameter here... isset check for the params name, thats it
 	if(isset($params["lockdown"])){
