@@ -1248,7 +1248,7 @@ function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript, $wgScriptPath;
 	global $wgTitle, $wgUser;
-	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects;
+	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects, $wgCalendarForceNamespace;
 
     $wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
@@ -1265,6 +1265,13 @@ function displayCalendar($paramstring, $params = array()) {
 	//return $calendar->getURLRelativePath();
 	
 	$calendar->namespace = $wgTitle->getNsText();
+	
+	// if the calendar isn't in a namespace specificed in $wgCalendarForceNamespace, return a warning
+	if( ($wgCalendarForceNamespace != $calendar->namespace) 
+				&& isset($wgCalendarForceNamespace) && !isset($params["fullsubscribe"]) ){
+		
+		return Common::translate('invalid_namespace') . '<b>'.$wgCalendarForceNamespace.'</b>';
+	}
 	
 	if(!isset($params["name"])) $params["name"] = "Public";
 	
@@ -1330,10 +1337,19 @@ function displayCalendar($paramstring, $params = array()) {
 	// subscriber only calendar...basically, taking the subscribers identity fully...ie: "title/name" format
 	if( isset($params["fullsubscribe"]) ) {
 		if($params["fullsubscribe"] != "fullsubscribe") {
+			$arrString = explode('/', $params["fullsubscribe"]);
+			array_pop($arrString);
+			$string = implode('/', $arrString);
+			$article = new Article(Title::newFromText( $string ));
+			
+			// if the fullsubscribe calendar doesn't exisit, return a warning...
+			if(!$article->exists()) return "Invalid 'fullsubscribe' calendar page: <b><i>$string</i></b>";
+			
 			$calendar->calendarPageName = htmlspecialchars($params["fullsubscribe"]);
 			$calendar->isFullSubscribe = true;
 		}
 	}
+	
 	// finished special conditions; set the $title and $name in the class
 	$calendar->setTitle($title);
 	$calendar->setName($name);
