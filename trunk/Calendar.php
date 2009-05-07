@@ -253,9 +253,9 @@ class Calendar extends CalendarArticles
 	}
 	
 	function initalizeHTML(){
-		global $wgOut,$wgScriptPath;
-		
-		$cssURL = $this->getURLRelativePath() . "/templates";
+		global $wgOut,$wgScriptPath, $wgVersion;
+
+		$cssURL = $this->getURLRelativePath() . "/templates/";
 		
 		// set paths			
 		$extensionPath = $this->setting('path');
@@ -263,15 +263,19 @@ class Calendar extends CalendarArticles
 		
 		// build template
 		$data_start = "<!-- Calendar Start -->";
-		$css = $this->setting('css');		
+		
+		$css = $this->setting('css');
+		
+		$css_data = file_get_contents($extensionPath . "/templates/$css");	//ugly method	
 		$html_data = file_get_contents($extensionPath . "/templates/calendar_template.html");
+
 		$data_end = "<!-- Calendar End -->";	
 		
-		//check for valid css file
-		if($css)
-			$wgOut->addStyle( $cssURL . "/$css", 'screen');
+		//add css; this is set as 'default.css' or an override
+		if($wgVersion >= '1.14')
+			$wgOut->addStyle($cssURL . $css, 'screen'); //clean method
 		else
-			$wgOut->addStyle( $cssURL . "/default.css", 'screen');
+			$wgOut->addHTML($css_data); //ugly method
 
 		$this->html_template = $data_start . $html_data . $data_end;
 	
@@ -1223,7 +1227,7 @@ class Calendar extends CalendarArticles
 		//$path = str_ireplace('calendar.php', '', __FILE__);
 		//$path = str_replace('\\', '/', $path);
 		//$url = stristr($path, 'extensions');
-		
+
 		if($wgCalendarURLPath){
 			return $wgCalendarURLPath;
 		}else{
@@ -1259,7 +1263,7 @@ function displayCalendar($paramstring, $params = array()) {
 
 	$calendar = null;	
 	$calendar = new Calendar($wikiRoot, isset($params["debug"]));
-	
+
 	//return $calendar->getURLRelativePath();
 	
 	$calendar->namespace = $wgTitle->getNsText();
