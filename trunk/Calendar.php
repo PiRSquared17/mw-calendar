@@ -935,8 +935,6 @@ class Calendar extends CalendarArticles
 		$firstDate = getdate(mktime(12, 0, 0, $month, 1, $year));
 	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
 
-		$today = getdate();    	// today's date
-
 		$start=1;
 		if($this->setting('monday')) $start=2;
 		$dayOffset = -$first + $start;
@@ -982,7 +980,7 @@ class Calendar extends CalendarArticles
 		
 		for ($i = 0; $i < $numWeeks; $i++) {	
 			for($j=0; $j < 7; $j++){
-				if($year == $today['year'] && $month == $today['mon'] && $dayOffset == $today['mday'])
+				if($year == $this->year && $month == $this->month && $dayOffset == $this->day)
 					$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
 					
 				if($dayOffset > 0 && $dayOffset <= $maxDays){
