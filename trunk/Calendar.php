@@ -1266,13 +1266,6 @@ function displayCalendar($paramstring, $params = array()) {
 	
 	$calendar->namespace = $wgTitle->getNsText();
 	
-	// if the calendar isn't in a namespace specificed in $wgCalendarForceNamespace, return a warning
-	if( ($wgCalendarForceNamespace != $calendar->namespace) 
-				&& isset($wgCalendarForceNamespace) && !isset($params["fullsubscribe"]) ){
-		
-		return Common::translate('invalid_namespace') . '<b>'.$wgCalendarForceNamespace.'</b>';
-	}
-	
 	if(!isset($params["name"])) $params["name"] = "Public";
 	
 	$calendar->paramstring = $paramstring;
@@ -1299,6 +1292,13 @@ function displayCalendar($paramstring, $params = array()) {
 	
 	// just in case i rename some preferences... we can make them backwards compatible here...
 	legacyAliasChecks($params);
+	
+	// if the calendar isn't in a namespace specificed in $wgCalendarForceNamespace, return a warning
+	if( ($wgCalendarForceNamespace != $calendar->namespace) 
+				&& isset($wgCalendarForceNamespace) && !isset($params["fullsubscribe"]) ){
+		
+		return Common::translate('invalid_namespace') . '<b>'.$wgCalendarForceNamespace.'</b>';
+	}
 	
 	//set defaults that are required later in the code...
 	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
