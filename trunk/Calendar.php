@@ -273,7 +273,7 @@ class Calendar extends CalendarArticles
 		
 		//add css; this is set as 'default.css' or an override
 		if($wgVersion >= '1.14')
-			$wgOut->addStyle($cssURL . $css, 'screen'); //clean method
+			$wgOut->addStyle($cssURL . $css); //clean method
 		else
 			$wgOut->addHTML($css_data); //ugly method
 
