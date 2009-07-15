@@ -1053,7 +1053,7 @@ class Calendar extends CalendarArticles
 		$html_head = "<form  method='post'><table $styleTable>";
 		$html_foot = "</table></form>";
 		
-		$weekday = date('N', mktime(12, 0, 0, $this->month, $this->day, $this->year));
+		$weekday = date('w', mktime(12, 0, 0, $this->month, $this->day, $this->year));
 		
 		if($this->setting('monday')) $weekday--;
 		$date = Common::datemath(-($weekday), $this->month, $this->day, $this->year);
