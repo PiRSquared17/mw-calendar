@@ -141,4 +141,28 @@
 			'' => "",
 			'' => "",
 	);
+	
+	$messages['nl'] = array(
+	 'default_title' => "Publiek",
+	 'year' => "jaar",
+	 'month' => "maand",
+	 'week' => "week",
+	 'ical_inst' => "Specificeer een ical-bestandsformaat (vcalendar).",
+	 'add_event' => "nieuw",
+	 'add_event_tip' => "Voeg een nieuwe gebeurtenis toe",
+	 'styles_btn' => "Stijl",
+	 'styles_btn_tip' => "Gebruik stijl op basis van sleutelwoorden",
+	 'template_btn' => "Gebeurtenis",
+	 'template_btn_tip' => "meer gebeurtenissen op een pagina...",
+	 'ical_btn' => "Importeer",
+	 'ical_btn_tip' => "Importeer een geselecteerd bestand",
+	 'ical_browse_tip' => "Blader naar een te gebruiken ical-bestand",
+	 'config_btn' => "Voorkeuren",
+	 'config_btn_tip' => "Voeg kalendervoorkeur toe",
+	 'today' => "vandaag",
+	 'invalid_namespace' => "Ongeldige naamruimte; kalenders moeten in de volgende naamruimte gemaakt worden: ",
+	  => "",
+	  => "",
+	);
+
 ?>
