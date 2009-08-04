@@ -4,6 +4,7 @@
 # and populate the translations.
 
 	$messages = array();
+	//english
 	$messages['en'] = array(
 		'default_title' => "Public",
 		'year' => "year",
@@ -23,10 +24,10 @@
 		'config_btn_tip' => "Add calendar preferences here",
 		'today' => "today",
 		'invalid_namespace' => "Invalid Namespace - This calendar extension must be created in the following namespace: ",
-		'' => "",
+		'about' => "Click here for help and more information",
 		'' => "",
 	);
-	
+	//frensh
 	$messages['fr'] = array(
 		'default_title' => "Public",
 		'year' => 'année',
@@ -46,10 +47,10 @@
 		'config_btn_tip' => "Ajouter calendrier préférences ici",
 		'today' => "aujourd'hui",
 		'invalid_namespace' => "Invalid Namespace - Ce calendrier d'extension doit être créé dans les noms: ",
-		'' => "",
+		'about' => "Cliquez ici pour obtenir de l'aide et plus d'information",
 		'' => "",
 	);
-	
+	//spanish
 	$messages['es'] = array(
 		'default_title' => "Pública",
 		'year' => "año",
@@ -69,10 +70,10 @@
 		'config_btn_tip' => "Añadir parámetros calendario aquí",
 		'today' => "hoy",
 		'invalid_namespace' => "De nombres no válidos - Este calendario de extensión se debe crear en los siguientes nombres: ",
-		'' => "",
+		'about' => "Haga clic aquí para obtener ayuda y más información",
 		'' => "",
 	);
-	
+	//german
 	$messages['de'] = array(
 		'default_title' => "Öffentlich",
 		'year' => "Jahr",
@@ -92,10 +93,10 @@
 		'config_btn_tip' => "Kalender-Parameter hinzufügen",
 		'today' => "Heute",
 		'invalid_namespace' => "Ungültiger Namespace - Dieser Kalender Verlängerung muss in den folgenden Namespace: ",
-		'' => "",
+		'about' => "Klicken Sie hier, um Hilfe und weitere Informationen",
 		'' => "",
 	);
-	
+	//finnish
 	$messages['fi'] = array(
 		'default_title' => "Julkinen",
 		'year' => "Vuosi",
@@ -115,10 +116,10 @@
 		'config_btn_tip' => "Muuta kalenterin määrityksiä",
 		'today' => "Tänään",
 		'invalid_namespace' => "Hindi wastong Ngalan-espasyo - Tämä aikataulu Pidentämispäätökset luotu seuraavat nimitila: ",
-		'' => "",
+		'about' => "Click here for help ja lisätietoja",
 		'' => "",
 	);
-	
+	//hungarian
 	$messages['hu'] = array(
 		'default_title' => "Naptár",
 			'year' => "év",
@@ -138,10 +139,10 @@
 			'config_btn_tip' => "Itt adhatod meg a naptár beállításait",
 			'today' => "ma",
 			'invalid_namespace' => "Érvénytelen névtér - A naptár kiterjesztés kell teremteni a következo namespace: ",
-			'' => "",
+			'about' => "Kattintson ide a segítséget, és több információt",
 			'' => "",
 	);
-	
+	//polish
 	$messages['nl'] = array(
 	 'default_title' => "Publiek",
 	 'year' => "jaar",
@@ -161,8 +162,8 @@
 	 'config_btn_tip' => "Voeg kalendervoorkeur toe",
 	 'today' => "vandaag",
 	 'invalid_namespace' => "Ongeldige naamruimte; kalenders moeten in de volgende naamruimte gemaakt worden: ",
-	  => "",
-	  => "",
+	 'about' => "Kliknij tutaj, aby uzyskac pomoc i wiecej informacji",
+	 '' => "",
 	);
 
 ?>

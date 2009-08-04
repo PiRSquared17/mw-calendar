@@ -66,7 +66,7 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gCalendarVersion = "v3.7.7.1 (5/6/2009)";
+$gCalendarVersion = "v3.7.8 (8/3/2009)";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -194,8 +194,12 @@ class Calendar extends CalendarArticles
 			$this->buildTagEvents($this->paramstring);
 
 		//grab last months events for overlapped repeating events
-		if($this->setting('enablerepeatevents')) 
-			$this->initalizeMonth($this->day +15, 0); // this checks 1/2 way into the previous month
+		if($this->setting('enablerepeatevents')){
+			$daysBack = $this->setting('enablerepeatevents',false);
+			if($daysBack == '') $daysBack = 15; //default - this checks 1/2 way into the previous month
+			$this->debug->set($daysBack );
+			$this->initalizeMonth( ($this->day + $daysBack), 0); 
+		}
 		else
 			$this->initalizeMonth($this->day, 0); // just go back to the 1st of the current month
 		
@@ -649,8 +653,9 @@ class Calendar extends CalendarArticles
 			$tag_calendarName = Common::translate('default_title');
 		else
 			$tag_calendarName = $this->name;
-			
-		$tag_about = "<a title='Click here is learn more and get help' href='http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>...";
+		
+		$about_translated = Common::translate('about');
+		$tag_about = "<a title='$about_translated' href='http://www.mediawiki.org/wiki/Extension:Calendar_(Kenyu73)' target='new'>about</a>...";
 		
 	    // set the month's mont and year tags
 		$tag_calendarMonth = Common::translate($this->month, 'month');
@@ -689,7 +694,7 @@ class Calendar extends CalendarArticles
 		$tag_configButton = $this->buildConfigLink(false);
 
 		$style_value = Common::translate('styles_btn');
-		$style_tip = Common::translate('styles_btn_tip');;
+		$style_tip = Common::translate('styles_btn_tip');
 		
 		if(!$this->setting("disablestyles")){
 			$articleStyle = $this->wikiRoot . wfUrlencode($this->calendarPageName) . "/style&action=edit" . "';\">";
@@ -1307,7 +1312,8 @@ function displayCalendar($paramstring, $params = array()) {
 	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;
 	if(!isset($params["yearoffset"])) 		$params["yearoffset"] = 2;
 	if(!isset($params["charlimit"])) 		$params["charlimit"] = 25;
-	if(!isset($params["css"])) 				$params["css"] = "default.css";
+	if(!isset($params["css"])) 				$params["css"] = "default.css"; 
+	//if(!isset($params["enablerepeatevents"])) $params["enablerepeatevents"] = 15; 
 
 	//set secure mode via $wgRestrictCalendarTo global
 	// this global is set via LocalSetting.php (ex: $wgRestrictCalendarTo = 'sysop';
