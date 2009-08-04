@@ -46,7 +46,7 @@ if (isset($_POST["calendar_info"]) ){
 
 	$mode = $_POST["viewSelect"];
 	
-	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
+	$cookie_name = preg_replace('/(\.|\s)/',  '_', ($title . " " . $name)); //replace periods and spaces
 	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
 	setcookie($cookie_name, $cookie_value);
 	
@@ -66,7 +66,8 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-$gCalendarVersion = "v3.7.8 (8/3/2009)";
+//$gCalendarVersion = "v3.7.8 (8/3/2009)";
+$gCalendarVersion = "trunk/beta";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
@@ -1362,7 +1363,7 @@ function displayCalendar($paramstring, $params = array()) {
 	$calendar->setTitle($title);
 	$calendar->setName($name);
 
-	$cookie_name = str_replace(' ', '_', ($title . "_" . $name));
+	$cookie_name = preg_replace('/(\.|\s)/',  '_', ($title . " " . $name)); //replace periods and spaces
 	if(isset($_COOKIE[$cookie_name])){
 		$calendar->debug->set('cookie loaded');
 
