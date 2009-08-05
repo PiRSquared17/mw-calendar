@@ -8,8 +8,8 @@
 __TOC__
 ==Setup==
 
-* It's recommended to create a custom calendar type Namespace, like '''Calendars''', but can be whatever Namespaces defined in LocalSettings.php or standard MediaWiki namespaces (like user namespaces) however, it's not required. It is recommended though so searches in the main wiki do not included calendar events.
-** The easist way is to enter "Calendars:PageName" in the search box to create the main base calendar page.
+* It's recommended to create a custom calendar type Namespace, like '''Calendars''', but can be whatever Namespaces defined in LocalSettings.php or standard MediaWiki namespaces (like user namespaces) however, it's not required. It is recommended though so searches in the main wiki do not included calendar events. You can also force this rule by setting an optional localsetting global (see below).
+* The easist way to create a new calendar page is to type "Calendars:PageName" in the search box 
 * Add a <nowiki><calendar /></nowiki> extension tag to the newly create page (or existing page)
 * Add parameters as required (see below listing)
 
@@ -36,7 +36,7 @@ The following are examples of how an ('''Namespace:Page/Name/EventDate''') event
      '''Calendars:Acme Company/Support/12-1-2008 -Event 1'''
 
 === Sharing Calendars ===
-You can also "share" or subscribe to other calendars by using the "''subscribe''" or "''fullsubscribe''" parameter. This will create a calendar of your own, but you'll also have all the events listed from "Sales". Remember to use the full "wiki page/calendar name" format. Be sure to include ''usetemplates'' or other special parameters in your calendar if the subscibed calendar uses them.
+You can also "share" or subscribe to other calendars by using the "''subscribe''" or "''fullsubscribe''" parameter. This will create a calendar of your own, but you'll also have all the events listed from "Sales". Remember to use the full '''namespace:wiki page/calendar name''' format. Be sure to include ''usetemplates'' or other special parameters in your calendar if the subscibed calendar uses them.
  '''Namespace not used:'''
  <nowiki><calendar name="Support" subscribe="Acme Company/Sales" /></nowiki>
 
@@ -45,7 +45,7 @@ You can also "share" or subscribe to other calendars by using the "''subscribe''
 
 === Parameters ===
 Please use quotes for any parameter that may contain a space
-{| border=1 cellpadding="5"
+{| border=1 cellpadding="5" class="prettytable"
 ! Parameters
 ! Description
 ! Example
@@ -172,11 +172,11 @@ Please use quotes for any parameter that may contain a space
 |enabled
 |3.5
 |-
-|'''enablerepeatevents'''
-|Repeating events are created using using (5# Vacation) within normal events. The code looks up the previous months and applies carry-over events to the current month. It may increase the calendar load time as it looks back 15 days into the previous month for carry over repeating events.
-|enablerepeatevents
+|'''enablerepeatevents=<value>'''
+|Repeating events are created using using (5# Vacation) within normal events. The code looks up the previous months and applies carry-over events to the current month. It may increase the calendar load time as it looks back 15 days (default) into the previous month for carry over repeating events.
+|enablerepeatevents=45
 |disabled
-|3.5
+|3.5<br>mod:3.7.8
 |-
 |'''enablelegacy'''
 |Load events from the older "Title (12-1-2008) - Event 1" format. These older events were used in some version of 3.2 and older. This may increase calendar load times as it much search for older style events and newer events. 
@@ -225,6 +225,12 @@ Please use quotes for any parameter that may contain a space
 |monday
 |Sat-Sun
 |3.7.4
+|-
+|'''disableredirects'''
+|disables event redirects to other pages...ie, so you can use the page "move" without duplicating events
+|disableredirects
+|redirects enabled
+|3.7.7
 |}
 
 == Events ==
@@ -313,13 +319,13 @@ The calendar accepts the following vCalendar formats
 The RRULE evaluates basic calendar event logic only... nothing complex like "every 3rd Monday of every-other month". It does handle typical repeats like Thanksgiving, Mothers Day, etc that required logic like "the 4th Thursday of November" or "the last Monday of March" kinda logic. Basically, it should capture most repeating events like birthdays and holidays.
 
 
-The RRULE (repeating) events are stored in a subpage called '''recurrence'''. Basically, in the following format ''page/calendarname/recurrence''. You can manually edit or delete these as needed. If you use the ''ical=overwrite'' option, it deleted the data before writing in the new ical data. 
+The RRULE (repeating) events are stored in a subpage called '''recurrence'''. Basically, in the following format ''page/calendarname/recurrence''. You can manually edit or delete these as needed. If you use the ''ical=overwrite'' option, it deletes the data before writing in the new ical data. 
 
 
-Imported events without the RRULE are created in the calendar as normal pages in the -Event 0 page for the respective day.
+Imported single day events, without the RRULE, are created in the calendar as normal pages in the -Event 0 page for the respective day.
 
 == Internationalization (i18n)==
-The calendar months and weekday names will display in any MediaWiki language selected in the user preferences. However, the custom buttons and other calendar specific information has only been converted to French (fr), Spanish (es), German (de), Hungarian (hu) and Finnish(fi). 
+The calendar months and weekday names will display in any MediaWiki language selected in the user preferences. However, the custom buttons and other calendar specific information has only been converted to French (fr), Spanish (es), German (de), Hungarian (hu),Polish (nl) and Finnish(fi). 
 
 
 If any other languages are required, new messages structures will have to be created in the ''calendar.i18n.php'' file as needed by the user. It's not hard really, just copy an existing message structure in that file and update the required translations. It would take all of 15 minutes to add additional languages. The calendar logic is coded as such that any new message structures added will auto-load and be available right away! If you '''post''' the newly created language to the '''google issue tracker''', I'll add it into the language file below.
@@ -342,7 +348,7 @@ I update the trunk code everytime someone posts a language translation. Please c
 <tr>
   <td>repeating event (template method)</td>
   <td>5-10#Vacation</td>
-  <td>Creates 5 repeating event days starting on the 5th continuing until the 10th</td>
+  <td>Creates event days starting on the 5th continuing until the 10th</td>
 </tr>
 <tr>
   <td>create a reoccurring yearly event (add event)</td>
@@ -384,19 +390,30 @@ The additional namespaces move all the events outside the "main" group... should
 
 ==== Optional LocalSetting.php Settings ====
 {| border=1 width=75%
-!override
+!Override
 !Description
+!Version
 |-
 | nowrap | $wgRestrictCalendarTo = 'sysop';
-| You can put the whole wiki site into ''Calendar Lockdown'' with the following entry. The value can be any defined group in your wiki site. The
+| You can put the whole wiki site into ''Calendar Lockdown'' with the following entry. The value can be any defined group in your wiki site.
+| &nbsp;
 |-
-| nowrap |$wgCalendarURLPath = "/w/extensions/Calendar/trunk";
-| if for any reason, the calendar CSS file path is invalid, please manually set it here.
+| nowrap | $wgCalendarURLPath="/w/extensions/Calendar";
+| if for any reason, the calendar CSS file path is invalid, please set the calendar root URL manually
+| &nbsp;
+|-
+| nowrap | $wgCalendarDisableRedirects=true
+| disables calendar event redirects globally
+| &nbsp;
+|-
+| nowrap | $wgCalendarForceNamespace='Calendar'
+| only allow calendars to be created in the required namespace
+| &nbsp;
+|-
+| nowrap | $wgCalendarDateFormat=YYYYMMDD
+| use YYYY, MM, DD, M, D, SM, LM in any format <br>''(SM D, YYYY --> Jul 1, 2009)'' <br>(''YYYYMMDD --> 20090701)''
+| 3.8
 |}
 
 == Troublehooting ==
 * If you have an issue with the calendar display, try setting '''<code>$wgUseTidy = false;</code>''' in LocalSettings.php.
-
-
-
-[[Extension:Calendar (Kenyu73)/Readme/beta | Beta Readme]]
