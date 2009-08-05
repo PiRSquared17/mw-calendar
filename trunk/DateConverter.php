@@ -1,4 +1,15 @@
 <?php
+
+# examples:
+#		<dateConverter pagename='Calendars:TeamPage' />
+#		<dateConverter pagename='Calendars:TeamPage' calname='Team Vacation' />
+#		<dateConverter pagename='Calendars:TeamPage' calname='Team Vacation' newformat='LM D, YYYY' /> //ex: July 1, 2009
+#
+#	newformat: format of converted events (YYYY MM DD M D SM LM) SM=short month, LM=longmonth
+#	pagename: wikipage name
+#	calname: calendar name (default: Public)
+#	redirect: add redirects to the old page name (default: no redirects)
+
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
@@ -17,23 +28,25 @@ function convertCalendarDates( $paramstring, $params = array() ){
 
 	$converter = new convertCalendarDates;
 	
-	if( !isset($params['limit'] ) ) $params['limit'] = 100000;
+	// defaults
 	if( !isset($params['newformat'] ) ) $params['newformat'] = 'YYYYMMDD';
+	if( !isset($params['calname'] ) ) $params['calname'] = 'Public';
 	
 	$ret = $converter->convert(	$params['newformat'],
 								$params['pagename'],
 								$params['calname'],
-								isset($params['redirect']),
-								$params['limit'] );
+								isset($params['redirect']) );
 	
 	return $ret;
 }
 
+require_once ("common.php");
+
 class convertCalendarDates
 {
-	function convert($newFormat, $pageName, $calName, $redirect, $limit){
+	function convert($newFormat, $pageName, $calName, $redirect){
 		$search = "$pageName/$calName";
-		$pages = PrefixSearch::titleSearch( $search, $limit);
+		$pages = PrefixSearch::titleSearch( $search, 1000000); //search upto 1,000,000 events (no performace issue)
 		$count=$redirectsIgnored=$erroredCount = 0;
 		$errored = '';
 
@@ -58,16 +71,14 @@ class convertCalendarDates
 				}
 			}else{
 				$erroredCount +=1;
-				$errored .=  '&nbsp;&nbsp;' . $page . '<br>';
 			}
 		}
 		unset($pages);	
 		
 		$ret = $count + $redirectsIgnored + $erroredCount . " total events found in <b>$search</b><br><br>";
-		$ret .= "<b>Successfully converted $count events!</b><br>";
-		$ret .= "<b>Redirects Ignored $redirectsIgnored</b><br><br>";
-		$ret .= "<b>The following $erroredCount pages were not converted:</b><br>$errored";
-	
+		$ret .= "<b>$count successfully converted events (MM-DD-YYYY &rarr; $newFormat)</b><br>";
+		$ret .= "<b>$redirectsIgnored redirects ignored </b><br>";
+		$ret .= "<b>$erroredCount pages not converted because they were not in the MM-DD-YYYY format</b>";
 		
 		return $ret;
 	}
