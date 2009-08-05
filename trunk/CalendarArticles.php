@@ -331,7 +331,9 @@
 			
 		$tip = Common::translate('add_event_tip');
 		
-		$date = "$month-$day-$year";
+		//$date = "$month-$day-$year";
+		$date = $this->userDateFormat($month, $day, $year);
+
 		$articleName = $this->getNextAvailableArticle($this->calendarPageName, $date);
 		
 		// if we're using multi-event mode, then default to section=new

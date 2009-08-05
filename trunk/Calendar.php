@@ -227,8 +227,8 @@ class Calendar extends CalendarArticles
 		$ret .= $this->buildTrackTimeSummary();
 		$ret .= $this->debug->get();
 	
-		if($this->setting('ical'))
-			$ret .= $this->loadiCalLink();
+		//if($this->setting('ical'))
+			//$ret .= $this->loadiCalLink();
 	
 		return $ret;
 	 }
@@ -801,8 +801,8 @@ class Calendar extends CalendarArticles
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
 		
-		//if($this->setting('ical'))
-			//$tag_loadiCalButton = $this->loadiCalLink();
+		if($this->setting('ical'))
+			$tag_loadiCalButton = $this->loadiCalLink();
 			
 		// replace potential variables in footer
 		$tempString = str_replace("[[TodayData]]", $this->tag_HiddenData, $tempString);
@@ -811,7 +811,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[Version]]", $gCalendarVersion, $tempString);
 		$tempString = str_replace("[[ConfigurationButton]]", $tag_configButton, $tempString);
 		$tempString = str_replace("[[TimeTrackValues]]", $tag_timeTrackValues, $tempString);
-		//$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
+		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
 	    $ret .= $tempString;
@@ -882,10 +882,12 @@ class Calendar extends CalendarArticles
 	// uses prefix seaching (NS:page/name/date)... anything after doesn't matter
     function buildArticlesForDay($month, $day, $year) {
 	
-		$date = "$month-$day-$year";
-
+		//$date = "$month-$day-$year";
+		$date = $this->userDateFormat($month, $day, $year);
+		
 		$search = "$this->calendarPageName/$date";
 		$pages = PrefixSearch::titleSearch( $search, '100');
+		
 		foreach($pages as $page) {
 			$this->addArticle($month, $day, $year, $page);
 		}
@@ -913,6 +915,30 @@ class Calendar extends CalendarArticles
 		}
 	}
 
+	// this is a general find/replace for the date format
+	// users can define whatever format this wish
+	// ie: 20090731, 07-01-2009, 07.01.2009, etc
+	function userDateFormat($month, $day, $year) {
+		global $wgCalendarDateFormat;
+		
+		$format = $wgCalendarDateFormat;
+		if($format == '') $format = 'M-D-YYYY'; //default
+
+		$format = str_ireplace('YYYY',$year,$format);
+		$format = str_ireplace('MM', str_pad($month, 2, '0', STR_PAD_LEFT), $format);
+		$format = str_ireplace('DD', str_pad($day, 2, '0', STR_PAD_LEFT), $format);
+		
+		if( stripos($format,'SM') || stripos($format,'LM') ){
+			$format = str_ireplace('SM', Common::translate($month, 'month_short'), $format);
+			$format = str_ireplace('LM', Common::translate($month, 'month'), $format);
+		}else{
+			$format = str_ireplace('M',$month,$format);
+			$format = str_ireplace('D',$day,$format);
+		}
+
+		return $format;
+	}
+	
 	function buildTagEvents($paramstring){
 	
 		$events = split( "\n", trim($paramstring) );
@@ -1175,7 +1201,9 @@ class Calendar extends CalendarArticles
 				if(!isset($event['DTEND'])) 
 					$event['DTEND'] = $event['DTSTART'];
 				
-				$date_string = $start['mon']."-".$start['mday']."-".$start['year'];	
+				//$date_string = $start['mon']."-".$start['mday']."-".$start['year'];	
+				
+				$date_string = $this->userDateFormat($start['mon'], $start['mday'], $start['year']);
 				$page = $this->getNextAvailableArticle($this->calendarPageName, $date_string, true);
 
 				$date_diff = ceil(Common::day_diff($event['DTSTART'], $event['DTEND']));
@@ -1256,9 +1284,9 @@ function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript, $wgScriptPath;
 	global $wgTitle, $wgUser;
-	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects, $wgCalendarForceNamespace;
-
-    $wgParser->disableCache();
+	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects, $wgCalendarForceNamespace, $wgCalendarDateFormat;
+    
+	$wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
 	$userMode = 'month';
 	
@@ -1314,7 +1342,12 @@ function displayCalendar($paramstring, $params = array()) {
 	if(!isset($params["yearoffset"])) 		$params["yearoffset"] = 2;
 	if(!isset($params["charlimit"])) 		$params["charlimit"] = 25;
 	if(!isset($params["css"])) 				$params["css"] = "default.css"; 
-	//if(!isset($params["enablerepeatevents"])) $params["enablerepeatevents"] = 15; 
+	
+	//if(!isset($params["formatdate"])) $params["formatdate"] = 'M-D-YYYY'; 
+
+	//if($params["formatdate"] == 'formatdate'){
+	//	return 'Invalid date format';
+	//}
 
 	//set secure mode via $wgRestrictCalendarTo global
 	// this global is set via LocalSetting.php (ex: $wgRestrictCalendarTo = 'sysop';
