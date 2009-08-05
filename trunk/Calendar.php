@@ -928,7 +928,7 @@ class Calendar extends CalendarArticles
 		$format = str_ireplace('MM', str_pad($month, 2, '0', STR_PAD_LEFT), $format);
 		$format = str_ireplace('DD', str_pad($day, 2, '0', STR_PAD_LEFT), $format);
 		
-		if( stripos($format,'SM') || stripos($format,'LM') ){
+		if( stripos($format,'SM') !== false || stripos($format,'LM') !== false ){
 			$format = str_ireplace('SM', Common::translate($month, 'month_short'), $format);
 			$format = str_ireplace('LM', Common::translate($month, 'month'), $format);
 		}else{
