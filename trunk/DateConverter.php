@@ -1,9 +1,11 @@
 <?php
 
 # examples:
-#		<dateConverter pagename='Calendars:TeamPage' />
+#		<dateConverter pagename='Calendars:TeamPage' /> - defaults to 'Public' and YYYYMMDD
 #		<dateConverter pagename='Calendars:TeamPage' calname='Team Vacation' />
 #		<dateConverter pagename='Calendars:TeamPage' calname='Team Vacation' newformat='LM D, YYYY' /> //ex: July 1, 2009
+#
+#	require_once( "$IP/extensions/calendar/dateConverter.php" );
 #
 #	newformat: format of converted events (YYYY MM DD M D SM LM) SM=short month, LM=longmonth
 #	pagename: wikipage name
@@ -16,10 +18,7 @@ if (defined('MEDIAWIKI')) {
 $wgExtensionFunctions[] = "wfDateConverter";
 
 function wfDateConverter() {
-	global $wgParser;
-	global $wgParser, $wgHooks;
-	global $wgCalendarSidebarRef;
-	
+	global $wgParser;	
 	$wgParser->setHook( "dateconverter", "convertCalendarDates" );
 }
 
