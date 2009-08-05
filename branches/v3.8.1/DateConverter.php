@@ -36,7 +36,8 @@ function convertCalendarDates( $paramstring, $params = array() ){
 	$ret = $converter->convert(	$params['newformat'],
 								$params['pagename'],
 								$params['calname'],
-								isset($params['redirect']) );
+								isset($params['redirect']),
+								isset($params['go']) );
 	
 	return $ret;
 }
@@ -45,7 +46,7 @@ require_once ("common.php");
 
 class convertCalendarDates
 {
-	function convert($newFormat, $pageName, $calName, $redirect){
+	function convert($newFormat, $pageName, $calName, $redirect, $go){
 		$search = "$pageName/$calName";
 		$pages = PrefixSearch::titleSearch( $search, 1000000); //search upto 1,000,000 events (no performace issue)
 		$count=$redirectsIgnored=$erroredCount = 0;
@@ -63,10 +64,15 @@ class convertCalendarDates
 				$toTitle = Title::newFromText($newPage);
 				
 				if( !$article->isRedirect() ){
-					$count +=1;
-					$retval = $fromTitle->moveTo($toTitle, true, 'CalendarConversion', $redirect);
-					
-					if($retval != true) $errored .=  '&nbsp;&nbsp;' . $page . '<br>';
+					if($go){
+						$retval = $fromTitle->moveTo($toTitle, true, 'CalendarConversion', $redirect);
+						if($retval) $count +=1; 
+						if(!$retval) $erroredCount +=1;
+					}else{
+						if($count < 10){
+							$testRun .= '&nbsp;&nbsp;' . $page . '  &rarr;&rarr;  ' . $newPage . '<br>';
+						}
+					}
 				}else{
 					$redirectsIgnored +=1;
 				}
@@ -76,10 +82,14 @@ class convertCalendarDates
 		}
 		unset($pages);	
 		
-		$ret = $count + $redirectsIgnored + $erroredCount . " total events found in <b>$search</b><br><br>";
-		$ret .= "<b>$count successfully converted events (MM-DD-YYYY &rarr; $newFormat)</b><br>";
-		$ret .= "<b>$redirectsIgnored redirects ignored </b><br>";
-		$ret .= "<b>$erroredCount pages not converted because they were not in the MM-DD-YYYY format</b>";
+		if($go){
+			$ret = $count + $redirectsIgnored + $erroredCount . " total events found in <b>$search</b><br><br>";
+			$ret .= "<b>$count successfully converted events (MM-DD-YYYY &rarr; $newFormat)</b><br>";
+			$ret .= "<b>$redirectsIgnored redirects ignored </b><br>";
+			$ret .= "<b>$erroredCount pages not converted or already converted</b>";
+		}else{
+			$ret = "<b>Test Results, add '<i>go</i>' to the <i>dateConverter</i> tag to convert:</b><br>$testRun";
+		}
 		
 		return $ret;
 	}
