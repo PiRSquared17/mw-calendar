@@ -16,31 +16,60 @@ function wfDateConverter() {
 function convertCalendarDates( $paramstring, $params = array() ){
 
 	$converter = new convertCalendarDates;
-	$ret = $converter->convert($params['newformat'],$params['pagename'],$params['calname'],!$params['noredirect']);
+	
+	if( !isset($params['limit'] ) ) $params['limit'] = 100000;
+	if( !isset($params['newformat'] ) ) $params['newformat'] = 'YYYYMMDD';
+	
+	$ret = $converter->convert(	$params['newformat'],
+								$params['pagename'],
+								$params['calname'],
+								isset($params['redirect']),
+								$params['limit'] );
 	
 	return $ret;
-	
 }
 
 class convertCalendarDates
 {
-	function convert($newFormat, $pageName, $calName, $redirect){
+	function convert($newFormat, $pageName, $calName, $redirect, $limit){
 		$search = "$pageName/$calName";
-		$pages = PrefixSearch::titleSearch( $search, 10);
-		$count=0;
+		$pages = PrefixSearch::titleSearch( $search, $limit);
+		$count=$redirectsIgnored=$erroredCount = 0;
+		$errored = '';
 
 		foreach($pages as $page) {
+			$retval = false;
 			$newPage = $this->convertToNewPage($page, $newFormat);			
-			$temp .='<br>'.$page;
 			
-			$fromTitle = Title::newFromText($page);
-			$toTitle = Title::newFromText($newPage);
+			$article = new Article(Title::newFromText($page));
+			if(!$article->exists()) $newPage = "";	
 			
-			//$retval = $fromTitle->moveTo($toTitle, true, 'CalendarConversion', $redirect);
+			if($newPage != ''){
+				$fromTitle = Title::newFromText($page);
+				$toTitle = Title::newFromText($newPage);
+				
+				if( !$article->isRedirect() ){
+					$count +=1;
+					$retval = $fromTitle->moveTo($toTitle, true, 'CalendarConversion', $redirect);
+					
+					if($retval != true) $errored .=  '&nbsp;&nbsp;' . $page . '<br>';
+				}else{
+					$redirectsIgnored +=1;
+				}
+			}else{
+				$erroredCount +=1;
+				$errored .=  '&nbsp;&nbsp;' . $page . '<br>';
+			}
 		}
 		unset($pages);	
 		
-		return $temp;
+		$ret = $count + $redirectsIgnored + $erroredCount . " total events found in <b>$search</b><br><br>";
+		$ret .= "<b>Successfully converted $count events!</b><br>";
+		$ret .= "<b>Redirects Ignored $redirectsIgnored</b><br><br>";
+		$ret .= "<b>The following $erroredCount pages were not converted:</b><br>$errored";
+	
+		
+		return $ret;
 	}
 	
 	function convertToNewPage($page, $newFormat){
@@ -48,6 +77,9 @@ class convertCalendarDates
 		$dateStr = trim( array_pop($arrPage) ); //get last element
 		
 		$arrDateElements = explode('-',$dateStr); //arr[0]=month, arr[1]=day, arr[2]=year, arr[3]=eventid
+		
+		if(count($arrDateElements) != 4) return '';
+		
 		$eventID = array_pop($arrDateElements); 
 		
 		$newDate = $this->userDateFormat(	trim($arrDateElements[0]), 
