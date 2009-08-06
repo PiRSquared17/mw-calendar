@@ -66,8 +66,8 @@ if (isset($_POST["calendar_info"]) ){
 # Confirm MW environment
 if (defined('MEDIAWIKI')) {
 
-//$gCalendarVersion = "v3.8.1 (8/5/2009)";
-$gCalendarVersion = "trunk/beta";
+$gCalendarVersion = "v3.8.1 (8/5/2009)";
+//$gCalendarVersion = "trunk/beta";
 
 # Credits	
 $wgExtensionCredits['parserhook'][] = array(
