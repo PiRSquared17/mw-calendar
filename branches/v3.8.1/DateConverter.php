@@ -75,16 +75,11 @@ class convertCalendarDates
 					}
 				}	
 			}
-			
-			if($retval) $count +=1;
-			if(!$retval) $erroredCount +=1;
 		}
 		unset($pages);	
 		
 		if($go){
-			$ret = $count + $erroredCount . " total events found in <b>$search</b><br><br>";
-			$ret .= "<b>$count successfully converted events (MM-DD-YYYY &rarr; $newFormat)</b><br>";
-			$ret .= "<b>$erroredCount pages not converted or already converted</b>";
+			$ret = "Conversion completed.";
 		}else{
 			$ret = "<b>Test Results, add '<i>go</i>' to the <i>dateConverter</i> tag to convert:</b><br>$testRun";
 		}
