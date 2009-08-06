@@ -369,6 +369,11 @@ I update the trunk code everytime someone posts a language translation. Please c
 
 == Installation ==
 The following are details of the administrator installation of this calendar extension. If you dont have any custom Namespaces, then 100 and 101 are fine, if you do have existing custom Namespaces, just bump the numbers up accordingly. See [http://www.mediawiki.org/wiki/Help:Namespaces Help:Namespaces] for more information. The $wgNamespacesWithSubpages values must match the values assigned to the $wgExtraNamespaces.
+
+
+The default date format is '''M-D-YYYY''', please change this if needed with the '''$wgCalendarDateFormat''' override below before you go live with your calendar.
+
+
  '''Recommended Folder Path:''' /extensions/Calendar
 '''Localsettings.php:'''<br/>
 <br/>
@@ -386,6 +391,9 @@ The following are details of the administrator installation of this calendar ext
  // Puts the events into Subpages (allows a quick link back to primary calendar)
  $wgNamespacesWithSubpages[100] = true;
  $wgNamespacesWithSubpages[101] = true;
+ 
+ $wgCalendarForceNamespace='Calendars'
+
 The additional namespaces move all the events outside the "main" group... should clean the mess up some. If you have custom namespaces installed already, make sure you bump up the [100][101] values up accordingly.
 
 ==== Optional LocalSetting.php Settings ====
@@ -411,9 +419,41 @@ The additional namespaces move all the events outside the "main" group... should
 | &nbsp;
 |-
 | nowrap | $wgCalendarDateFormat=YYYYMMDD
-| use YYYY, MM, DD, M, D, SM, LM in any format <br>''(SM D, YYYY --> Jul 1, 2009)'' <br>(''YYYYMMDD --> 20090701)''
+| use YYYY, MM, DD, M, D, SM, LM in any format <br>''(SM D, YYYY --> Jul 1, 2009)'' <br>(''YYYYMMDD --> 20090701)''<br>'''Note:''' Previous events will not display if you change date formats.
 | 3.8
 |}
 
+== Date Conversion Tool (v3.8.1) ==
+'''Please <u>'''TEST'''</u> using a test calendar before using on a LIVE calendar.'''   
+
+
+* Used in conjunction with global '''$wgCalendarDateFormat=YYYYMMDD'''
+
+
+This tool allows admins to convert all wiki calendar pages from MM-DD-YYY to a custom user defined format. This only converts from the legacy date format to the custom format so technically can only be used to convert one time. The new format can be used in any manner or order.
+
+This tool finds the original calendar events and moves the to new pages using the newer date format.
+
+
+ require_once( "$IP/extensions/calendar/dateConverter.php" );
+
+'''Parameters:'''
+*'''newformat''': (YYYY MM DD M D SM LM) SM=short month, LM=long month (default: YYYYMMDD)
+*'''pagename''': wiki pagename including namespace as needed
+*'''calname''': name of the calendar (default: Public)
+*'''redirect''': add redirect link to old original event pages. (default: no redirect links, old page is removed)
+
+
+The following examples do not convert the wiki title/pages; its more of a "test" run...
+ <dateConverter pagename='Calendars:TeamPage' calname='Team Calendar' newFormat='YYYYMMDD' /> -- 20090805
+ <dateConverter pagename='Calendars:TeamPage' calname='Team Calendar' newFormat='SD D, YYYY' /> -- Jul 1, 2009
+
+Once you test the script, you MUST add ''''go'''' to the tag to acutally convert the events to the new format
+ <dateConverter pagename='Calendars:TeamPage' calname='Team Calendar' newFormat='YYYYMMDD' '''go''' />
+
 == Troublehooting ==
 * If you have an issue with the calendar display, try setting '''<code>$wgUseTidy = false;</code>''' in LocalSettings.php.
+
+
+
+[[Extension:Calendar (Kenyu73)/Readme/beta | Beta Readme]]
