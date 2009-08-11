@@ -496,7 +496,8 @@
 			}
 		}
 
-		return "style='$defaultStyle;$stylePage'";
+		//return "style='" . str_replace("'", "", "$defaultStyle;$stylePage") . "' ";
+		return "style='$defaultStyle;$stylePage' ";
 	}
 	
 	// creates a new page and populates it as required
