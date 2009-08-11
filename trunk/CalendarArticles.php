@@ -482,19 +482,21 @@
 	
 	private function buildStyleBySearch($text){
 
+		$stylePage = '';
+	
 		// set default style if available, if not... use std windows defaults
-		$ret = "style='" . $this->setting('style', false) . "' ";
+		$defaultStyle = $this->setting('style', false);
 		
 		for($i=0; $i < count($this->arrStyle); $i++){
 			$arr = split("::", $this->arrStyle[$i]);
 			$cnt = count($arr);
 			
 			if(stripos($text, $arr[0]) !== false) {
-				$ret = "style='" . trim($arr[1]) . "' ";
+				$stylePage = trim($arr[1]);
 			}
 		}
 
-		return $ret;
+		return "style='$defaultStyle;$stylePage'";
 	}
 	
 	// creates a new page and populates it as required
