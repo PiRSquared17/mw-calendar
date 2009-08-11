@@ -65,6 +65,13 @@
 		$lines = split("\n",$body);
 		$cntLines = count($lines);
 	
+		// dont use section events... only line 1 of the page
+		if($this->setting('disablesectionevents')){
+			$key = $lines[0]; //initalize the key
+			$head[$key] = ""; 
+			$cntLines = 0;
+		}
+	
 		for($i=0; $i<$cntLines; $i++){
 			$line = $lines[$i];
 			if(substr($line,0,2) == '=='){
