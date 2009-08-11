@@ -593,6 +593,44 @@ class Calendar extends CalendarArticles
 		 
 		 return $ret;
 	}
+	function buildMonthSelectBox($shortMonths=false){
+	
+	    // build the month select box
+	    $monthSelect = "<select name='monthSelect' method='post' onChange='javascript:this.form.submit()'>";
+		for ($i = 1; $i <= 12; $i++) {
+    		if ($i == $this->month) {
+				$monthSelect .= "<option class='lst' value='" . ($i) . "' selected='true'>" . 
+				Common::translate($i, 'month_short') . "</option>\n";
+    		}
+    		else {
+				$monthSelect .= "<option class='lst' value='" . ($i) . "'>" . 
+				Common::translate($i, 'month_short') . "</option>\n";
+    		}
+	    }
+	    $monthSelect .= "</select>";
+	
+		return $monthSelect;
+	}
+	
+	function buildYearSelectBox(){
+    	
+		$yearoffset = $this->setting('yearoffset',false);
+
+	    // build the year select box, with +/- 5 years in relation to the currently selected year
+	    $yearSelect = "<select name='yearSelect' method='post' onChange='javascript:this.form.submit()'>";
+		for ($i = ($this->year - $yearoffset); $i <= ($this->year + $yearoffset); $i += 1) {
+    		if ($i == $this->year) {
+				$yearSelect .= "<option class='lst' value='$i' selected='true'>" . 
+				$i . "</option>\n";
+    		}
+    		else {
+				$yearSelect .= "<option class='lst' value='$i'>$i</option>\n";
+    		}
+	    }
+	    $yearSelect .= "</select>";	
+	
+		return $yearSelect;
+	}
 	
     function renderMonth() {   
 		global $gCalendarVersion;
@@ -661,36 +699,10 @@ class Calendar extends CalendarArticles
 	    // set the month's mont and year tags
 		$tag_calendarMonth = Common::translate($this->month, 'month');
 	    $tag_calendarYear = $this->year;
-    	
-	    // build the month select box
-	    $tag_monthSelect = "<select name='monthSelect' method='post' onChange='javascript:this.form.submit()'>";
 
-		for ($i = 1; $i <= 12; $i++) {
-    		if ($i == $this->month) {
-				$tag_monthSelect .= "<option class='lst' value='" . ($i) . "' selected='true'>" . 
-				Common::translate($i, 'month') . "</option>\n";
-    		}
-    		else {
-				$tag_monthSelect .= "<option class='lst' value='" . ($i) . "'>" . 
-				Common::translate($i, 'month') . "</option>\n";
-    		}
-	    }
-	    $tag_monthSelect .= "</select>";
-    	$yearoffset = $this->setting('yearoffset',false);
-
-	    // build the year select box, with +/- 5 years in relation to the currently selected year
-	    $tag_yearSelect = "<select name='yearSelect' method='post' onChange='javascript:this.form.submit()'>";
-		for ($i = ($this->year - $yearoffset); $i <= ($this->year + $yearoffset); $i += 1) {
-    		if ($i == $this->year) {
-				$tag_yearSelect .= "<option class='lst' value='$i' selected='true'>" . 
-				$i . "</option>\n";
-    		}
-    		else {
-				$tag_yearSelect .= "<option class='lst' value='$i'>$i</option>\n";
-    		}
-	    }
-	    $tag_yearSelect .= "</select>";
-    	
+		$tag_monthSelect =  $this->buildMonthSelectBox();;
+    	$tag_yearSelect = $this->buildYearSelectBox();
+		
 		$tag_templateButton = $this->buildTemplateLink();
 		$tag_configButton = $this->buildConfigLink(false);
 
@@ -981,13 +993,17 @@ class Calendar extends CalendarArticles
 
 		if($sixRow) $numWeeks = 6;
 
-		$monthname = Common::translate($month,'month');
+		$monthname = Common::translate($month,'month_short');
 		if ( $this->isFullSubscribe ) {
 			$monthname = "<a title='$this->calendarPageName' href='" . $this->wikiRoot . substr($this->calendarPageName, 0, strrpos($this->calendarPageName, "/")) . "'>" . $monthname . "</a>";
 		}
-		//$monthname = "<a href=''>$monthname";
 
-		$ret = "<tr><td class='yearTitle' colspan=7>" . $monthname . "</td></tr>";				
+		$monthyear = "$monthname, $this->year";
+		
+		$prev = "<input class='btn' name='monthBack' type='submit' value='<<'>";
+		$next = "<input class='btn' name='monthForward' type='submit' value='>>'>";
+		
+		$ret = "<tr><td colspan=2>$prev</td><td colspan=3 style='font-size:9px' class='yearTitle'>" . $monthyear . "</td><td colspan=2>$next</td></tr>";				
 		if($this->setting('monday')){
 			$ret .= "
 				<tr>
@@ -1039,7 +1055,9 @@ class Calendar extends CalendarArticles
 			$row = "";
 		}
 		
-		return "<table class='yearCalendarMonth'>$ret</table>";
+		$hidden = $this->tag_HiddenData;
+		
+		return "<form name='cal_frm' method='post'><table class='yearCalendarMonth'>$ret</table>$hidden</form>";
 	}	
 
 	function renderYear(){
@@ -1303,6 +1321,9 @@ function displayCalendar($paramstring, $params = array()) {
 	$calendar->namespace = $wgTitle->getNsText();
 	
 	if(!isset($params["name"])) $params["name"] = "Public";
+	
+	// append simplemonth to name to seperate from normal calendar names
+	//if(isset($params["simplemonth"])) $params["name"] .= "_simplemonth";
 	
 	$calendar->paramstring = $paramstring;
 	
