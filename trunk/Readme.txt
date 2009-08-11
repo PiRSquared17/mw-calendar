@@ -231,6 +231,18 @@ Please use quotes for any parameter that may contain a space
 |disableredirects
 |redirects enabled
 |3.7.7
+|-
+|'''disablesectionevents'''
+|disables the calendar from using sections (==event==) as calendar events
+|disablesectionevents
+|section events enabled
+|3.8.2
+|-
+|'''style'''
+|sets a default '''style''' for all events (ie: font-size, color, etc)... keyword styles via the "style" button override this default style
+|style="font-size:10px; color: green; font-style:italic"
+|style=""
+|3.8.2
 |}
 
 == Events ==
