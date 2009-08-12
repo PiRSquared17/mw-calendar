@@ -161,19 +161,25 @@ class Common{
 	//kludge to display an image event link... this MUST be cleaned up!
 	static function getImageURL( $image ){
 		
-		if( !strpos($image, '.') ) return null;
+		// stripe brackets... cant use them in the lookup
+		$image = str_replace('[[', '',$image);
+		$image = str_replace(']]', '',$image);
 		
-		$name = $image;
+		// check to see if they passed in Image: or File: and add if needed
+		if( (stripos($image, 'Image:') === false) && (stripos($image, 'File:') === false) ){
+			$image = "File:" . $image;
+		}
 		
-		$name = preg_replace( '/\[\[.*:/i', '', $name ); //remove image tag prefixes like [[image:
-		$name = str_replace( ']]', '', $name );
+		$titleObj = Title::newFromText( $image );
 		
-		$img = Image::newFromName( $name );
-		$path = str_replace("\\", "/", $_SERVER['DOCUMENT_ROOT']) . $img->getURL();
+		// return if the image doesn't exist
+		if( !$titleObj->exists() ) 
+			return null;
 		
-		if( !file_exists($path) ) return null;
-
-		return $img->getURL();	
+		$img = new ImagePage($titleObj); 
+		
+		// we're good, return the URL
+		return $img->getDisplayedFile()->getUrl();  
 	} 
 }
 
