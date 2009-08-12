@@ -160,7 +160,7 @@ class Common{
 	
 	//kludge to display an image event link... this MUST be cleaned up!
 	static function getImageURL( $image ){
-		
+
 		// stripe brackets... cant use them in the lookup
 		$image = str_replace('[[', '',$image);
 		$image = str_replace(']]', '',$image);
@@ -171,6 +171,7 @@ class Common{
 		}
 		
 		$titleObj = Title::newFromText( $image );
+		if(!$titleObj) return null;
 		
 		// return if the image doesn't exist
 		if( !$titleObj->exists() ) 
