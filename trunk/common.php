@@ -171,11 +171,8 @@ class Common{
 		}
 		
 		$titleObj = Title::newFromText( $image );
-		if(!$titleObj) return null;
-		
-		// return if the image doesn't exist
-		if( !$titleObj->exists() ) 
-			return null;
+		if( !$titleObj ) return null;
+		if( !$titleObj->exists() ) return null;
 		
 		$img = new ImagePage($titleObj); 
 		
