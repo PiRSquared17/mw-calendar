@@ -600,11 +600,11 @@ class Calendar extends CalendarArticles
 		for ($i = 1; $i <= 12; $i++) {
     		if ($i == $this->month) {
 				$monthSelect .= "<option class='lst' value='" . ($i) . "' selected='true'>" . 
-				Common::translate($i, 'month_short') . "</option>\n";
+				Common::translate($i, 'month') . "</option>\n";
     		}
     		else {
 				$monthSelect .= "<option class='lst' value='" . ($i) . "'>" . 
-				Common::translate($i, 'month_short') . "</option>\n";
+				Common::translate($i, 'month') . "</option>\n";
     		}
 	    }
 	    $monthSelect .= "</select>";
