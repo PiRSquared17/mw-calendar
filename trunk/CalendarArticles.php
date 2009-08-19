@@ -208,6 +208,9 @@
 		if (count($arrAllEvents) > 0){
 			for($i=0; $i<count($arrAllEvents); $i++){
 				$arrEvent = split("#",$arrAllEvents[$i]);
+				
+				if(!isset($arrEvent[1])) continue;//skip 
+				
 				if(strlen($arrEvent[1]) > 0){
 					$day = $arrEvent[0];
 					$arrRepeat = split("-",$arrEvent[0]);

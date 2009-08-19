@@ -323,7 +323,8 @@ class Calendar extends CalendarArticles
     // $day may be out of range; if so, give blank HTML
     function getHTMLForDay($month, $day, $year, $dateFormat='default', $mode='month'){
 		$tag_eventList = $tag_dayCustom = "";
-
+		$tag_weekyear = $tag_dayyear = "";
+		
 		$max = Common::getDaysInMonth($month, $year);
 		
 		if ($day <=0 || $day > $max)		
@@ -376,13 +377,21 @@ class Calendar extends CalendarArticles
 		
 		$tag_alerts = $this->buildAlertLink($day, $month);
 		
+		if($this->setting('dayofyear')){
+			$tag_dayweekyear = $this->getDayOfTheYear($month,$day,$year);
+		}		
+		if($this->setting('weekofyear')){
+			$tag_dayweekyear .= $this->getWeekOfTheYear($month,$day,$year);
+		}
+	
 		//kludge... for some reason, the "\n" is removed in full calendar mode
 		if($mode == "monthMode")
 			$tag_eventList = str_replace("\n", " ", $tag_eventList); 
-			
+		
 		$tempString = str_replace("[[AddEvent]]", $tag_addEvent, $tempString);
 		$tempString = str_replace("[[EventList]]", "<ul>" . $tag_eventList . "</ul>", $tempString);
 		$tempString = str_replace("[[Alert]]", $tag_alerts, $tempString);
+		$tempString = str_replace("[[DayWeekYear]]", $tag_dayweekyear, $tempString);
 		$tempString = str_replace("[[mode]]", $tag_mode, $tempString);
 		$tempString = str_replace("[[dayCustom]]", $tag_dayCustom, $tempString);
 		
@@ -406,6 +415,35 @@ class Calendar extends CalendarArticles
 		return $ret;
 	}
 
+	function getWeekOfTheYear($month, $day, $year, $monday=true){
+		
+		$timestamp = mktime(12,0,0,$month, $day, $year);
+		$weekDay = date("w", $timestamp);
+		$week = date("W", $timestamp);
+		
+		$translated = Common::translate('weekyearTranslated');		
+
+		if($this->setting('weekofyear')){
+			$html = "<span title='" . $translated . "'>/$week</span>";
+		}
+		else{
+			$html = "<span title='" . $translated . "'>$week</span>";
+		}
+			
+		return $html;
+	}
+	
+	function getDayOfTheYear($month, $day, $year){
+		
+		$timestamp = mktime(12,0,0,$month, $day, $year);
+		$dayYear = (date("z", $timestamp) +1);
+		
+		$translated = Common::translate('dayyearTranslated');
+		$html = "<span title='" . $translated . "'>$dayYear</span>";
+		
+		return $html;
+	}
+	
 	// build the 'template' button	
 	function buildTemplateLink(){	
 		if(!$this->setting('usetemplates')) return "";
@@ -916,6 +954,7 @@ class Calendar extends CalendarArticles
 		// depreciated (around 1/1/2009)
 		// old format: ** name (12-15-2008) - Event 1 **
 		if($this->setting('enablelegacy')){
+			$date = "$month-$day-$year";
 			$name = $this->setting('name');
 			$search = "$this->namespace:$name ($date)";
 			$pages = PrefixSearch::titleSearch( $search, '100');

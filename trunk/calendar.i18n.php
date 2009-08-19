@@ -25,7 +25,8 @@
 		'today' => "today",
 		'invalid_namespace' => "Invalid Namespace - This calendar extension must be created in the following namespace: ",
 		'about' => "Click here for help and more information",
-		'' => "",
+		'dayyearTranslated' => "Day of the year",
+		'weekyearTranslated' => "Week of the year"
 	);
 	//frensh
 	$messages['fr'] = array(
@@ -48,7 +49,8 @@
 		'today' => "aujourd'hui",
 		'invalid_namespace' => "Invalid Namespace - Ce calendrier d'extension doit être créé dans les noms: ",
 		'about' => "Cliquez ici pour obtenir de l'aide et plus d'information",
-		'' => "",
+		'dayyearTranslated' => "Jour de l'année",
+		'weekyearTranslated' => "Semaine de l'année"
 	);
 	//spanish
 	$messages['es'] = array(
@@ -71,7 +73,8 @@
 		'today' => "hoy",
 		'invalid_namespace' => "De nombres no válidos - Este calendario de extensión se debe crear en los siguientes nombres: ",
 		'about' => "Haga clic aquí para obtener ayuda y más información",
-		'' => "",
+		'dayyearTranslated' => "Los días del año",
+		'weekyearTranslated' => "Semana del año"
 	);
 	//german
 	$messages['de'] = array(
@@ -94,7 +97,8 @@
 		'today' => "Heute",
 		'invalid_namespace' => "Ungültiger Namespace - Dieser Kalender Verlängerung muss in den folgenden Namespace: ",
 		'about' => "Klicken Sie hier, um Hilfe und weitere Informationen",
-		'' => "",
+		'dayyearTranslated' => "Tag des Jahres",
+		'weekyearTranslated' => "Woche des Jahres"
 	);
 	//finnish
 	$messages['fi'] = array(
@@ -117,53 +121,56 @@
 		'today' => "Tänään",
 		'invalid_namespace' => "Hindi wastong Ngalan-espasyo - Tämä aikataulu Pidentämispäätökset luotu seuraavat nimitila: ",
 		'about' => "Click here for help ja lisätietoja",
-		'' => "",
+		'dayyearTranslated' => "Vuoden päivänä",
+		'weekyearTranslated' => "Viikko vuoden"
 	);
 	//hungarian
 	$messages['hu'] = array(
 		'default_title' => "Naptár",
-			'year' => "év",
-			'month' => "hónap",
-			'week' => "nap",
-			'ical_inst' => "Adj meg egy ical formátumú állományt (vcalendar).",
-			'add_event' => "Új esemény",
-			'add_event_tip' => "új esemény hozzáadása",
-			'styles_btn' => "eseménystílusok",
-			'styles_btn_tip' => "CSS stílus beállítása bizonyos hívószavakra",
-			'template_btn' => "események",
-			'template_btn_tip' => "Több esemény létrehozása egy oldalon...",
-			'ical_btn' => "betöltés",
-			'ical_btn_tip' => "kiválasztott állomány importálása",
-			'ical_browse_tip' => "a feltöltendo ical állomány kiválasztása...",
-			'config_btn' => "beállítások",
-			'config_btn_tip' => "Itt adhatod meg a naptár beállításait",
-			'today' => "ma",
-			'invalid_namespace' => "Érvénytelen névtér - A naptár kiterjesztés kell teremteni a következo namespace: ",
-			'about' => "Kattintson ide a segítséget, és több információt",
-			'' => "",
+		'year' => "év",
+		'month' => "hónap",
+		'week' => "nap",
+		'ical_inst' => "Adj meg egy ical formátumú állományt (vcalendar).",
+		'add_event' => "Új esemény",
+		'add_event_tip' => "új esemény hozzáadása",
+		'styles_btn' => "eseménystílusok",
+		'styles_btn_tip' => "CSS stílus beállítása bizonyos hívószavakra",
+		'template_btn' => "események",
+		'template_btn_tip' => "Több esemény létrehozása egy oldalon...",
+		'ical_btn' => "betöltés",
+		'ical_btn_tip' => "kiválasztott állomány importálása",
+		'ical_browse_tip' => "a feltöltendo ical állomány kiválasztása...",
+		'config_btn' => "beállítások",
+		'config_btn_tip' => "Itt adhatod meg a naptár beállításait",
+		'today' => "ma",
+		'invalid_namespace' => "Érvénytelen névtér - A naptár kiterjesztés kell teremteni a következo namespace: ",
+		'about' => "Kattintson ide a segítséget, és több információt",
+		'dayyearTranslated' => "Nap az év",
+		'weekyearTranslated' => "Hét év"
 	);
 	//polish
 	$messages['nl'] = array(
-	 'default_title' => "Publiek",
-	 'year' => "jaar",
-	 'month' => "maand",
-	 'week' => "week",
-	 'ical_inst' => "Specificeer een ical-bestandsformaat (vcalendar).",
-	 'add_event' => "nieuw",
-	 'add_event_tip' => "Voeg een nieuwe gebeurtenis toe",
-	 'styles_btn' => "Stijl",
-	 'styles_btn_tip' => "Gebruik stijl op basis van sleutelwoorden",
-	 'template_btn' => "Gebeurtenis",
-	 'template_btn_tip' => "meer gebeurtenissen op een pagina...",
-	 'ical_btn' => "Importeer",
-	 'ical_btn_tip' => "Importeer een geselecteerd bestand",
-	 'ical_browse_tip' => "Blader naar een te gebruiken ical-bestand",
-	 'config_btn' => "Voorkeuren",
-	 'config_btn_tip' => "Voeg kalendervoorkeur toe",
-	 'today' => "vandaag",
-	 'invalid_namespace' => "Ongeldige naamruimte; kalenders moeten in de volgende naamruimte gemaakt worden: ",
-	 'about' => "Kliknij tutaj, aby uzyskac pomoc i wiecej informacji",
-	 '' => "",
+		'default_title' => "Publiek",
+		'year' => "jaar",
+		'month' => "maand",
+		'week' => "week",
+		'ical_inst' => "Specificeer een ical-bestandsformaat (vcalendar).",
+		'add_event' => "nieuw",
+		'add_event_tip' => "Voeg een nieuwe gebeurtenis toe",
+		'styles_btn' => "Stijl",
+		'styles_btn_tip' => "Gebruik stijl op basis van sleutelwoorden",
+		'template_btn' => "Gebeurtenis",
+		'template_btn_tip' => "meer gebeurtenissen op een pagina...",
+		'ical_btn' => "Importeer",
+		'ical_btn_tip' => "Importeer een geselecteerd bestand",
+		'ical_browse_tip' => "Blader naar een te gebruiken ical-bestand",
+		'config_btn' => "Voorkeuren",
+		'config_btn_tip' => "Voeg kalendervoorkeur toe",
+		'today' => "vandaag",
+		'invalid_namespace' => "Ongeldige naamruimte; kalenders moeten in de volgende naamruimte gemaakt worden: ",
+		'about' => "Kliknij tutaj, aby uzyskac pomoc i wiecej informacji",
+		'dayyearTranslated' => "Dzien roku",
+		'weekyearTranslated' => "Tydzien roku"
 	);
 
 ?>
