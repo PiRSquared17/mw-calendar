@@ -64,7 +64,9 @@ if (isset($_POST["calendar_info"]) ){
 }
 
 # Confirm MW environment
-if (defined('MEDIAWIKI')) {
+if (!defined('MEDIAWIKI')) {
+	die( 'This file is a MediaWiki extension, it is not a valid entry point' );
+}
 
 $gCalendarVersion = "v3.8.2 (8/10/2009)";
 //$gCalendarVersion = "trunk/beta";
@@ -1518,6 +1520,5 @@ function wfCalendarFunctions_Magic( &$magicWords, $langCode ) {
     }
     return true;
 }
-} //end define MEDIAWIKI
 
 
