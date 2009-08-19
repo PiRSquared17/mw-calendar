@@ -43,6 +43,9 @@ You can also "share" or subscribe to other calendars by using the "''subscribe''
  '''Namespace is used:'''
  <nowiki><calendar name="Support" subscribe="Calendars:Acme Company/Sales" /></nowiki>
 
+ '''To share more than one calender'''
+ <nowiki><calendar name="Support" subscribe="Calendars:Acme Company/Sales, Calendars:Acme Company/Marketing" /></nowiki>
+
 === Parameters ===
 Please use quotes for any parameter that may contain a space
 {| border=1 cellpadding="5" class="prettytable"
@@ -243,6 +246,18 @@ Please use quotes for any parameter that may contain a space
 |style="font-size:10px; color: green; font-style:italic"
 |style=""
 |3.8.2
+|-
+|'''dayofyear'''
+|displays the day of the year (1-365)
+|dayofyear
+|disabled
+|3.8.3
+|-
+|'''weekofyear'''
+|displays the week of the year
+|weekofyear
+|disabled
+|3.8.3
 |}
 
 == Events ==
@@ -268,9 +283,12 @@ Bring food!
 Bring drinks
 </nowiki>
 
-* If you're forcing users to reuse pages '''(usesectionevents)''', the addevent defaults to a page simular to the discussion (+) page. Ensure users use the Subject textbox and enter something in the body for the event to save. Using this method eliminates the ==event== manual entry. However, you can omit the subject and still manually add section events in the body.
 
-:'''The body requires some entry or the event will NOT save...'''
+* '''The body requires some entry or the event will NOT save...'''
+
+* If you're forcing users to reuse pages '''(usesectionevents)''', the addevent defaults to a page simular to the discussion (+) page. Ensure users use the Subject textbox and enter something in the body for the event to save. Using this method eliminates the <nowiki>==event==</nowiki> manual entry. However, you can omit the subject and still manually add section events in the body.
+
+* use the '''disablesectionevents''' preference to diable the calendar from using sections as events.
 
 === Repeating Events ===
 Repeating events (''if enabled'') allow an easy way to add the same event over multiple days. The below example will create 5 repeating Vacation events in the calendar. You MUST enable the functionality by adding '''enablerepeatevents''' to your parameter tag or config page. Enabling repeating events causes the calendar to look back 15 days into the previous month for any carry over events. If by chance you have a repeating event prior to the 15th, it will not carry over to the next month. 
@@ -310,6 +328,10 @@ The day and the event '''must''' be seperated by an '#' as shown in the example.
 
 
 I'm not sure how far and how many variation of the css and/or Wiki formatting will go, but I've tested a good portion of the standard text properties. (<nowiki><div></nowiki> is giving me an issue at this time though... but <nowiki><span></nowiki> works just fine!)
+
+
+* you can default all events to your style preference by using the '''style="..."''' preference. However, individual keyword event styles override the global default.
+
 === Time Tracker ===
 You can keep simple time tracking of events by formatting the event as below. This will track any dynamically created event in a simple table below the calendar in full mode only. The event is triggered by prefixing (2) colons followed by the event then (1) colon or (1) dash followed by a numeric value to add. 
  ::Vacation: 8 or ::Vacation -8
@@ -465,7 +487,3 @@ Once you test the script, you MUST add ''''go'''' to the tag to acutally convert
 
 == Troublehooting ==
 * If you have an issue with the calendar display, try setting '''<code>$wgUseTidy = false;</code>''' in LocalSettings.php.
-
-
-
-[[Extension:Calendar (Kenyu73)/Readme/beta | Beta Readme]]
