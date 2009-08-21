@@ -444,7 +444,7 @@
 
 		//locked links
 		if($this->setting('disablelinks') || $noLink)
-			$ret = "<a $style>" . $arrText[1] . "</a>";
+			$ret = "<span $style>" . $arrText[1] . "</span>";
 		else
 			if($this->setting('defaultedit'))
 				$ret = "<a $style title='$arrText[0]' href='" . $this->wikiRoot . wfUrlencode($title) . "&action=edit'>$arrText[1]</a>";

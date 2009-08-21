@@ -68,7 +68,7 @@ if (!defined('MEDIAWIKI')) {
 	die( 'This file is a MediaWiki extension, it is not a valid entry point' );
 }
 
-$gCalendarVersion = "v3.8.3 (8/18/2009)";
+$gCalendarVersion = "v3.8.4 (8/18/2009)";
 //$gCalendarVersion = "trunk/beta";
 
 # Credits	
@@ -148,29 +148,11 @@ class Calendar extends CalendarArticles
 		// set the calendar's initial date
 		$now = getdate();
 		
-		$this->month = $now['mon'];
-		$this->year = $now['year'];
-		$this->day = $now['mday'];
+		$this->month = $this->actualMonth = $now['mon'];
+		$this->year = $this->actualYear = $now['year'];
+		$this->day = $this->actualDay = $now['mday'];
 		
 		$this->debug->set("Calendar Constructor Ended.");
-    }
-
-    function html_week_array($format){
-		
-		//search values for html template only, no need to Common::translate...
-	
-		$days = array("weekend","weekday","weekday",
-			"weekday","weekday","weekday","weekend");			
-		
-
-		$ret = array();			 	
-		for($i=0;$i<7;$i++){
-			$ret[$i] = $this->searchHTML($this->html_template,
-						 sprintf($format,$days[$i],"Start"),
-						 sprintf($format,$days[$i],"End"));
-
-		}
-		return $ret;
     }
 	
 	 // render the calendar
@@ -229,9 +211,6 @@ class Calendar extends CalendarArticles
 		$ret .= $this->buildTrackTimeSummary();
 		$ret .= $this->debug->get();
 	
-		//if($this->setting('ical'))
-			//$ret .= $this->loadiCalLink();
-	
 		return $ret;
 	 }
 	
@@ -268,27 +247,21 @@ class Calendar extends CalendarArticles
 		$extensionPath = $this->setting('path');
 		$extensionPath = str_replace("\\", "/", $extensionPath);
 		
-		// build template
-		$data_start = "<!-- Calendar Start -->";
-		
 		$css = $this->setting('css');
 		
 		$css_data = file_get_contents($extensionPath . "/templates/$css");	//ugly method	
-		$html_data = file_get_contents($extensionPath . "/templates/calendar_template.html");
-
-		$data_end = "<!-- Calendar End -->";	
-		
-		//add css; this is set as 'default.css' or an override
-		if($wgVersion >= '1.14')
-			$wgOut->addStyle($cssURL . $css); //clean method
-		else
-			$wgOut->addHTML($css_data); //ugly method
-
-		$this->html_template = $data_start . $html_data . $data_end;
+		$this->html_template = file_get_contents($extensionPath . "/templates/calendar_template.html");
 	
-		$this->daysNormalHTML   = $this->html_week_array("<!-- %s %s -->");
-		$this->daysSelectedHTML = $this->html_week_array("<!-- Selected %s %s -->");
-		$this->daysMissingHTML  = $this->html_week_array("<!-- Missing %s %s -->");
+		//add css; this is set as 'default.css' or an override
+		if($wgVersion >= '1.14'){
+			$wgOut->addStyle($cssURL . $css); //clean method
+		}
+		else{
+			$wgOut->addHTML($css_data); //ugly method
+		}
+	
+		$this->templateHTML['normal'] = $this->searchHTML($this->html_template,"<!-- Day Start -->", "<!-- Day End -->");
+		$this->templateHTML['missing'] = $this->searchHTML($this->html_template,"<!-- Missing Start -->", "<!-- Missing End -->");
 		
 		$year = Common::translate('year');
 		$month = Common::translate('month');
@@ -329,8 +302,13 @@ class Calendar extends CalendarArticles
 		
 		$max = Common::getDaysInMonth($month, $year);
 		
-		if ($day <=0 || $day > $max)		
-			return $this->daysMissingHTML[0];
+		// return an empty plain table cell (includes style class )
+		if ($day <=0 || $day > $max){	
+			return $this->templateHTML['missing'];
+		}
+		
+		// template table cell	
+		$tempString = $this->templateHTML['normal'];
 
 		$thedate = getdate(mktime(12, 0, 0, $month, $day, $year));
 		$wday  = $thedate['wday'];
@@ -344,16 +322,16 @@ class Calendar extends CalendarArticles
 		if($dateFormat == 'none')
 			$display_day = "";
 
-		if ($thedate['mon'] == $this->month
-			&& $thedate['year'] == $this->year
-			&& $thedate['mday'] == $this->day ) {
-			$tempString = $this->daysSelectedHTML[$wday];
+		if ( ($thedate['mon'] == $this->actualMonth) && ($thedate['year'] == $this->actualYear) && ($thedate['mday'] == $this->actualDay) ) {
+			$tag_wday = "calendarToday";
+		}
+		elseif($wday==0 || $wday ==6){ 
+			$tag_wday = "calendarWeekend";
 		}
 		else {
-			$tempString = $this->daysNormalHTML[$wday];
-
+			$tag_wday = "calendarWeekday";
 		}
-
+	
 		$tag_addEvent = $this->buildAddEventLink($month, $day, $year);
 
 		$tag_mode = 'monthMode';
@@ -375,8 +353,6 @@ class Calendar extends CalendarArticles
 		// no events, then return nothing!
 		if((strlen($tag_eventList) == 0) && ($mode == 'events')) return "";
 		
-		$tempString = str_replace("[[Day]]", $display_day, $tempString);
-		
 		$tag_alerts = $this->buildAlertLink($day, $month);
 		
 		if($this->setting('dayofyear')){
@@ -390,11 +366,13 @@ class Calendar extends CalendarArticles
 		if($mode == "monthMode")
 			$tag_eventList = str_replace("\n", " ", $tag_eventList); 
 		
+		$tempString = str_replace("[[Day]]", $display_day, $tempString);
 		$tempString = str_replace("[[AddEvent]]", $tag_addEvent, $tempString);
 		$tempString = str_replace("[[EventList]]", "<ul>" . $tag_eventList . "</ul>", $tempString);
 		$tempString = str_replace("[[Alert]]", $tag_alerts, $tempString);
 		$tempString = str_replace("[[DayWeekYear]]", $tag_dayweekyear, $tempString);
 		$tempString = str_replace("[[mode]]", $tag_mode, $tempString);
+		$tempString = str_replace("[[wday]]", $tag_wday, $tempString);
 		$tempString = str_replace("[[dayCustom]]", $tag_dayCustom, $tempString);
 		
 		return $tempString;
@@ -452,7 +430,6 @@ class Calendar extends CalendarArticles
 
 		$articleName = $this->wikiRoot . wfUrlencode($this->calendarPageName) . "/" . $this->month . "-" . $this->year . " -Template&action=edit" . "'\">";
 		
-//		$value = strtolower(Common::translate($this->month,'month')) . " " . Common::translate('template_btn');
 		$value = Common::translate('template_btn');
 		$title = Common::translate('template_btn_tip');
 
@@ -701,9 +678,6 @@ class Calendar extends CalendarArticles
 		$tag_about = "";
         
 	    /***** Calendar parts (loaded from template) *****/
-
-	    $html_calendar_start = "";     // calendar pieces
-	    $html_calendar_end = "";
 	    $html_header = "";             // the calendar header
 	    $html_day_heading = "";        // the day heading
 	    $html_week_start = "";         // the calendar week pieces
@@ -762,19 +736,12 @@ class Calendar extends CalendarArticles
 		$tag_previousYearButton = "<input class='btn' name='yearBack' type='submit' value='<<'>";
 		$tag_nextYearButton = "<input class='btn' name='yearForward' type='submit' value='>>'>";
 		
-	    // grab the HTML for the calendar
-	    // calendar pieces
-	    $html_calendar_start = $this->searchHTML($this->html_template, 
-						     "<!-- Calendar Start -->", "<!-- Header Start -->");
-	    $html_calendar_end = $this->searchHTML($this->html_template,
-						   "<!-- Footer End -->", "<!-- Calendar End -->");;
-	    // the calendar header
+	    // grab the HTML peices for the calendar
 	    $html_header = $this->searchHTML($this->html_template,
 					     "<!-- Header Start -->", "<!-- Header End -->");
-	    // the day heading
-	    $html_day_heading = $this->searchHTML($this->html_template,
-						  "<!-- Day Heading Start -->",
-						  "<!-- Day Heading End -->");
+
+		 $html_day_heading = $this->searchHTML($this->html_template,
+						  "<!-- Heading Start -->","<!-- Heading End -->");
 						  
 	    // the calendar week pieces
 	    $html_week_start = "<tr>";
@@ -786,7 +753,6 @@ class Calendar extends CalendarArticles
     	
 	    /***** Begin Building the Calendar (pre-week) *****/    	
 	    // add the header to the calendar HTML code string
-	    $ret .= $html_calendar_start;
 	    $ret .= $html_header;
 	    $ret .= $html_day_heading;
 
@@ -866,11 +832,7 @@ class Calendar extends CalendarArticles
 		$tempString = str_replace("[[Load_iCal]]", $tag_loadiCalButton, $tempString);
 		$tempString = str_replace("[[About]]", $tag_about, $tempString);
 		
-	    $ret .= $tempString;
-  		
-	    /***** Do calendar end code *****/
-	    $ret .= $html_calendar_end;
- 			
+	    $ret .= $tempString;	
 		$ret = $this->stripLeadingSpace($ret);
 		
 		$this->debug->set("renderMonth Ended");		

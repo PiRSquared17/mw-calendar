@@ -30,7 +30,7 @@
 </tr>
 <!-- Header End -->
   
-<!-- Day Heading Start -->
+<!-- Heading Start -->
 <tr>
 	<td class="calendarHeading">[[day1]]</td>
 	<td class="calendarHeading">[[day2]]</td>
@@ -40,26 +40,10 @@
 	<td class="calendarHeading">[[day6]]</td>
 	<td class="calendarHeading">[[day7]]</td>
 </tr>
-<!-- Day Heading End -->
-
-<!-- weekend Start -->
-<td class="[[mode]] calendarWeekend">
-  <table class="calendarTransparent">
-	<tr>
-	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-	  <td class="alerts">[[Alert]]</td>
-	  <td class="dayweekyear">[[DayWeekYear]]</td>
-	  <td class="calendarAddEvent">[[AddEvent]]</td>
-	</tr>
-	<tr>
-	  <td colspan="4"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td>
-	</tr>
-  </table>
-</td>
-<!-- weekend End -->
+<!-- Heading End -->
 	
-<!-- weekday Start -->
-<td class="[[mode]] calendarWeekday">
+<!-- Day Start -->
+<td class="[[mode]] [[wday]]">
   <table class="calendarTransparent">
 	<tr>
 	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
@@ -72,47 +56,11 @@
 	</tr>
   </table>
 </td>
-<!-- weekday End -->
+<!-- Day End -->
 
-<!-- Selected weekend Start -->
-<td class="[[mode]] calendarToday">
-  <table class="calendarTransparent">
-	<tr>
-	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-	  <td class="alerts">[[Alert]]</td>
-	  <td class="dayweekyear">[[DayWeekYear]]</td>
-	  <td class="calendarAddEvent">[[AddEvent]]</td>
-	</tr>
-	<tr>
-	  <td colspan="4"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td>
-	</tr>
-  </table>
-</td>
-<!-- Selected weekend End -->
-
-<!-- Selected weekday Start -->
-<td class="[[mode]] calendarToday">
-  <table class="calendarTransparent">
-	<tr>
-	  <td class="calendarDayNumber [[dayCustom]]">[[Day]]</td>
-	  <td class="alerts">[[Alert]]</td>
-	  <td class="dayweekyear">[[DayWeekYear]]</td>
-	  <td class="calendarAddEvent">[[AddEvent]]</td>
-	</tr>
-	<tr>
-	  <td colspan="4"><table cellspacing=1 class="calendarEventList">[[EventList]]</table></td>
-	</tr>
-  </table>
-</td>
-<!-- Selected weekday End -->
-
-<!-- Missing weekend Start -->
-<td class="daymissing calendarWeekend">&nbsp;</td>
-<!-- Missing weekend End -->
-
-<!-- Missing weekday Start -->
-<td class="daymissing calendarWeekday">&nbsp;</td>
-<!-- Missing weekday End -->
+<!-- Missing Start -->
+<td class="daymissing">&nbsp;</td>
+<!-- Missing End -->
 
 <!-- Footer Start -->
 </table>
