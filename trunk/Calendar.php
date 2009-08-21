@@ -325,7 +325,7 @@ class Calendar extends CalendarArticles
     // $day may be out of range; if so, give blank HTML
     function getHTMLForDay($month, $day, $year, $dateFormat='default', $mode='month'){
 		$tag_eventList = $tag_dayCustom = "";
-		$tag_weekyear = $tag_dayyear = "";
+		$tag_dayweekyear = "";
 		
 		$max = Common::getDaysInMonth($month, $year);
 		
@@ -1343,7 +1343,8 @@ function displayCalendar($paramstring, $params = array()) {
     global $wgParser;
 	global $wgScript, $wgScriptPath;
 	global $wgTitle, $wgUser;
-	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects, $wgCalendarForceNamespace, $wgCalendarDateFormat;
+	global $wgRestrictCalendarTo, $wgCalendarDisableRedirects;
+	global $wgCalendarForceNamespace, $wgCalendarDateFormat;
     
 	$wgParser->disableCache();
 	$wikiRoot = $wgScript . "?title=";
@@ -1377,10 +1378,6 @@ function displayCalendar($paramstring, $params = array()) {
 	$calendar->calendarPageName = "$title/$name";
 	$calendar->configPageName = "$title/$name/config";
 	
-	// disabling for now... causing wierd errors with mutiple calendars per page
-	//(UNIQ249aadf6593f3f85-calendar-00000000-QINU}
-	//$calendar->createNewPage("$title/$name/config", buildConfigString());	
-	
 	if(isset($params["useconfigpage"])) {	
 		$configs = $calendar->getConfig("$title/$name");
 		
@@ -1391,13 +1388,25 @@ function displayCalendar($paramstring, $params = array()) {
 	// just in case i rename some preferences... we can make them backwards compatible here...
 	legacyAliasChecks($params);
 	
-	// if the calendar isn't in a namespace specificed in $wgCalendarForceNamespace, return a warning
-	if( ($wgCalendarForceNamespace != $calendar->namespace) 
-				&& isset($wgCalendarForceNamespace) && !isset($params["fullsubscribe"]) ){
-		
-		return Common::translate('invalid_namespace') . '<b>'.$wgCalendarForceNamespace.'</b>';
+	// if the calendar isn't in a namespace(s) specificed in $wgCalendarForceNamespace, return a warning
+	// this can be a string or an array
+	if(isset($wgCalendarForceNamespace)){
+		if(is_array($wgCalendarForceNamespace)){
+			if(!in_array($calendar->namespace,$wgCalendarForceNamespace)  && !isset($params["fullsubscribe"]) ) {
+				
+				$namespaces = "";
+				foreach($wgCalendarForceNamespace as $namespace){
+					$namespaces .= $namespace . ", ";
+				}
+				
+				return Common::translate('invalid_namespace') . '<b>'.$namespaces.'</b>';
+			}
+		}
+		else if ($wgCalendarForceNamespace != $calendar->namespace){
+			return Common::translate('invalid_namespace') . '<b>'.$wgCalendarForceNamespace.'</b>';
+		}
 	}
-	
+
 	//set defaults that are required later in the code...
 	if(!isset($params["timetrackhead"])) 	$params["timetrackhead"] = "Event, Value";
 	if(!isset($params["maxdailyevents"])) 	$params["maxdailyevents"] = 5;
@@ -1415,10 +1424,16 @@ function displayCalendar($paramstring, $params = array()) {
 	// this global is set via LocalSetting.php (ex: $wgRestrictCalendarTo = 'sysop';
 	if( isset($wgRestrictCalendarTo) ){
 		$arrGroups = $wgUser->getGroups();
-		if( !in_array($wgRestrictCalendarTo, $arrGroups) ){
-			$calendar->debug->set($arrGroups[2]);
-			$params["lockdown"] = true;
-		}	
+		if( is_array($wgRestrictCalendarTo) ){
+			if( count(array_intersect($wgRestrictCalendarTo, $arrGroups)) == 0 ){
+				$params["lockdown"] = true;
+			}
+		}
+		else{
+			if( !in_array($wgRestrictCalendarTo, $arrGroups) ){
+				$params["lockdown"] = true;
+			}
+		}
 	}
 
 	if (isset($wgCalendarDisableRedirects))

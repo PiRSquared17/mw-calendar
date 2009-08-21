@@ -178,7 +178,8 @@ class Common{
 		
 		// we're good, return the URL
 		return $img->getDisplayedFile()->getUrl();  
-	} 
+	}
+	
 }
 
 
