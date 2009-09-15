@@ -1114,6 +1114,9 @@ class Calendar extends CalendarArticles
 	
 		$tag_mini_cal_year = "";
 		
+		$tag_previousYearButton = "<input class='btn' name='yearBack' type='submit' value='<<'>";
+		$tag_nextYearButton = "<input class='btn' name='yearForward' type='submit' value='>>'>";
+		
 		//$styleContainer = "style='width:100%; border:1px solid #CCCCCC; border-collapse:collapse;'";
 		$styleTitle = "style='text-align:center; font-size:24px; font-weight:bold;'";
 		
@@ -1124,7 +1127,7 @@ class Calendar extends CalendarArticles
 		$nextMon=1;
 		$nextYear = $this->year;
 		
-		$title = "$this->year";
+		$title = "$tag_previousYearButton &nbsp; $this->year &nbsp; $tag_nextYearButton";
 		
 		$ret = "<tr><td>" . $this->buildConfigLink(true) . "</td><td $styleTitle colspan=2>$title</td><td align=right>$this->tag_views</td></tr>";
 
@@ -1145,7 +1148,7 @@ class Calendar extends CalendarArticles
 		
 		//defaults
 		$sunday = $saturday  = $ret = $week = ""; 
-		$colspan = 3; 
+		$colspan = 2; 
 		
 		$styleTable = "style='border-collapse:collapse; width:100%;'";
 		$styleTitle = "style='font-size: 24px;'";
@@ -1163,7 +1166,7 @@ class Calendar extends CalendarArticles
 		$year = $date['year'];
 		
 		//$title = $date['month'];
-		$title = Common::translate($month, 'month');
+		$title = Common::translate($month, 'month') . ", " . $year;
 		
 		$btnToday = Common::translate('today');
 		$tag_weekBack = "<input class='btn' name='weekBack' type='submit' value='<<'>";
@@ -1173,11 +1176,11 @@ class Calendar extends CalendarArticles
 		if(!$fiveDay){
 			$sunday = "<td class='calendarHeading'>" . Common::translate(1, 'weekday'). "</td>";
 			$saturday = "<td class='calendarHeading'>" . Common::translate(7, 'weekday'). "</td>";
-			$colspan = 5; //adjust for mode buttons
+			$colspan = 4; //adjust for mode buttons
 		}
 		
 		//hide mode buttons if selected via parameter tag
-		$ret .= "<tr>&nbsp;<td></td><td $styleTitle>$title</td>" . "<td><i>". $this->buildConfigLink(true) . "</i></td>"
+		$ret .= "<tr>&nbsp;<td></td><td $styleTitle colspan=2>&nbsp;$title</td>" . "<td>&nbsp;<i>". $this->buildConfigLink(true) . "</i></td>"
 			. "<td align=right colspan=$colspan>$tag_todayButton &nbsp;&nbsp; $this->tag_views</td><td>&nbsp;</td></tr>";	
 		
 		if($this->setting('monday')){
