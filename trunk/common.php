@@ -180,6 +180,13 @@ class Common{
 		return $img->getDisplayedFile()->getUrl();  
 	}
 	
+	static function isWeekend($month, $day, $year){
+		$dayOfWeek = date('N', mktime(12, 0, 0, $month, $day, $year));
+		
+		if($dayOfWeek > 5) return true;
+
+		return false;
+	}
 }
 
 

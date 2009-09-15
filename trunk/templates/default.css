@@ -2,7 +2,7 @@
 	/* the calendar table style */
 	option.lst{}
 	input.btn{}	
-	ul.bullets {padding-left: 0px;}
+	ul.bullets {padding-left: 0px;  /*list-style-image:url("example.gif")*/}
 
 	.calendarWeekday {vertical-align:top; background-color:;}	
 	.calendarWeekend {vertical-align:top; background-color:#EEEEEE;}	

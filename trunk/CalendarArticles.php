@@ -328,6 +328,7 @@
 	//find the number of current events and "build" the <add event> link
     public function buildAddEventLink($month, $day, $year, $text="") {
 		
+		if($day < 1) return "";
 		$section_new = '';
 		
 		if($this->setting('disableaddevent') && strlen($text) == 0) return "";
@@ -340,6 +341,10 @@
 			$text = "<u>" . Common::translate("add_event") . "</u>";
 			
 		$tip = Common::translate('add_event_tip');
+		
+		if($this->setting('weekofyear')){
+			$tip .= " (wk:" . $this->getWeekOfTheYear($month,$day,$year,true) . ")";
+		}
 		
 		//$date = "$month-$day-$year";
 		$date = $this->userDateFormat($month, $day, $year);

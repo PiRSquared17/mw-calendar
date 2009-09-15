@@ -152,6 +152,8 @@ class Calendar extends CalendarArticles
 		$this->year = $this->actualYear = $now['year'];
 		$this->day = $this->actualDay = $now['mday'];
 		
+		$this->daysInMonth = 
+		
 		$this->debug->set("Calendar Constructor Ended.");
     }
 	
@@ -292,6 +294,19 @@ class Calendar extends CalendarArticles
 			. $this->title . "`"
 			. $this->name . "`"
 			. "'>";			
+
+		$this->tag_heading = 
+			'<td class="calendarHeading">[[day1]]</td>
+			<td class="calendarHeading">[[day2]]</td>
+			<td class="calendarHeading">[[day3]]</td>
+			<td class="calendarHeading">[[day4]]</td>
+			<td class="calendarHeading">[[day5]]</td>';
+			
+		if(!$this->setting('5dayweek') ){
+			$this->tag_heading .=
+				'<td class="calendarHeading">[[day6]]</td>
+				<td class="calendarHeading">[[day7]]</td>';
+		}
 	}
 	
     // Generate the HTML for a given month
@@ -300,11 +315,17 @@ class Calendar extends CalendarArticles
 		$tag_eventList = $tag_dayCustom = "";
 		$tag_dayweekyear = "";
 		
-		$max = Common::getDaysInMonth($month, $year);
-		
 		// return an empty plain table cell (includes style class )
-		if ($day <=0 || $day > $max){	
+		if ($day <= 0) {
 			return $this->templateHTML['missing'];
+		}
+		
+		if( $this->setting("5dayweek") ){
+			$dayOfWeek = date('N', mktime(12, 0, 0, $month, $day, $year));	// 0-6
+			
+			if($dayOfWeek > 5){	
+				return "";
+			}		
 		}
 		
 		// template table cell	
@@ -395,15 +416,17 @@ class Calendar extends CalendarArticles
 		return $ret;
 	}
 
-	function getWeekOfTheYear($month, $day, $year, $monday=true){
+	function getWeekOfTheYear($month, $day, $year, $noHTML=false){
 		
 		$timestamp = mktime(12,0,0,$month, $day, $year);
 		$weekDay = date("w", $timestamp);
 		$week = date("W", $timestamp);
 		
+		if($noHTML) return $week;
+		
 		$translated = Common::translate('weekyearTranslated');		
 
-		if($this->setting('weekofyear')){
+		if($this->setting('dayofyear')){
 			$html = "<span title='" . $translated . "'>/$week</span>";
 		}
 		else{
@@ -692,14 +715,6 @@ class Calendar extends CalendarArticles
 		//the previous days have already been loaded
 		$this->initalizeMonth(0, (32 - $this->day));
 		
-	    // the date for the first day of the month
-	    $firstDate = getdate(mktime(12, 0, 0, $this->month, 1, $this->year));
-	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
-
-	    //$today = getdate();    	// today's date
-	    $isSelected = false;    	// if the day being processed is today
-	    $isMissing = false;    	// if the calendar cell being processed is in the current month
-		
 	    /***** Build the known tag elements (non-dynamic) *****/
 	    // set the month's name tag
 		if($this->name == 'Public')
@@ -740,7 +755,7 @@ class Calendar extends CalendarArticles
 	    $html_header = $this->searchHTML($this->html_template,
 					     "<!-- Header Start -->", "<!-- Header End -->");
 
-		 $html_day_heading = $this->searchHTML($this->html_template,
+		$html_day_heading = $this->searchHTML($this->html_template,
 						  "<!-- Heading Start -->","<!-- Heading End -->");
 						  
 	    // the calendar week pieces
@@ -756,6 +771,8 @@ class Calendar extends CalendarArticles
 	    $ret .= $html_header;
 	    $ret .= $html_day_heading;
 
+		//$ret = str_replace("[[HEADER]]", $this->tag_header_month_view, $ret);
+		
 	    /***** Search and replace variable tags at this point *****/
 		$ret = str_replace("[[TodayButton]]", $tag_todayButton, $ret);
 	    $ret = str_replace("[[MonthSelect]]", $tag_monthSelect, $ret);
@@ -769,53 +786,37 @@ class Calendar extends CalendarArticles
 	    $ret = str_replace("[[CalendarYear]]", $tag_calendarYear, $ret);
 		$ret = str_replace("[[Views]]", $this->tag_views, $ret);
 		
-		if(!$this->setting('monday')){
-			$ret = str_replace("[[day1]]", Common::translate(1,'weekday'), $ret);
-			$ret = str_replace("[[day2]]", Common::translate(2,'weekday'), $ret);
-			$ret = str_replace("[[day3]]", Common::translate(3,'weekday'), $ret);
-			$ret = str_replace("[[day4]]", Common::translate(4,'weekday'), $ret);
-			$ret = str_replace("[[day5]]", Common::translate(5,'weekday'), $ret);
-			$ret = str_replace("[[day6]]", Common::translate(6,'weekday'), $ret);
-			$ret = str_replace("[[day7]]", Common::translate(7,'weekday'), $ret);
+		$heading = $this->tag_heading;
+		
+		if($this->setting('monday')){
+			$heading = str_replace("[[day1]]", Common::translate(2,'weekday'), $heading);
+			$heading = str_replace("[[day2]]", Common::translate(3,'weekday'), $heading);
+			$heading = str_replace("[[day3]]", Common::translate(4,'weekday'), $heading);
+			$heading = str_replace("[[day4]]", Common::translate(5,'weekday'), $heading);
+			$heading = str_replace("[[day5]]", Common::translate(6,'weekday'), $heading);
+			
+			if( !$this->setting('5dayweek') ){
+				$heading = str_replace("[[day6]]", Common::translate(7,'weekday'), $heading);
+				$heading = str_replace("[[day7]]", Common::translate(1,'weekday'), $heading);
+			}
 		}
 		else{
-			$ret = str_replace("[[day1]]", Common::translate(2,'weekday'), $ret);
-			$ret = str_replace("[[day2]]", Common::translate(3,'weekday'), $ret);
-			$ret = str_replace("[[day3]]", Common::translate(4,'weekday'), $ret);
-			$ret = str_replace("[[day4]]", Common::translate(5,'weekday'), $ret);
-			$ret = str_replace("[[day5]]", Common::translate(6,'weekday'), $ret);
-			$ret = str_replace("[[day6]]", Common::translate(7,'weekday'), $ret);
-			$ret = str_replace("[[day7]]", Common::translate(1,'weekday'), $ret);		
+			$heading = str_replace("[[day1]]", Common::translate(1,'weekday'), $heading);
+			$heading = str_replace("[[day2]]", Common::translate(2,'weekday'), $heading);
+			$heading = str_replace("[[day3]]", Common::translate(3,'weekday'), $heading);
+			$heading = str_replace("[[day4]]", Common::translate(4,'weekday'), $heading);
+			$heading = str_replace("[[day5]]", Common::translate(5,'weekday'), $heading);
+			
+			if( !$this->setting('5dayweek') ){
+				$heading = str_replace("[[day6]]", Common::translate(6,'weekday'), $heading);
+				$heading = str_replace("[[day7]]", Common::translate(7,'weekday'), $heading);
+			}			
 		}
 		
+		$ret = str_replace("[[HEADING]]", $heading, $ret);
 		
-	    /***** Begin building the calendar days *****/
-	    // determine the starting day offset for the month
-		//$wday_info = Common::wdayOffset($this->month,$this->year,$first);
-		//$dayOffset = $wday_info['offset'] +1;
-	    
-		$start=1;
-		if($this->setting('monday')) $start=2;
-		$dayOffset = -$first + $start;
-		
-	    $maxDays = Common::getDaysInMonth($this->month,$this->year);
+		$ret .= $this->getMonthHTML($this->month, $this->year);
 
-	    // determine the number of weeks in the month
-		//$numWeeks = $wday_info['weeks'] +1;
-	    $numWeeks = floor(($maxDays - $dayOffset + 7) / 7);  	
-
-	    // begin writing out month weeks
-	    for ($i = 0; $i < $numWeeks; $i += 1) {
-			$ret .= $html_week_start;		// write out the week start code	
-			
-			// write out the days in the week
-			for ($j = 0; $j < 7; $j += 1) {
-				$ret .= $this->getHTMLForDay($this->month, $dayOffset, $this->year);
-				$dayOffset += 1;
-			}
-			$ret .= $html_week_end; 		// add the week end code
-		}   	
-		
 	    /***** Do footer *****/
 	    $tempString = $html_footer;
 		
@@ -837,6 +838,53 @@ class Calendar extends CalendarArticles
 		
 		$this->debug->set("renderMonth Ended");		
 	    return $ret;	
+	}
+	
+	// this generates the logic and the html to organize where the days go in the "grid"
+	function getMonthHTML($month, $year, $simplemonth=false){
+		$offset = 1;
+		$dayOfWeek = date('N', mktime(12, 0, 0, $month, 1, $year));	// 0-6
+	    $daysInMonth = Common::getDaysInMonth($month,$year); // 28-31
+		$weeksInMonth = ceil( ($dayOfWeek + $daysInMonth)/7 ) ; // 4-6
+	
+		if( $this->setting("monday") && !$this->setting("5dayweek") ) $offset = 2;
+	
+		$counter = $theDay = -($dayOfWeek-$offset);
+		$ret = "";
+		
+		$bfiveDayWeek = $this->setting("5dayweek");
+		
+		for ($week = 0; $week < $weeksInMonth; $week+=1){
+			$ret .= "<tr>";	
+			
+			for ($day = 0; $day < 7; $day+=1){
+				$bSkipDay = false;
+				
+				if($counter > $daysInMonth) $theDay = 0; // we want these days to be grey or empty...etc
+				
+				if( ($day == 0 or $day == 6) && $bfiveDayWeek ){
+					$bSkipDay = true;
+				}	
+				
+				if( !$bSkipDay ){
+					if($simplemonth){
+						$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
+						$link = $this->buildAddEventLink($month, $theDay, $year, $theDay);
+
+						$ret .= "<td class='yearWeekday $todayStyle'>$link</td>";
+					}
+					else{
+						$ret .= $this->getHTMLForDay($month, $theDay, $year);
+					}
+				}
+				
+				$counter++;
+				$theDay++;
+			}
+			$ret .= "</tr>";
+		}
+	
+		return $ret;
 	}
 
     // returns the HTML that appears between two search strings.
@@ -979,23 +1027,10 @@ class Calendar extends CalendarArticles
 		}
 	}
 	
-	function buildSimpleCalendar($month, $year, $sixRow=false){
+	function buildSimpleCalendar($month, $year,$disableNavButtons=false){
 
-		$row = $todayStyle = "";
-
-		$firstDate = getdate(mktime(12, 0, 0, $month, 1, $year));
-	    $first = $firstDate["wday"];   // the day of the week of the 1st of the month (ie: Sun:0, Mon:1, etc)
-
-		$start=1;
-		if($this->setting('monday')) $start=2;
-		$dayOffset = -$first + $start;
-    
-	    // determine the number of weeks in the month
-		$maxDays = Common::getDaysInMonth($month,$year);
-	    $numWeeks = floor(($maxDays - $dayOffset + 7) / 7);  	
-
-		if($sixRow) $numWeeks = 6;
-
+		$prev = $next = "";
+	
 		$monthname = Common::translate($month,'month_short');
 		if ( $this->isFullSubscribe ) {
 			$monthname = "<a title='$this->calendarPageName' href='" . $this->wikiRoot . substr($this->calendarPageName, 0, strrpos($this->calendarPageName, "/")) . "'>" . $monthname . "</a>";
@@ -1003,61 +1038,44 @@ class Calendar extends CalendarArticles
 
 		$monthyear = "$monthname, $this->year";
 		
-		$prev = "<input class='btn' name='monthBack' type='submit' value='<<'>";
-		$next = "<input class='btn' name='monthForward' type='submit' value='>>'>";
+		if(!$disableNavButtons){
+			$prev = "<input class='btn' name='monthBack' type='submit' value='<<'>";
+			$next = "<input class='btn' name='monthForward' type='submit' value='>>'>";
+		}
 		
 		$ret = "<tr><td colspan=2>$prev</td><td colspan=3 style='font-size:9px' class='yearTitle'>" . $monthyear . "</td><td colspan=2>$next</td></tr>";				
-		if($this->setting('monday')){
+	
+		$ret .= "<tr>";
+	
+		if($this->setting('monday')){	
 			$ret .= "
-				<tr>
-					<td class='yearHeading'>" . substr(Common::translate(2,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(3,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(4,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(5,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(6,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(7,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(1,'weekday'),0,1) . "</td>
-				</tr>";
+				<td class='yearHeading'>" . substr(Common::translate(2,'weekday'),0,1) . "</td>						
+				<td class='yearHeading'>" . substr(Common::translate(3,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(4,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(5,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(6,'weekday'),0,1) . "</td>";
+			if(!$this->setting('5dayweek')){	
+				$ret .= 
+					"<td class='yearHeading'>" . substr(Common::translate(7,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(1,'weekday'),0,1) . "</td>";
+			}		
 		}
 		else{
 			$ret .= "
-				<tr>
-					<td class='yearHeading'>" . substr(Common::translate(1,'weekday'),0,1) . "</td>						
-					<td class='yearHeading'>" . substr(Common::translate(2,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(3,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(4,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(5,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(6,'weekday'),0,1) . "</td>
-					<td class='yearHeading'>" . substr(Common::translate(7,'weekday'),0,1) . "</td>
-			
-				</tr>";		
-		}
-		
-		for ($i = 0; $i < $numWeeks; $i++) {	
-			for($j=0; $j < 7; $j++){
-				if($year == $this->year && $month == $this->month && $dayOffset == $this->day)
-					$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
-					
-				if($dayOffset > 0 && $dayOffset <= $maxDays){
-					$link = $this->buildAddEventLink($month, $dayOffset, $year, $dayOffset);
-					if( (($j==0 || $j==6) && !$this->setting('monday')) || 
-					($j > 4 && $this->setting('monday')) )
-						$row .= "<td class='yearWeekend $todayStyle'>$link</td>";
-					else
-						$row .= "<td class='yearWeekday' $todayStyle>$link</td>";
-				}
-				else{
-					$row .= "<td>&nbsp;</td>";	
-				}
-				
-				$todayStyle = "";
-				$dayOffset++;
+				<td class='yearHeading'>" . substr(Common::translate(1,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(2,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(3,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(4,'weekday'),0,1) . "</td>
+				<td class='yearHeading'>" . substr(Common::translate(5,'weekday'),0,1) . "</td>";
+			if(!$this->setting('5dayweek')){	
+				$ret .= 
+					"<td class='yearHeading'>" . substr(Common::translate(6,'weekday'),0,1) . "</td>
+					<td class='yearHeading'>" . substr(Common::translate(7,'weekday'),0,1) . "</td>";
 			}
-			
-			$ret .= "<tr>$row</tr>";
-			$row = "";
 		}
 		
+		$ret.= $this->getMonthHTML($month,$year,true);
+	
 		$hidden = $this->tag_HiddenData;
 		
 		return "<form name='cal_frm' method='post'><table class='yearCalendarMonth'>$ret</table>$hidden</form>";
@@ -1408,6 +1426,10 @@ function displayCalendar($paramstring, $params = array()) {
 		$params['locktemplates'] = true;
 	}
 
+	if(isset($params["5dayweek"])){
+		$params['monday'] = true;
+	}
+	
 	// this needs to be last after all required $params are updated, changed, defaulted or whatever
 	$calendar->arrSettings = $params;
 	
