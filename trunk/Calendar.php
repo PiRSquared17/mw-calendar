@@ -60,7 +60,9 @@ if (isset($_POST["calendar_info"]) ){
 		$year = $arr['year'];
 	}
 
-	$mode = $_POST["viewSelect"];
+	if(isset($_POST["viewSelect"])){
+		$mode = $_POST["viewSelect"];
+	}
 	
 	$cookie_name = preg_replace('/(\.|\s)/',  '_', ($title . " " . $name)); //replace periods and spaces
 	$cookie_value = $month . "`" . $day . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
@@ -1072,7 +1074,9 @@ class Calendar extends CalendarArticles
 			$next = "<input class='btn' name='monthForward' type='submit' value='>>'>";
 		}
 		
-		$header = "<table class='yearCalendarMonth'><tr><td colspan=2>$prev</td><td colspan=3 style='font-size:9px' class='yearTitle'>" . $monthyear . "</td><td colspan=2>$next</td></tr></table>";				
+		$title = "<table class='yearCalendarMonth_x' width=100% cellpadding=0 cellspacing=0><td>$prev</td><td>" . $monthyear . "</td><td>$next</td></table>";
+		
+		$header = "<table class='yearCalendarMonth'><tr><td style='font-size:9px' class='yearTitle'>$title</tr></table>";				
 	
 		$ret = "<tr>";
 	
@@ -1519,7 +1523,7 @@ function displayCalendar($paramstring, $params = array()) {
 	if(isset($params['useeventlist'])) $userMode = 'events';
 	if(isset($params['date'])) $userMode = 'day';
 	if(isset($params['simplemonth'])) $userMode = 'simplemonth';
-	
+
 	if(isset($_COOKIE['calendar_ical'])){
 		$calendar->debug->set('ical cookie loaded');		
 
