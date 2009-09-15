@@ -1392,7 +1392,7 @@ function displayCalendar($paramstring, $params = array()) {
 				return Common::translate('invalid_namespace') . '<b>'.$namespaces.'</b>';
 			}
 		}
-		else if ($wgCalendarForceNamespace != $calendar->namespace){
+		else if ( $wgCalendarForceNamespace != $calendar->namespace  && !isset($params["fullsubscribe"]) ){
 			return Common::translate('invalid_namespace') . '<b>'.$wgCalendarForceNamespace.'</b>';
 		}
 	}
