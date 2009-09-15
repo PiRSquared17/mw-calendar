@@ -187,6 +187,15 @@ class Common{
 
 		return false;
 	}
+	
+	function right($value, $count){
+		$value = substr($value, (strlen($value) - $count), strlen($value));
+		return $value;
+	}
+
+	function left($string, $count){
+		return substr($string, 0, $count);
+	}
 }
 
 

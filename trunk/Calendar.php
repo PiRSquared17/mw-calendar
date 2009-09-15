@@ -855,10 +855,12 @@ class Calendar extends CalendarArticles
 		$bfiveDayWeek = $this->setting("5dayweek");
 		
 		for ($week = 0; $week < $weeksInMonth; $week+=1){
-			$ret .= "<tr>";	
+			$bValidWeek = false;
+			$temp = "<tr>";	
 			
 			for ($day = 0; $day < 7; $day+=1){
 				$bSkipDay = false;
+				
 				
 				if($counter > $daysInMonth) $theDay = 0; // we want these days to be grey or empty...etc
 				
@@ -867,21 +869,29 @@ class Calendar extends CalendarArticles
 				}	
 				
 				if( !$bSkipDay ){
+					if($theDay > 0) $bValidWeek = true; 
+					
 					if($simplemonth){
 						$todayStyle = "style='background-color: #C0C0C0;font-weight:bold;'";
 						$link = $this->buildAddEventLink($month, $theDay, $year, $theDay);
 
-						$ret .= "<td class='yearWeekday $todayStyle'>$link</td>";
+						$temp .= "<td class='yearWeekday $todayStyle'>$link</td>";
 					}
 					else{
-						$ret .= $this->getHTMLForDay($month, $theDay, $year);
+						$temp .= $this->getHTMLForDay($month, $theDay, $year);
 					}
 				}
 				
 				$counter++;
 				$theDay++;
 			}
-			$ret .= "</tr>";
+			
+			$temp .= "</tr>";
+			
+			// dont display a completely "greyed" out 5 day week
+			if($bValidWeek == true){
+				$ret .= $temp;
+			}
 		}
 	
 		return $ret;
@@ -1043,9 +1053,9 @@ class Calendar extends CalendarArticles
 			$next = "<input class='btn' name='monthForward' type='submit' value='>>'>";
 		}
 		
-		$ret = "<tr><td colspan=2>$prev</td><td colspan=3 style='font-size:9px' class='yearTitle'>" . $monthyear . "</td><td colspan=2>$next</td></tr>";				
+		$header = "<table class='yearCalendarMonth'><tr><td colspan=2>$prev</td><td colspan=3 style='font-size:9px' class='yearTitle'>" . $monthyear . "</td><td colspan=2>$next</td></tr></table>";				
 	
-		$ret .= "<tr>";
+		$ret = "<tr>";
 	
 		if($this->setting('monday')){	
 			$ret .= "
@@ -1078,7 +1088,7 @@ class Calendar extends CalendarArticles
 	
 		$hidden = $this->tag_HiddenData;
 		
-		return "<form name='cal_frm' method='post'><table class='yearCalendarMonth'>$ret</table>$hidden</form>";
+		return "<form name='cal_frm' method='post'>" . $header . "<table class='yearCalendarMonth'>$ret</table>$hidden</form>";
 	}	
 
 	function renderYear(){
