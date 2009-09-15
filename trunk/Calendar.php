@@ -17,9 +17,10 @@ if (isset($_POST["calendar_info"]) ){
 
 	// set the initial values
 	$month = $temp[0];
-	$year = $temp[1];	
-	$title =  $temp[2];
-	$name =  $temp[3];
+	$day = $temp[1];
+	$year = $temp[2];	
+	$title =  $temp[3];
+	$name =  $temp[4];
 	
 	// the yearSelect and monthSelect must be on top... the onChange triggers  
 	// whenever the other buttons are clicked
@@ -30,6 +31,7 @@ if (isset($_POST["calendar_info"]) ){
 	if(isset($_POST["yearForward"])) ++$year;	
 
 	if(isset($_POST["today"])){
+		$day = $today['mday'];
 		$month = $today['mon'];
 		$year = $today['year'];
 	}	
@@ -43,11 +45,25 @@ if (isset($_POST["calendar_info"]) ){
 		$year = ($month == 12 ? ++$year : $year);		
 		$month = ($month == 12 ? 1 : ++$month);
 	}
+	
+	if(isset($_POST["weekBack"])){
+		$arr = getdate( mktime(12, 0, 0,$month, $day-7, $year) );
+		$month = $arr['mon'];
+		$day = $arr['mday'];
+		$year = $arr['year'];
+	}
+
+	if(isset($_POST["weekForward"])){
+		$arr = getdate( mktime(12, 0, 0,$month, $day+7, $year) );
+		$month = $arr['mon'];
+		$day = $arr['mday'];
+		$year = $arr['year'];
+	}
 
 	$mode = $_POST["viewSelect"];
 	
 	$cookie_name = preg_replace('/(\.|\s)/',  '_', ($title . " " . $name)); //replace periods and spaces
-	$cookie_value = $month . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
+	$cookie_value = $month . "`" . $day . "`" . $year . "`" . $title . "`" . $name . "`" . $mode . "`";
 	setcookie($cookie_name, $cookie_value);
 	
 	if(isset($_POST["ical"])){
@@ -241,6 +257,8 @@ class Calendar extends CalendarArticles
 	}
 	
 	function initalizeHTML(){
+	
+		$this->debug->set("initalizeHTML() called");
 		global $wgOut,$wgScriptPath, $wgVersion;
 
 		$cssURL = $this->getURLRelativePath() . "/templates/";
@@ -290,6 +308,7 @@ class Calendar extends CalendarArticles
 		// build the hidden calendar date info (used to offset the calendar via sessions)
 		$this->tag_HiddenData = "<input class='btn' type='hidden' name='calendar_info' value='"
 			. $this->month . "`"
+			. $this->day . "`"
 			. $this->year . "`"
 			. $this->title . "`"
 			. $this->name . "`"
@@ -1131,7 +1150,7 @@ class Calendar extends CalendarArticles
 		$styleTable = "style='border-collapse:collapse; width:100%;'";
 		$styleTitle = "style='font-size: 24px;'";
 		
-		$html_head = "<form  method='post'><table $styleTable>";
+		$html_head = "<form  method='post'><table $styleTable border=0>";
 		$html_foot = "</table></form>";
 		
 		$weekday = date('w', mktime(12, 0, 0, $this->month, $this->day, $this->year));
@@ -1146,18 +1165,23 @@ class Calendar extends CalendarArticles
 		//$title = $date['month'];
 		$title = Common::translate($month, 'month');
 		
+		$btnToday = Common::translate('today');
+		$tag_weekBack = "<input class='btn' name='weekBack' type='submit' value='<<'>";
+		$tag_weekForward = "<input class='btn' name='weekForward' type='submit' value='>>'>";		
+		$tag_todayButton = "<input class='btn' name='today' type='submit' value=\"$btnToday\">";
+		
 		if(!$fiveDay){
 			$sunday = "<td class='calendarHeading'>" . Common::translate(1, 'weekday'). "</td>";
 			$saturday = "<td class='calendarHeading'>" . Common::translate(7, 'weekday'). "</td>";
-			$colspan = 5; //adjuct for mode buttons
+			$colspan = 5; //adjust for mode buttons
 		}
 		
 		//hide mode buttons if selected via parameter tag
-		$ret .= "<tr><td $styleTitle>$title</td>" . "<td><i>". $this->buildConfigLink(true) . "</i></td>"
-			. "<td align=right colspan=$colspan>$this->tag_views</td></tr>";	
+		$ret .= "<tr>&nbsp;<td></td><td $styleTitle>$title</td>" . "<td><i>". $this->buildConfigLink(true) . "</i></td>"
+			. "<td align=right colspan=$colspan>$tag_todayButton &nbsp;&nbsp; $this->tag_views</td><td>&nbsp;</td></tr>";	
 		
 		if($this->setting('monday')){
-			$ret .= "<tr>";
+			$ret .= "<tr><td></td>";
 			$ret .= "<td class='calendarHeading'>" . Common::translate(2, 'weekday'). "</td>";
 			$ret .= "<td class='calendarHeading'>" . Common::translate(3, 'weekday'). "</td>";
 			$ret .= "<td class='calendarHeading'>" . Common::translate(4, 'weekday'). "</td>";
@@ -1165,10 +1189,10 @@ class Calendar extends CalendarArticles
 			$ret .= "<td class='calendarHeading'>" . Common::translate(6, 'weekday'). "</td>";
 			$ret .= $saturday;
 			$ret .= $sunday;
-			$ret .= "</tr>";
+			$ret .= "<td></td></tr>";
 		}
 		else{
-			$ret .= "<tr>";
+			$ret .= "<tr><td></td>";
 			$ret .= $sunday;
 			$ret .= "<td class='calendarHeading'>" . Common::translate(2, 'weekday'). "</td>";
 			$ret .= "<td class='calendarHeading'>" . Common::translate(3, 'weekday'). "</td>";
@@ -1176,7 +1200,7 @@ class Calendar extends CalendarArticles
 			$ret .= "<td class='calendarHeading'>" . Common::translate(5, 'weekday'). "</td>";
 			$ret .= "<td class='calendarHeading'>" . Common::translate(6, 'weekday'). "</td>";
 			$ret .= $saturday;
-			$ret .= "</tr>";
+			$ret .= "<td></td></tr>";
 		}
 		
 		if($fiveDay && !$this->setting('monday')) 
@@ -1188,8 +1212,9 @@ class Calendar extends CalendarArticles
 			Common::getNextValidDate($month, $day, $year);
 		}
 
-		$ret .= "<tr>" . $week . "</tr>";
+		$ret .= "<tr><td width=1% valign=top>$tag_weekBack</td>" . $week . "<td width=1% valign=top>$tag_weekForward</td></tr>";
 		
+		$this->debug->set($year);	
 		$this->debug->set("renderWeek Ended");	
 		return $html_head . $ret . $this->tag_HiddenData . $html_foot;
 	}
@@ -1320,6 +1345,7 @@ class Calendar extends CalendarArticles
 	
 	// Set/Get accessors		
 	function setMonth($month) { $this->month = $month; } /* currently displayed month */
+	function setDay($day) { $this->day = $day; } /* currently displayed month */
 	function setYear($year) { $this->year = $year; } /* currently displayed year */
 	function setTitle($title) { $this->title = $title; }
 	function setName($name) { $this->name = $name; }
@@ -1473,12 +1499,13 @@ function displayCalendar($paramstring, $params = array()) {
 
 		$arrSession = split("`", $_COOKIE[$cookie_name]);
 		$calendar->setMonth($arrSession[0]);
-		$calendar->setYear($arrSession[1]);	
-		$calendar->setTitle($arrSession[2]);				
-		$calendar->setName($arrSession[3]);	
+		$calendar->setDay($arrSession[1]);
+		$calendar->setYear($arrSession[2]);	
+		$calendar->setTitle($arrSession[3]);				
+		$calendar->setName($arrSession[4]);	
 
-		if(strlen($arrSession[4]) > 0)
-			$userMode = $arrSession[4];
+		if(strlen($arrSession[5]) > 0)
+			$userMode = $arrSession[5];
 	}
 	else{
 		// defaults from the <calendar /> parameters; must restart browser to enable
